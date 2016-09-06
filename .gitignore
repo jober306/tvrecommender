@@ -1,0 +1,5 @@
+.classpath
+.project
+.settings
+target
+src/main/resources/tv-audience-dataset/tv-audience-dataset.csv
