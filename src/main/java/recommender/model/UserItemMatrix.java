@@ -47,6 +47,18 @@ public class UserItemMatrix {
 		userItemMatrix[userID][itemID] = value;
 	}
 	
+	public void setUserValues(int userID, double[] values){
+		for(int i = 0; i < values.length; i++){
+			userItemMatrix[userID][i] = values[i];
+		}
+	}
+	
+	public void setItemValues(int itemID, double[] values){
+		for(int i = 0; i < values.length; i++){
+			userItemMatrix[i][itemID] = values[i];
+		}
+	}
+	
 	public double getUsersSimilarity(int userIndex1, int userIndex2, Similarity similarity){
 		return similarity.calculateSimilarity(getUserValues(userIndex1), getUserValues(userIndex2));
 	}

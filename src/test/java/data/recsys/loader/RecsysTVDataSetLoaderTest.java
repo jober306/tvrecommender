@@ -38,7 +38,7 @@ public class RecsysTVDataSetLoaderTest {
 	
 	@AfterClass
 	public static void tearDown(){
+		dataSet.close();
 		loader = null;
-		dataSet = null;
 	}
 }
