@@ -2,6 +2,7 @@ package data.recsys.mapper;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,10 +21,10 @@ public class RecSysMapReader {
 	private String programIDToIDMapFileName;
 	private String eventIDToIDMapFileName;
 
-	public RecSysMapReader(RecSysMapCreator mapCreator) {
-		userIDToIDMapFileName = mapCreator.getuserIDToIDMapFileName();
-		programIDToIDMapFileName = mapCreator.getProgramIDToIDMapFileName();
-		eventIDToIDMapFileName = mapCreator.getEventIDToIDMapFileName();
+	public RecSysMapReader(String[] fileNames) {
+		this.userIDToIDMapFileName = fileNames[0];
+		this.programIDToIDMapFileName = fileNames[1];
+		this.eventIDToIDMapFileName = fileNames[2];
 		initializeMaps(userIDToIDMapFileName, programIDToIDMapFileName,
 				eventIDToIDMapFileName);
 	}
@@ -43,52 +44,22 @@ public class RecSysMapReader {
 	private void initializeMaps(String userIDToIDMapFileName,
 			String programIDToIDMapFileName, String eventIDToIDMapFileName) {
 		userIDToIdMap = new HashMap<Integer, Integer>();
-		try {
-			InputStream userIDToIdStream = RecsysTVDataSetUtilities.class
-					.getResourceAsStream("\\" + userIDToIDMapFileName);
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					userIDToIdStream));
-			String line = "";
-			while ((line = br.readLine()) != null) {
-				String[] lineInfos = line.split(RecSysMapCreator.MAP_DELIMITER);
-				Integer userID = Integer.parseInt(lineInfos[0]);
-				Integer ID = Integer.parseInt(lineInfos[1]);
-				userIDToIdMap.put(userID, ID);
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		programIDtoIDMap = new HashMap<Integer, Integer>();
-		try {
-			InputStream programIDToIdStream = RecsysTVDataSetUtilities.class
-					.getResourceAsStream("\\" + programIDToIDMapFileName);
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					programIDToIdStream));
-			String line = "";
-			while ((line = br.readLine()) != null) {
-				String[] lineInfos = line.split(RecSysMapCreator.MAP_DELIMITER);
-				Integer programID = Integer.parseInt(lineInfos[0]);
-				Integer ID = Integer.parseInt(lineInfos[1]);
-				programIDtoIDMap.put(programID, ID);
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		eventIDtoIDMap = new HashMap<Integer, Integer>();
+		loadMapData(userIDToIdMap, RecSysMapCreator.PATH_TO_RESOURCES + userIDToIDMapFileName);
+		loadMapData(programIDtoIDMap, RecSysMapCreator.PATH_TO_RESOURCES + programIDToIDMapFileName);
+		loadMapData(eventIDtoIDMap, RecSysMapCreator.PATH_TO_RESOURCES + eventIDToIDMapFileName);
+	}
+	
+	private void loadMapData(Map<Integer, Integer> map, String mapFilePath){
 		try {
-			InputStream eventIDToIdStream = RecsysTVDataSetUtilities.class
-					.getResourceAsStream("\\" + eventIDToIDMapFileName);
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					eventIDToIdStream));
+			BufferedReader br = new BufferedReader(new FileReader(new File(mapFilePath)));
 			String line = "";
 			while ((line = br.readLine()) != null) {
 				String[] lineInfos = line.split(RecSysMapCreator.MAP_DELIMITER);
-				Integer eventID = Integer.parseInt(lineInfos[0]);
+				Integer originalID = Integer.parseInt(lineInfos[0]);
 				Integer ID = Integer.parseInt(lineInfos[1]);
-				programIDtoIDMap.put(eventID, ID);
+				map.put(originalID, ID);
 			}
 			br.close();
 		} catch (IOException e) {

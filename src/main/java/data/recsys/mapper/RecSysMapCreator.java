@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import data.recsys.model.RecsysTVDataSet;
@@ -23,6 +24,10 @@ public class RecSysMapCreator {
 		userIDToIDMapFileName = getValidFileName("userIDToIDMap1") + ".txt";
 		programIDToIDMapFileName = getValidFileName("programIDToIDMap1") + ".txt";
 		eventIDToIDMapFileName = getValidFileName("eventIDToIDMap1") + ".txt";
+	}
+	
+	public String[] getFileNames(){
+		return new String[]{userIDToIDMapFileName,programIDToIDMapFileName,eventIDToIDMapFileName};
 	}
 
 	public String getuserIDToIDMapFileName() {

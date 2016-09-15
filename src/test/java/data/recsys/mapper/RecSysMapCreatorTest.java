@@ -42,6 +42,12 @@ public class RecSysMapCreatorTest {
 	}
 	
 	@Test
+	public void testGetFileNames(){
+		List<String> expectedFileNames = Arrays.asList("userIDToIDMap1.txt", "programIDToIDMap1.txt","eventIDToIDMap1.txt");
+		assertEquals(expectedFileNames, Arrays.asList(mapCreator.getFileNames()));
+	}
+	
+	@Test
 	public void testMapCreatedCorrectly(){
 		List<Integer> eventIds = Arrays.asList(1,2,3,4,5,6);
 		List<Integer> userIds = Arrays.asList(7,8,9,10);

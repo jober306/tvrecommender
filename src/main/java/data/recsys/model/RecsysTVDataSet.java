@@ -66,7 +66,8 @@ public class RecsysTVDataSet implements DataSet {
 		mapCreator.createUserIDToIDMap(getAllUserIds());
 		mapCreator.createProgramIDToIDMap(getAllProgramIds());
 		mapCreator.createEventIDToIDMap(getAllEventIds());
-		idMap = new RecSysMapReader(mapCreator);
+		
+		idMap = new RecSysMapReader(mapCreator.getFileNames());
 	}
 
 	/**
