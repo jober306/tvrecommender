@@ -59,12 +59,13 @@ public class RecsysTVDataSet implements DataSet {
 	}
 
 	/**
-	 * Method that initializes the map reader. TODO: There will be conflict if
-	 * multiple datasets.
+	 * Method that initializes the map reader.
 	 */
 	public void initializeMapReader() {
 		RecSysMapCreator mapCreator = new RecSysMapCreator();
-		mapCreator.createMaps(this);
+		mapCreator.createUserIDToIDMap(getAllUserIds());
+		mapCreator.createProgramIDToIDMap(getAllProgramIds());
+		mapCreator.createEventIDToIDMap(getAllEventIds());
 		idMap = new RecSysMapReader(mapCreator);
 	}
 

@@ -20,9 +20,9 @@ public class RecSysMapCreator {
 	private final String eventIDToIDMapFileName;
 
 	public RecSysMapCreator() {
-		userIDToIDMapFileName = getValidFileName("userIDToIDMap") + ".txt";
-		programIDToIDMapFileName = getValidFileName("programIDToIDMap") + ".txt";
-		eventIDToIDMapFileName = getValidFileName("eventIDToIDMap") + ".txt";
+		userIDToIDMapFileName = getValidFileName("userIDToIDMap1") + ".txt";
+		programIDToIDMapFileName = getValidFileName("programIDToIDMap1") + ".txt";
+		eventIDToIDMapFileName = getValidFileName("eventIDToIDMap1") + ".txt";
 	}
 
 	public String getuserIDToIDMapFileName() {
@@ -49,12 +49,11 @@ public class RecSysMapCreator {
 		return PATH_TO_RESOURCES + eventIDToIDMapFileName;
 	}
 
-	public void createUserIDToIDMap(RecsysTVDataSet dataSet) {
+	public void createUserIDToIDMap(List<Integer> userIDs) {
 		BufferedWriter bw;
 		try {
 			
 			bw = new BufferedWriter(new FileWriter(new File(getUserIDToIDMapPath())));
-			List<Integer> userIDs = dataSet.getAllUserIds();
 			int id = 0;
 			for (Integer userID : userIDs) {
 				bw.write(userID + MAP_DELIMITER + id + "\n");
@@ -66,12 +65,11 @@ public class RecSysMapCreator {
 		}
 	}
 
-	public void createProgramIDToIDMap(RecsysTVDataSet dataSet) {
+	public void createProgramIDToIDMap(List<Integer> programIDs) {
 		BufferedWriter bw;
 		try {
 			bw = new BufferedWriter(new FileWriter(new File(
 					getProgramIDToIDMapPath())));
-			List<Integer> programIDs = dataSet.getAllProgramIds();
 			int id = 0;
 			for (Integer programID : programIDs) {
 				bw.write(programID + MAP_DELIMITER + id + "\n");
@@ -83,15 +81,14 @@ public class RecSysMapCreator {
 		}
 	}
 
-	public void createEventIDToIDMap(RecsysTVDataSet dataSet) {
+	public void createEventIDToIDMap(List<Integer> eventIDs) {
 		BufferedWriter bw;
 		try {
 			bw = new BufferedWriter(
 					new FileWriter(new File(getEventIDToIDMapPath())));
-			List<Integer> programIDs = dataSet.getAllProgramIds();
 			int id = 0;
-			for (Integer programID : programIDs) {
-				bw.write(programID + MAP_DELIMITER + id + "\n");
+			for (Integer eventID : eventIDs) {
+				bw.write(eventID + MAP_DELIMITER + id + "\n");
 				id++;
 			}
 			bw.close();
@@ -107,8 +104,8 @@ public class RecSysMapCreator {
 		while(!validFilePath){
 			File f = new File(PATH_TO_RESOURCES + tempFilePath + ".txt");	
 			if(f.exists()){
-				int numCharToRemove = (int)Math.floor(Math.log10(index));
-				tempFilePath = tempFilePath.substring(tempFilePath.length() - numCharToRemove, tempFilePath.length());
+				int numCharToRemove = (int)Math.floor(Math.log10(index)) + 1;
+				tempFilePath = tempFilePath.substring(0, tempFilePath.length() - numCharToRemove);
 				index++;
 				tempFilePath += index;
 			}
@@ -119,9 +116,12 @@ public class RecSysMapCreator {
 		return tempFilePath;
 	}
 	
-	public void createMaps(RecsysTVDataSet dataSet){
-		createUserIDToIDMap(dataSet);
-		createProgramIDToIDMap(dataSet);
-		createEventIDToIDMap(dataSet);
+	public void close(){
+		File userMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + userIDToIDMapFileName);
+		File programMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + programIDToIDMapFileName);
+		File eventMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + eventIDToIDMapFileName);
+		userMapFile.delete();
+		programMapFile.delete();
+		eventMapFile.delete();
 	}
 }
