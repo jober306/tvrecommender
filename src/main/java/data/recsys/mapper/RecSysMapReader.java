@@ -1,6 +1,7 @@
 package data.recsys.mapper;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,11 +15,29 @@ public class RecSysMapReader {
 	private Map<Integer, Integer> userIDToIdMap;
 	private Map<Integer, Integer> programIDtoIDMap;
 	private Map<Integer, Integer> eventIDtoIDMap;
+	
+	private String userIDToIDMapFileName;
+	private String programIDToIDMapFileName;
+	private String eventIDToIDMapFileName;
 
-	public RecSysMapReader(String userIDToIDMapFileName,
-			String programIDToIDMapFileName, String eventIDToIDMapFileName) {
+	public RecSysMapReader(RecSysMapCreator mapCreator) {
+		userIDToIDMapFileName = mapCreator.getuserIDToIDMapFileName();
+		programIDToIDMapFileName = mapCreator.getProgramIDToIDMapFileName();
+		eventIDToIDMapFileName = mapCreator.getEventIDToIDMapFileName();
 		initializeMaps(userIDToIDMapFileName, programIDToIDMapFileName,
 				eventIDToIDMapFileName);
+	}
+	
+	public String getUserIDMapFileName(){
+		return userIDToIDMapFileName;
+	}
+	
+	public String getProgramIDMapFileName(){
+		return programIDToIDMapFileName;
+	}
+	
+	public String getEventIDMapFileName(){
+		return eventIDToIDMapFileName;
 	}
 
 	private void initializeMaps(String userIDToIDMapFileName,
@@ -31,7 +50,7 @@ public class RecSysMapReader {
 					userIDToIdStream));
 			String line = "";
 			while ((line = br.readLine()) != null) {
-				String[] lineInfos = line.split(RecSysMapCreator.mapDelimiter);
+				String[] lineInfos = line.split(RecSysMapCreator.MAP_DELIMITER);
 				Integer userID = Integer.parseInt(lineInfos[0]);
 				Integer ID = Integer.parseInt(lineInfos[1]);
 				userIDToIdMap.put(userID, ID);
@@ -49,7 +68,7 @@ public class RecSysMapReader {
 					programIDToIdStream));
 			String line = "";
 			while ((line = br.readLine()) != null) {
-				String[] lineInfos = line.split(RecSysMapCreator.mapDelimiter);
+				String[] lineInfos = line.split(RecSysMapCreator.MAP_DELIMITER);
 				Integer programID = Integer.parseInt(lineInfos[0]);
 				Integer ID = Integer.parseInt(lineInfos[1]);
 				programIDtoIDMap.put(programID, ID);
@@ -66,7 +85,7 @@ public class RecSysMapReader {
 					eventIDToIdStream));
 			String line = "";
 			while ((line = br.readLine()) != null) {
-				String[] lineInfos = line.split(RecSysMapCreator.mapDelimiter);
+				String[] lineInfos = line.split(RecSysMapCreator.MAP_DELIMITER);
 				Integer eventID = Integer.parseInt(lineInfos[0]);
 				Integer ID = Integer.parseInt(lineInfos[1]);
 				programIDtoIDMap.put(eventID, ID);
@@ -87,5 +106,14 @@ public class RecSysMapReader {
 
 	public Integer mapEventIDtoID(int eventID) {
 		return eventIDtoIDMap.get(eventID);
+	}
+	
+	public void close(){
+		File userMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + userIDToIDMapFileName);
+		File programMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + programIDToIDMapFileName);
+		File eventMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + eventIDToIDMapFileName);
+		userMapFile.delete();
+		programMapFile.delete();
+		eventMapFile.delete();
 	}
 }

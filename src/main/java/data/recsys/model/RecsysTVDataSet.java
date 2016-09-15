@@ -64,11 +64,8 @@ public class RecsysTVDataSet implements DataSet {
 	 */
 	public void initializeMapReader() {
 		RecSysMapCreator mapCreator = new RecSysMapCreator();
-		mapCreator.createUserIDToIDMap(this);
-		mapCreator.createProgramIDToIDMap(this);
-		idMap = new RecSysMapReader(mapCreator.getuserIDToIDMapFileName(),
-				mapCreator.getProgramIDToIDMapFileName(),
-				mapCreator.getEventIDToIDMapFileName());
+		mapCreator.createMaps(this);
+		idMap = new RecSysMapReader(mapCreator);
 	}
 
 	/**
@@ -167,15 +164,23 @@ public class RecsysTVDataSet implements DataSet {
 	public int getNumberOfEvents() {
 		return (int) eventsData.count();
 	}
-
+	
+	/**
+	 * Method that splits the data into the number of entries in ratio array. Each subset respect the ratio proportion.
+	 * @param ratios The ratios corresponding to the subset size.
+	 * @return A list containing all the subsets.
+	 */
 	public List<JavaRDD<Rating>> splitUserData(double[] ratios) {
 		List<JavaRDD<Rating>> splittedData = new ArrayList<JavaRDD<Rating>>();
-		double[] indexes = getIndexesCorrespondingToRatios(ratios);
+		int[] indexes = getIndexesCorrespondingToRatios(ratios);
 		for (int i = 0; i < ratios.length; i++) {
-			final int j = i;
+			int tempLowerLimit = i == 0 ? 0 : indexes[i-1];
+			final int lowerLimit = tempLowerLimit;
+			final int upperLimit = indexes[i];
 			JavaRDD<Rating> splitData = eventsData
-					.filter(tvEvent -> idMap.mapEventIDtoID(tvEvent
-							.getEventID()) <= indexes[j]).map(
+					.filter(tvEvent -> lowerLimit <= idMap.mapEventIDtoID(tvEvent
+							.getEventID()) && idMap.mapEventIDtoID(tvEvent
+									.getEventID()) < upperLimit).map(
 							event -> new Rating(idMap.mapUserIDtoID(event
 									.getUserID()), idMap.mapProgramIDtoID(event
 									.getProgramID()), 1.0));
@@ -184,16 +189,21 @@ public class RecsysTVDataSet implements DataSet {
 		return splittedData;
 	}
 
-	private double[] getIndexesCorrespondingToRatios(double[] ratios) {
-		double[] indexes = new double[ratios.length];
+	/**
+	 * Method that return the indexes at which the data need to be splitted.
+	 * @param ratios The ratio in each subset
+	 * @return The indexes of when to create a new subset of the partition.
+	 */
+	public int[] getIndexesCorrespondingToRatios(double[] ratios) {
+		int[] indexes = new int[ratios.length];
 		int total = getNumberOfEvents();
 		for (int i = 0; i < ratios.length; i++) {
 			if (i == 0)
-				indexes[0] = Math.floor(ratios[0] * total);
+				indexes[0] = (int) Math.floor(ratios[0] * total);
 			if (i == ratios.length)
 				indexes[indexes.length - 1] = total - 1;
 			else
-				indexes[i] = indexes[i - 1] + Math.floor(ratios[i] * total);
+				indexes[i] = indexes[i - 1] + (int)Math.floor(ratios[i] * total);
 		}
 		return indexes;
 	}
@@ -266,6 +276,7 @@ public class RecsysTVDataSet implements DataSet {
 	 */
 	public void close() {
 		sc.close();
+		idMap.close();
 		eventsData = null;
 	}
 }
