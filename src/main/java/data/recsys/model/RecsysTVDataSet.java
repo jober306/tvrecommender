@@ -1,10 +1,14 @@
 package data.recsys.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
@@ -34,7 +38,7 @@ public class RecsysTVDataSet implements DataSet {
 	/**
 	 * The spark context in which the data was loaded.
 	 */
-	JavaSparkContext sc;
+	transient JavaSparkContext sc;
 
 	/**
 	 * The map reader that maps userID of the recsysTVDataset to an unique id
@@ -217,9 +221,12 @@ public class RecsysTVDataSet implements DataSet {
 	 * @return A java RDD of the <class>Rating</class> class.
 	 */
 	public JavaRDD<Rating> convertToMLlibRatings() {
-		return eventsData.map(event -> new Rating(idMap.mapUserIDtoID(event
-				.getUserID()), idMap.mapProgramIDtoID(event.getProgramID()),
+		Broadcast<Map<Integer,Integer>> broadcastedUserIdMap = sc.broadcast(idMap.getUserIDToIdMap());
+		Broadcast<Map<Integer,Integer>> broadcastedProgramIdMap = sc.broadcast(idMap.getProgramIDtoIDMap());
+		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(broadcastedUserIdMap.value().get(event
+				.getUserID()), broadcastedProgramIdMap.value().get(event.getProgramID()),
 				1.0));
+		return ratings;
 	}
 
 	/**

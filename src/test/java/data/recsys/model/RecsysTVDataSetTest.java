@@ -3,6 +3,7 @@ package data.recsys.model;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -73,11 +74,10 @@ public class RecsysTVDataSetTest {
 	public void convertDataSetToMLlibRatingsTest(){
 		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
 		assertTrue(ratings.count()==3);
-		final List<Integer> userIDs = dataSet.getAllUserIds();
-		final List<Integer> programIDs = dataSet.getAllProgramIds();
+		List<Integer> expectedIDs = Arrays.asList(0,1,2);
 		ratings.foreach(rating -> {
-			assertTrue(userIDs.contains(rating.user()));
-			assertTrue(programIDs.contains(rating.product()));
+			assertTrue(expectedIDs.contains(rating.user()));
+			assertTrue(expectedIDs.contains(rating.product()));
 			assertTrue(rating.rating()==1);
 		});
 	}

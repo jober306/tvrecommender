@@ -6,13 +6,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import data.recsys.utility.RecsysTVDataSetUtilities;
 
-public class RecSysMapReader {
+public class RecSysMapReader implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private Map<Integer, Integer> userIDToIdMap;
 	private Map<Integer, Integer> programIDtoIDMap;
 	private Map<Integer, Integer> eventIDtoIDMap;
@@ -27,6 +33,18 @@ public class RecSysMapReader {
 		this.eventIDToIDMapFileName = fileNames[2];
 		initializeMaps(userIDToIDMapFileName, programIDToIDMapFileName,
 				eventIDToIDMapFileName);
+	}
+	
+	public Map<Integer, Integer> getUserIDToIdMap(){
+		return userIDToIdMap;
+	}
+	
+	public Map<Integer, Integer> getProgramIDtoIDMap(){
+		return programIDtoIDMap;
+	}
+	
+	public Map<Integer, Integer> getEventIDtoIDMap(){
+		return eventIDtoIDMap;
 	}
 	
 	public String getUserIDMapFileName(){
