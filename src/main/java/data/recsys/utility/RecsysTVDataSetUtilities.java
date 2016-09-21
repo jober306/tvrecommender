@@ -7,17 +7,17 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-
-import data.recsys.model.RecsysTVEvent;
-
+/**
+ * Class that provides some utilities methods related to the recsys tv data set.
+ * @author Jonathan Bergeron
+ *
+ */
 public class RecsysTVDataSetUtilities {
 	
-	public static final String GENRE_SUBGENRE_MAPPING_PATH = "/tv-audience-dataset/genreSubgenreMapping.txt";
+	static final String GENRE_SUBGENRE_MAPPING_PATH = "/tv-audience-dataset/genreSubgenreMapping.txt";
 	
-	public static Map<Byte, String> genreToNameMap;
-	public static Map<Byte, Map<Byte,String>> subgenreToNameMap;
+	static Map<Byte, String> genreToNameMap;
+	static Map<Byte, Map<Byte,String>> subgenreToNameMap;
 	static{
 		genreToNameMap = new HashMap<Byte,String>();
 		subgenreToNameMap = new HashMap<Byte, Map<Byte,String>>();
@@ -42,14 +42,28 @@ public class RecsysTVDataSetUtilities {
 		}
 	}
 	
+	/**
+	 * Getter method that maps a genre id to the genre it represents.
+	 * @param genreID The genre id.
+	 * @return The genre it represents.
+	 */
 	public static String getGenreName(byte genreID){
 		return genreToNameMap.get(genreID);
 	}
 	
+	/**
+	 * Getter method that maps a subgenre id to the subgenre it represents.
+	 * @param subgenreID The subgenre id.
+	 * @return The subgenre it represents.
+	 */
 	public static String getSubgenreName(byte genreID, byte subgenreID){
 		return subgenreToNameMap.get(genreID).get(subgenreID);
 	}
 	
+	/**
+	 * Method that check if both map are not empty.
+	 * @return True if both map are not empty, false otherwise.
+	 */
 	public static boolean isGenreSubgenreMapNotEmpty(){
 		return !genreToNameMap.isEmpty() && !subgenreToNameMap.isEmpty();
 	}
