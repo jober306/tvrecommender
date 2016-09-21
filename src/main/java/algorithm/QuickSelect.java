@@ -52,13 +52,13 @@ public class QuickSelect {
 		 return quickselect(Gp, 0, G.length - 1, k - 1);
 	}
 	 
-		public static List<Pair<Integer,Double>> selectTopN(Double[] G, int k){
-			List<Pair<Integer,Double>> topN = new ArrayList<Pair<Integer,Double>>();
-			for(int i = 1; i <= k; i++){
-				topN.add(QuickSelect.select(G, i));
-			}
-			return topN;
+	public static List<Pair<Integer,Double>> selectTopN(Double[] G, int k){
+		List<Pair<Integer,Double>> topN = new ArrayList<Pair<Integer,Double>>();
+		for(int i = 1; i <= k; i++){
+			topN.add(QuickSelect.select(G, i));
 		}
+		return topN;
+	}
 	 
 	private static Pair<Integer,Double> quickselect(List<Pair<Integer,Double>> Gp, int first, int last, int k) {
 	  if (first <= last) {
