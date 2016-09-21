@@ -4,20 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import data.recsys.utility.RecsysTVDataSetUtilities;
-
-public class RecSysMapReader implements Serializable{
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+/**
+ * Class that reads map created by the <class>RecSysMapCreator</class> and store them in HashMap.
+ * @author Jonathan
+ *
+ */
+public class RecSysMapReader {
 	
 	private Map<Integer, Integer> userIDToIdMap;
 	private Map<Integer, Integer> programIDtoIDMap;
@@ -27,6 +22,10 @@ public class RecSysMapReader implements Serializable{
 	private String programIDToIDMapFileName;
 	private String eventIDToIDMapFileName;
 
+	/**
+	 * Constructor of the RecSysMapReader class. It loads all the map from the given file names.
+	 * @param fileNames An array of string containing the file names. It must be in this order; user, program and event file name.
+	 */
 	public RecSysMapReader(String[] fileNames) {
 		this.userIDToIDMapFileName = fileNames[0];
 		this.programIDToIDMapFileName = fileNames[1];
@@ -35,28 +34,91 @@ public class RecSysMapReader implements Serializable{
 				eventIDToIDMapFileName);
 	}
 	
+	/**
+	 * Getter method to get the user id map.
+	 * @return The user id HashMap.
+	 */
 	public Map<Integer, Integer> getUserIDToIdMap(){
 		return userIDToIdMap;
 	}
 	
+	/**
+	 * Getter method to get the program id map.
+	 * @return The program id HashMap.
+	 */
 	public Map<Integer, Integer> getProgramIDtoIDMap(){
 		return programIDtoIDMap;
 	}
 	
+	/**
+	 * Getter method to get the event id map.
+	 * @return The event id HashMap.
+	 */
 	public Map<Integer, Integer> getEventIDtoIDMap(){
 		return eventIDtoIDMap;
 	}
 	
+	/**
+	 * Getter method to get the user id map file name.
+	 * @return The user id map file name.
+	 */
 	public String getUserIDMapFileName(){
 		return userIDToIDMapFileName;
 	}
 	
+	/**
+	 * Getter method to get the program id map file name.
+	 * @return The user id map file name.
+	 */
 	public String getProgramIDMapFileName(){
 		return programIDToIDMapFileName;
 	}
 	
+	/**
+	 * Getter method to get the event id map file name.
+	 * @return The user id map file name.
+	 */
 	public String getEventIDMapFileName(){
 		return eventIDToIDMapFileName;
+	}
+	
+	/**
+	 * Method that maps a recsys user id to the mapped id.
+	 * @param userID the recsys user id.
+	 * @return the mapped id.
+	 */
+	public Integer mapUserIDtoID(int userID) {
+		return userIDToIdMap.get(userID);
+	}
+	
+	/**
+	 * Method that maps a recsys program id to the mapped id.
+	 * @param programID the recsys program id.
+	 * @return the mapped id.
+	 */
+	public Integer mapProgramIDtoID(int programID) {
+		return programIDtoIDMap.get(programID);
+	}
+	
+	/**
+	 * Method that maps a recsys event id to the mapped id.
+	 * @param eventID the recsys event id.
+	 * @return the mapped id.
+	 */
+	public Integer mapEventIDtoID(int eventID) {
+		return eventIDtoIDMap.get(eventID);
+	}
+	
+	/**
+	 * Method that erases all the map.
+	 */
+	public void close(){
+		File userMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + userIDToIDMapFileName);
+		File programMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + programIDToIDMapFileName);
+		File eventMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + eventIDToIDMapFileName);
+		userMapFile.delete();
+		programMapFile.delete();
+		eventMapFile.delete();
 	}
 
 	private void initializeMaps(String userIDToIDMapFileName,
@@ -83,26 +145,5 @@ public class RecSysMapReader implements Serializable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public Integer mapUserIDtoID(int userID) {
-		return userIDToIdMap.get(userID);
-	}
-
-	public Integer mapProgramIDtoID(int programID) {
-		return programIDtoIDMap.get(programID);
-	}
-
-	public Integer mapEventIDtoID(int eventID) {
-		return eventIDtoIDMap.get(eventID);
-	}
-	
-	public void close(){
-		File userMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + userIDToIDMapFileName);
-		File programMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + programIDToIDMapFileName);
-		File eventMapFile = new File(RecSysMapCreator.PATH_TO_RESOURCES + eventIDToIDMapFileName);
-		userMapFile.delete();
-		programMapFile.delete();
-		eventMapFile.delete();
 	}
 }
