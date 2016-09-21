@@ -19,9 +19,6 @@ import data.recsys.model.RecsysTVEvent;
  */
 public class RecsysTVDataSetLoader implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	/**
