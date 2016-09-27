@@ -1,8 +1,6 @@
 package data.recsys.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,12 +68,11 @@ public class RecsysTVDataSet implements DataSet {
 		mapCreator.createUserIDToIDMap(getAllUserIds());
 		mapCreator.createProgramIDToIDMap(getAllProgramIds());
 		mapCreator.createEventIDToIDMap(getAllEventIds());
-		
 		idMap = new RecSysMapReader(mapCreator.getFileNames());
 	}
 
 	/**
-	 * Check if the data is empty
+	 * Check if the data set is empty.
 	 * 
 	 * @return true if the data set is empty
 	 */
@@ -179,17 +176,19 @@ public class RecsysTVDataSet implements DataSet {
 	public List<JavaRDD<Rating>> splitUserData(double[] ratios) {
 		List<JavaRDD<Rating>> splittedData = new ArrayList<JavaRDD<Rating>>();
 		int[] indexes = getIndexesCorrespondingToRatios(ratios);
+		Broadcast<Map<Integer,Integer>> broadcastedEventIdMap = sc.broadcast(idMap.getEventIDtoIDMap());
+		
 		for (int i = 0; i < ratios.length; i++) {
 			int tempLowerLimit = i == 0 ? 0 : indexes[i-1];
 			final int lowerLimit = tempLowerLimit;
 			final int upperLimit = indexes[i];
 			JavaRDD<Rating> splitData = eventsData
-					.filter(tvEvent -> lowerLimit <= idMap.mapEventIDtoID(tvEvent
-							.getEventID()) && idMap.mapEventIDtoID(tvEvent
+					.filter(tvEvent -> lowerLimit <= broadcastedEventIdMap.value().get(tvEvent
+							.getEventID()) && broadcastedEventIdMap.value().get(tvEvent
 									.getEventID()) < upperLimit).map(
-							event -> new Rating(idMap.mapUserIDtoID(event
-									.getUserID()), idMap.mapProgramIDtoID(event
-									.getProgramID()), 1.0));
+							event -> new Rating(event
+									.getUserID(), event
+									.getProgramID(), 1.0));
 			splittedData.add(splitData);
 		}
 		return splittedData;
@@ -206,8 +205,8 @@ public class RecsysTVDataSet implements DataSet {
 		for (int i = 0; i < ratios.length; i++) {
 			if (i == 0)
 				indexes[0] = (int) Math.floor(ratios[0] * total);
-			if (i == ratios.length)
-				indexes[indexes.length - 1] = total - 1;
+			else if (i == ratios.length - 1)
+				indexes[indexes.length - 1] = total;
 			else
 				indexes[i] = indexes[i - 1] + (int)Math.floor(ratios[i] * total);
 		}
