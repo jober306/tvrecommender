@@ -15,8 +15,6 @@ public interface DataSet {
 	
 	//----------ML lib convertion methods----------------
 	public JavaRDD<Rating> convertToMLlibRatings();
-	public IndexedRowMatrix convertToMLLibUserItemMatrix();
-	public IndexedRowMatrix convertToMLLibItemUserMatrix();
 	
 	//--------General Utilities methods--------------------
 	public int getNumberOfUsers();

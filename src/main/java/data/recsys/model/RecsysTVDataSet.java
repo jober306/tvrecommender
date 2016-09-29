@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -70,7 +71,33 @@ public class RecsysTVDataSet implements DataSet {
 		mapCreator.createEventIDToIDMap(getAllEventIds());
 		idMap = new RecSysMapReader(mapCreator.getFileNames());
 	}
-
+	
+	/**
+	 * Getter method that return the data attached to this data set.
+	 * @return The java RDD containing all the recsys tv event.
+	 */
+	public JavaRDD<RecsysTVEvent> getEventsData(){
+		return eventsData;
+	}
+	
+	/**
+	 * Wrapper method doing the intersection of two data sets.
+	 * @return The recsys tv data set corresponding to the instersection of the two data sets.
+	 */
+	public RecsysTVDataSet intersection(RecsysTVDataSet otherDataSet){
+		JavaRDD<RecsysTVEvent> intersection = eventsData.intersection(otherDataSet.getEventsData());
+		return new RecsysTVDataSet(intersection, sc);
+	}
+	
+	/**
+	 * Wrapper method doing the union of two data sets.
+	 * @return The recsys tv data set corresponding to the union of the two data sets.
+	 */
+	public RecsysTVDataSet union(RecsysTVDataSet otherDataSet){
+		JavaRDD<RecsysTVEvent> intersection = eventsData.union(otherDataSet.getEventsData());
+		return new RecsysTVDataSet(intersection, sc);
+	}
+	
 	/**
 	 * Check if the data set is empty.
 	 * 
@@ -173,23 +200,19 @@ public class RecsysTVDataSet implements DataSet {
 	 * @param ratios The ratios corresponding to the subset size.
 	 * @return A list containing all the subsets.
 	 */
-	public List<JavaRDD<Rating>> splitUserData(double[] ratios) {
-		List<JavaRDD<Rating>> splittedData = new ArrayList<JavaRDD<Rating>>();
+	public RecsysTVDataSet[] splitData(double[] ratios) {
+		RecsysTVDataSet[] splittedData = new RecsysTVDataSet[ratios.length];
 		int[] indexes = getIndexesCorrespondingToRatios(ratios);
 		Broadcast<Map<Integer,Integer>> broadcastedEventIdMap = sc.broadcast(idMap.getEventIDtoIDMap());
-		
 		for (int i = 0; i < ratios.length; i++) {
 			int tempLowerLimit = i == 0 ? 0 : indexes[i-1];
 			final int lowerLimit = tempLowerLimit;
 			final int upperLimit = indexes[i];
-			JavaRDD<Rating> splitData = eventsData
+			JavaRDD<RecsysTVEvent> splitData = eventsData
 					.filter(tvEvent -> lowerLimit <= broadcastedEventIdMap.value().get(tvEvent
 							.getEventID()) && broadcastedEventIdMap.value().get(tvEvent
-									.getEventID()) < upperLimit).map(
-							event -> new Rating(event
-									.getUserID(), event
-									.getProgramID(), 1.0));
-			splittedData.add(splitData);
+									.getEventID()) < upperLimit);
+			splittedData[i] = new RecsysTVDataSet(splitData, sc);
 		}
 		return splittedData;
 	}
@@ -220,63 +243,43 @@ public class RecsysTVDataSet implements DataSet {
 	 * @return A java RDD of the <class>Rating</class> class.
 	 */
 	public JavaRDD<Rating> convertToMLlibRatings() {
-		Broadcast<Map<Integer,Integer>> broadcastedUserIdMap = sc.broadcast(idMap.getUserIDToIdMap());
-		Broadcast<Map<Integer,Integer>> broadcastedProgramIdMap = sc.broadcast(idMap.getProgramIDtoIDMap());
-		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(broadcastedUserIdMap.value().get(event
-				.getUserID()), broadcastedProgramIdMap.value().get(event.getProgramID()),
+		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(event
+				.getUserID(), event.getProgramID(),
 				1.0));
 		return ratings;
-	}
-
-	/**
-	 * Method that converts the data into an RDD of IndexedRow that can be used
-	 * to do distributed calculus.
-	 * 
-	 * @return An IndexedRowMatrix representing the data.
-	 */
-	public IndexedRowMatrix convertToMLLibUserItemMatrix() {
-		UserItemMatrix userItemMatrix = convertToUserItemMatrix();
-		JavaRDD<IndexedRow> rows = sc.parallelize(userItemMatrix
-				.getMatrixRowsAsVector());
-		return new IndexedRowMatrix(rows.rdd());
-	}
-
-	public IndexedRowMatrix convertToMLLibItemUserMatrix() {
-		UserItemMatrix userItemMatrix = convertToUserItemMatrix();
-		JavaRDD<IndexedRow> rows = sc.parallelize(userItemMatrix
-				.getMatrixColumnAsVector());
-		return new IndexedRowMatrix(rows.rdd());
-	}
-
-	/**
-	 * Method that returns a Coordinate Matrix containing the cosine
-	 * similarities between items
-	 * 
-	 * @return A CoordinateMatrix containing the similarities.
-	 */
-	public CoordinateMatrix calculateItemsCosineSimilarities() {
-		IndexedRowMatrix rowMatrix = convertToMLLibUserItemMatrix();
-		return rowMatrix.columnSimilarities();
-	}
-
-	/**
-	 * Method that returns a Coordinate Matrix containing the cosine
-	 * similarities between users
-	 * 
-	 * @return A CoordinateMatrix containing the similarities.
-	 */
-	public CoordinateMatrix calculateUsersCosineSimilarities() {
-		IndexedRowMatrix columnMatrix = convertToMLLibItemUserMatrix();
-		return columnMatrix.columnSimilarities();
 	}
 
 	public UserItemMatrix convertToUserItemMatrix() {
 		UserItemMatrix X = new UserItemMatrix(getNumberOfUsers(),
 				getNumberOfItems());
-		eventsData.foreach(tvEvent -> X.setUserSeenItem(
-				idMap.mapUserIDtoID(tvEvent.getUserID()),
-				idMap.mapProgramIDtoID(tvEvent.getProgramID())));
+		eventsData.collect().forEach(tvEvent -> X.setUserSeenItem(
+				idMap.getUserIDToIdMap().get(tvEvent.getUserID()),
+				idMap.getProgramIDtoIDMap().get(tvEvent.getProgramID())));
 		return X;
+	}
+	
+	public int getOriginalUserID(int mappedID){
+		return (int)MapUtils.invertMap(idMap.getUserIDToIdMap()).get(mappedID);
+	}
+	
+	public int getOriginalProgramID(int mappedID){
+		return (int)MapUtils.invertMap(idMap.getProgramIDtoIDMap()).get(mappedID);
+	}
+	
+	public int getOriginalEventID(int mappedID){
+		return (int)MapUtils.invertMap(idMap.getEventIDtoIDMap()).get(mappedID);
+	}
+	
+	public int getMappedUserID(int userID){
+		return idMap.getUserIDToIdMap().get(userID);
+	}
+	
+	public int getMappedProgramID(int programID){
+		return idMap.getProgramIDtoIDMap().get(programID);
+	}
+	
+	public int getMappedEventID(int eventID){
+		return idMap.getEventIDtoIDMap().get(eventID);
 	}
 
 	/**

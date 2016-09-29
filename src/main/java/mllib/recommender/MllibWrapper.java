@@ -13,9 +13,8 @@ import data.recsys.model.RecsysTVDataSet;
 
 public class MllibWrapper {
 
-	public static MatrixFactorizationModel train(RecsysTVDataSet dataSet,
+	public static MatrixFactorizationModel train(JavaRDD<Rating> ratings,
 			int matrixRank, int numIter) {
-		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
 		return ALS.train(JavaRDD.toRDD(ratings), matrixRank, numIter);
 	}
 
@@ -47,7 +46,7 @@ public class MllibWrapper {
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader dataLoader = new RecsysTVDataSetLoader();
 		RecsysTVDataSet dataSet = dataLoader.loadDataSet();
-		MatrixFactorizationModel model = MllibWrapper.train(dataSet, 10, 20);
+		MatrixFactorizationModel model = MllibWrapper.train(dataSet.convertToMLlibRatings(), 10, 20);
 		MllibWrapper.evaluateModel(model, dataSet);
 	}
 }

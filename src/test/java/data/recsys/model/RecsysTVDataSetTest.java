@@ -8,17 +8,20 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.apache.spark.mllib.recommendation.Rating;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import recommender.model.UserItemMatrix;
 import spark.utilities.SparkUtilities;
 
 public class RecsysTVDataSetTest {
 	
 	final RecsysTVEvent tvEvent1 = new RecsysTVEvent((short)1,(short)2,(byte)3,(byte)4,(byte)81,1,202344,50880093,5);
-	final RecsysTVEvent tvEvent2 = new RecsysTVEvent((short)4,(short)7,(byte)1,(byte)6,(byte)11,3,5785,51122125,15);
+	final RecsysTVEvent tvEvent2 = new RecsysTVEvent((short)4,(short)7,(byte)1,(byte)6,(byte)11,3,202344,51122125,15);
 	final RecsysTVEvent tvEvent3 = new RecsysTVEvent((short)6,(short)33,(byte)1,(byte)4,(byte)30,3,5785,51097405,25);
 	
 	RecsysTVDataSet dataSet;
@@ -78,18 +81,6 @@ public class RecsysTVDataSetTest {
 	}
 	
 	@Test
-	public void convertDataSetToMLlibRatingsTest(){
-		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
-		assertTrue(ratings.count()==3);
-		List<Integer> expectedIDs = Arrays.asList(0,1,2);
-		ratings.foreach(rating -> {
-			assertTrue(expectedIDs.contains(rating.user()));
-			assertTrue(expectedIDs.contains(rating.product()));
-			assertTrue(rating.rating()==1);
-		});
-	}
-	
-	@Test
 	public void filterByMinTimeViewTest(){
 		JavaRDD<RecsysTVEvent> filtered_0 = dataSet.filterByMinTimeView(0);
 		assertTrue(filtered_0.count() == 3);
@@ -127,20 +118,12 @@ public class RecsysTVDataSetTest {
 		createBiggerDataSet(42);
 		double[] ratios = {0.17, 0.43, 0.40};
 		int[] expectedSize = {7, 18, 17};
-		List<JavaRDD<Rating>> splittedDataSet = dataSet.splitUserData(ratios);
-		for(int i = 0; i < 3; i++){
-			assertTrue(splittedDataSet.get(i).count()==expectedSize[i]);
+		RecsysTVDataSet[] splittedDataSet = dataSet.splitData(ratios);
+		for(int i = 0; i < splittedDataSet.length; i++){
+			assertTrue(splittedDataSet[i].getNumberOfEvents()==expectedSize[i]);
 		}
-		assertTrue(splittedDataSet.get(0).union(splittedDataSet.get(1)).union(splittedDataSet.get(2)).count() == 42);
-		
-	}
-	
-	private List<Integer> getListFromNToM(int n, int m){
-		List<Integer> list = new ArrayList<Integer>(m-n+1);
-		for(int i = n; i <= m; i++){
-			list.add(i);
-		}
-		return list;
+		assertTrue(splittedDataSet[0].intersection(splittedDataSet[1]).intersection(splittedDataSet[2]).isEmpty());
+		assertTrue(splittedDataSet[0].union(splittedDataSet[1]).union(splittedDataSet[2]).getNumberOfEvents() == 42);
 	}
 	
 	private void createBiggerDataSet(int dataSetSize){
@@ -152,6 +135,37 @@ public class RecsysTVDataSetTest {
 		JavaSparkContext defaultJavaSparkContext = SparkUtilities.getADefaultSparkContext();
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities.<RecsysTVEvent>elementsToJavaRDD(events, defaultJavaSparkContext);
 		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
+	}
+	
+	@Test
+	public void convertDataSetToMLlibRatingsTest(){
+		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
+		assertTrue(ratings.count()==3);
+		ratings.foreach(rating -> {
+			assertTrue(dataSet.getAllUserIds().contains(rating.user()));
+			assertTrue(dataSet.getAllProgramIds().contains(rating.product()));
+			assertTrue(rating.rating()==1);
+		});
+	}
+	
+	@Test
+	public void convertToUserItemMatrixTest(){
+		UserItemMatrix userItemMatrix = dataSet.convertToUserItemMatrix();
+		double[][] expectedMatrix = new double[2][2];
+		expectedMatrix[dataSet.getMappedUserID(tvEvent1.getUserID())][dataSet.getMappedProgramID(tvEvent1.getProgramID())] = 1;
+		expectedMatrix[dataSet.getMappedUserID(tvEvent2.getUserID())][dataSet.getMappedProgramID(tvEvent2.getProgramID())] = 1;
+		expectedMatrix[dataSet.getMappedUserID(tvEvent3.getUserID())][dataSet.getMappedProgramID(tvEvent3.getProgramID())] = 1;
+		for(int user = 0; user < 2; user++){
+			for(int program = 0; program < 2; program++){
+				assertTrue(expectedMatrix[user][program] == (userItemMatrix.getRating(user, program)));
+			}
+		}
+	}
+	
+	@Test
+	public void convertToMLLibUserItemMatrixTest(){
+		IndexedRowMatrix userItem = dataSet.convertToMLLibUserItemMatrix();
+		userItem.toCoordinateMatrix().entries().foreach(matEntry -> matEntry);
 	}
 	
 	@After
