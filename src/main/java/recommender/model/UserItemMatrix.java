@@ -47,6 +47,21 @@ public class UserItemMatrix {
 	}
 
 	/**
+	 * Constructor of the class initialized with the given data.
+	 * 
+	 * @param data
+	 *            The data with wich the userItemMatrix will be initialized.
+	 */
+	public UserItemMatrix(double[][] data) {
+		userItemMatrix = new double[data.length][data[0].length];
+		for (int row = 0; row < data.length; row++) {
+			for (int col = 0; col < data[0].length; col++) {
+				userItemMatrix[row][col] = data[row][col];
+			}
+		}
+	}
+
+	/**
 	 * Getter method that returns the number of users.
 	 * 
 	 * @return
@@ -111,7 +126,7 @@ public class UserItemMatrix {
 	 * @return The data contained in the user-item matrix in major column
 	 *         format.
 	 */
-	public double[] getMatrixDataMajorColumn() {
+	public double[] getDataMajorColumn() {
 		int numberOfUsers = getNumberOfUsers();
 		int numberOfItems = getNumberOfItems();
 		double[] matrixData = new double[numberOfUsers * numberOfItems];
@@ -129,12 +144,12 @@ public class UserItemMatrix {
 	 * 
 	 * @return The data contained in the user-item matrix in major row format.
 	 */
-	public double[] getMatrixDataMajorRow() {
+	public double[] getDataMajorRow() {
 		int numberOfUsers = getNumberOfUsers();
 		int numberOfItems = getNumberOfItems();
 		double[] matrixData = new double[numberOfUsers * numberOfItems];
-		for (int row = 0; row < numberOfItems; row++) {
-			for (int col = 0; col < numberOfUsers; col++) {
+		for (int row = 0; row < numberOfUsers; row++) {
+			for (int col = 0; col < numberOfItems; col++) {
 				matrixData[row * numberOfItems + col] = userItemMatrix[row][col];
 			}
 		}
