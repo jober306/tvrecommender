@@ -1,6 +1,5 @@
-package recommender.model.similarityMatrix;
+package recommender.model;
 
-import recommender.model.UserItemMatrix;
 import recommender.similarities.Similarity;
 
 public class ItemSimilaritiesMatrix extends SimilarityMatrix {

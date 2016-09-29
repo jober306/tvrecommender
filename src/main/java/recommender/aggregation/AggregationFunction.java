@@ -1,7 +1,7 @@
 package recommender.aggregation;
 
 import recommender.model.UserItemMatrix;
-import recommender.model.similarityMatrix.UserSimilaritiesMatrix;
+import recommender.model.UserSimilaritiesMatrix;
 
 public interface AggregationFunction {
 	

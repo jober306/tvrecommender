@@ -13,7 +13,7 @@ import data.recsys.model.RecsysTVDataSet;
 import recommender.aggregation.AggregationFunction;
 import recommender.aggregation.MeanFunction;
 import recommender.model.UserItemMatrix;
-import recommender.model.similarityMatrix.UserSimilaritiesMatrix;
+import recommender.model.UserSimilaritiesMatrix;
 import recommender.similarities.CosineSimilarity;
 
 public class MemoryBasedPredictor implements Predictor{

@@ -11,8 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import recommender.model.similarityMatrix.ItemSimilaritiesMatrix;
-import recommender.model.similarityMatrix.UserSimilaritiesMatrix;
 import recommender.similarities.Similarity;
 
 public class UserItemMatrixTest {

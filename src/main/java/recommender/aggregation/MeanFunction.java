@@ -3,7 +3,7 @@ package recommender.aggregation;
 import java.util.List;
 
 import recommender.model.UserItemMatrix;
-import recommender.model.similarityMatrix.UserSimilaritiesMatrix;
+import recommender.model.UserSimilaritiesMatrix;
 
 public class MeanFunction implements AggregationFunction{
 

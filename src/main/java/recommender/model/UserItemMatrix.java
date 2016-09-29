@@ -7,8 +7,6 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 
-import recommender.model.similarityMatrix.ItemSimilaritiesMatrix;
-import recommender.model.similarityMatrix.UserSimilaritiesMatrix;
 import recommender.similarities.Similarity;
 
 /**
