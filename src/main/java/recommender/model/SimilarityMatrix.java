@@ -8,27 +8,74 @@ import org.apache.commons.lang.ArrayUtils;
 import recommender.similarities.Similarity;
 import algorithm.QuickSelect;
 
+/**
+ * Abstract class that represents a similarity matrix.
+ * 
+ * @author Jonathan Bergeron
+ *
+ */
 public abstract class SimilarityMatrix {
 
+	/**
+	 * The similarity used to generate matrix entries.
+	 */
 	protected Similarity similarity;
+
+	/**
+	 * The matrix data.
+	 */
 	protected double[][] similaritiesMatrix;
 
+	/**
+	 * Getter method that returns the similarity used to calculate matrix
+	 * entries.
+	 * 
+	 * @return The <class>Similarity</class> that was used.
+	 */
 	public Similarity getSimilarity() {
 		return similarity;
 	}
 
+	/**
+	 * Getter method that returns the number of row of this similarity matrix.
+	 * 
+	 * @return The number of row.
+	 */
 	public int getNumberOfRow() {
 		return similaritiesMatrix.length;
 	}
 
+	/**
+	 * Getter method that returns the number of column of this similarity
+	 * matrix.
+	 * 
+	 * @return The number of column.
+	 */
 	public int getNumberOfCol() {
 		return similaritiesMatrix[0].length;
 	}
 
+	/**
+	 * Getter method that returns the similarity between index1 and index2.
+	 * 
+	 * @param index1
+	 *            The row index.
+	 * @param index2
+	 *            The col index.
+	 * @return The similarity calculated at row and col coordinate.
+	 */
 	public double getSimilarity(int index1, int index2) {
 		return similaritiesMatrix[index1][index2];
 	}
 
+	/**
+	 * Method that returns all the similarities calculated at the given column.
+	 * 
+	 * @param columnIndex
+	 *            The column index.
+	 * @return An array of double containing all the similarities of the given
+	 *         column.
+	 */
 	public Double[] getColumn(int columnIndex) {
 		Double[] column = new Double[similaritiesMatrix.length];
 		for (int i = 0; i < similaritiesMatrix.length; i++) {
@@ -37,10 +84,30 @@ public abstract class SimilarityMatrix {
 		return column;
 	}
 
+	/**
+	 * Method that returns all the similarities calculated at the given row.
+	 * 
+	 * @param rowIndex
+	 *            The row index.
+	 * @return An array of double containing all the similarities of the given
+	 *         row.
+	 */
 	public Double[] getRow(int rowIndex) {
 		return ArrayUtils.toObject(similaritiesMatrix[rowIndex]);
 	}
 
+	/**
+	 * Method that returns the position of the top n most similar entries for
+	 * the specified column. The entry at rowIndex=columnIndex is ignored
+	 * because it represents the same entity.
+	 * 
+	 * @param columnIndex
+	 *            The column index.
+	 * @param n
+	 *            The number of entries to find.
+	 * @return The list of position in decreasing order of the most similar
+	 *         entries.
+	 */
 	public List<Integer> getTopNSimilarColumnIndices(int columnIndex, int n) {
 		Double[] columnData = getColumn(columnIndex);
 		columnData[columnIndex] = Double.MIN_VALUE;
@@ -48,9 +115,21 @@ public abstract class SimilarityMatrix {
 				.map(pair -> pair.getFirst()).collect(Collectors.toList());
 	}
 
-	public List<Integer> getTopNSimilarRowIndices(int rowIndice, int n) {
-		Double[] columnData = getRow(rowIndice);
-		columnData[rowIndice] = Double.MIN_VALUE;
+	/**
+	 * Method that returns the position of the top n most similar entries for
+	 * the specified row. The entry at columnIndex=rowIndex is ignored because
+	 * it represents the same entity.
+	 * 
+	 * @param rowIndex
+	 *            The row index.
+	 * @param n
+	 *            The number of entries to find.
+	 * @return The list of position in decreasing order of the most similar
+	 *         entries.
+	 */
+	public List<Integer> getTopNSimilarRowIndices(int rowIndex, int n) {
+		Double[] columnData = getRow(rowIndex);
+		columnData[rowIndex] = Double.MIN_VALUE;
 		return QuickSelect.selectTopN(columnData, n).stream()
 				.map(pair -> pair.getFirst()).collect(Collectors.toList());
 	}
