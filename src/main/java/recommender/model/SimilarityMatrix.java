@@ -56,7 +56,8 @@ public abstract class SimilarityMatrix {
 	}
 
 	/**
-	 * Getter method that returns the similarity between index1 and index2.
+	 * Getter method that returns the similarity value between index1 and
+	 * index2.
 	 * 
 	 * @param index1
 	 *            The row index.
@@ -64,7 +65,7 @@ public abstract class SimilarityMatrix {
 	 *            The col index.
 	 * @return The similarity calculated at row and col coordinate.
 	 */
-	public double getSimilarity(int index1, int index2) {
+	public double getSimilarityValue(int index1, int index2) {
 		return similaritiesMatrix[index1][index2];
 	}
 
@@ -76,8 +77,8 @@ public abstract class SimilarityMatrix {
 	 * @return An array of double containing all the similarities of the given
 	 *         column.
 	 */
-	public Double[] getColumn(int columnIndex) {
-		Double[] column = new Double[similaritiesMatrix.length];
+	public double[] getColumn(int columnIndex) {
+		double[] column = new double[similaritiesMatrix.length];
 		for (int i = 0; i < similaritiesMatrix.length; i++) {
 			column[i] = similaritiesMatrix[i][columnIndex];
 		}
@@ -92,8 +93,8 @@ public abstract class SimilarityMatrix {
 	 * @return An array of double containing all the similarities of the given
 	 *         row.
 	 */
-	public Double[] getRow(int rowIndex) {
-		return ArrayUtils.toObject(similaritiesMatrix[rowIndex]);
+	public double[] getRow(int rowIndex) {
+		return similaritiesMatrix[rowIndex];
 	}
 
 	/**
@@ -109,7 +110,7 @@ public abstract class SimilarityMatrix {
 	 *         entries.
 	 */
 	public List<Integer> getTopNSimilarColumnIndices(int columnIndex, int n) {
-		Double[] columnData = getColumn(columnIndex);
+		Double[] columnData = ArrayUtils.toObject(getColumn(columnIndex));
 		columnData[columnIndex] = Double.MIN_VALUE;
 		return QuickSelect.selectTopN(columnData, n).stream()
 				.map(pair -> pair.getFirst()).collect(Collectors.toList());
@@ -128,7 +129,7 @@ public abstract class SimilarityMatrix {
 	 *         entries.
 	 */
 	public List<Integer> getTopNSimilarRowIndices(int rowIndex, int n) {
-		Double[] columnData = getRow(rowIndex);
+		Double[] columnData = ArrayUtils.toObject(getRow(rowIndex));
 		columnData[rowIndex] = Double.MIN_VALUE;
 		return QuickSelect.selectTopN(columnData, n).stream()
 				.map(pair -> pair.getFirst()).collect(Collectors.toList());
