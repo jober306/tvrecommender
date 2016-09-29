@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 import org.junit.After;
 import org.junit.Before;
@@ -181,9 +180,11 @@ public class RecsysTVDataSetTest {
 	public void convertDataSetToMLlibRatingsTest() {
 		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
 		assertTrue(ratings.count() == 3);
+		final List<Integer> expectedUserIds = dataSet.getAllUserIds();
+		final List<Integer> expectedProgramIds = dataSet.getAllProgramIds();
 		ratings.foreach(rating -> {
-			assertTrue(dataSet.getAllUserIds().contains(rating.user()));
-			assertTrue(dataSet.getAllProgramIds().contains(rating.product()));
+			assertTrue(expectedUserIds.contains(rating.user()));
+			assertTrue(expectedProgramIds.contains(rating.product()));
 			assertTrue(rating.rating() == 1);
 		});
 	}
@@ -204,12 +205,6 @@ public class RecsysTVDataSetTest {
 						.getRating(user, program)));
 			}
 		}
-	}
-
-	@Test
-	public void convertToMLLibUserItemMatrixTest() {
-		IndexedRowMatrix userItem = dataSet.convertToMLLibUserItemMatrix();
-		userItem.toCoordinateMatrix().entries().foreach(matEntry -> matEntry);
 	}
 
 	@After
