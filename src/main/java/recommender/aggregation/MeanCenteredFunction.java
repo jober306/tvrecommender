@@ -13,7 +13,7 @@ public class MeanCenteredFunction implements AggregationFunction{
 		double total = 0.0d;
 		double totalSimilarity = 0.0d;
 		for(int i = 0; i < topN; i++){
-			double similarity = U.getSimilarity(userIndex, topNSimilarUser.get(i));
+			double similarity = U.getSimilarityValue(userIndex, topNSimilarUser.get(i));
 			total += similarity * (X.getRating(topNSimilarUser.get(i), itemIndex)- getAverageRatingOfUser(X, topNSimilarUser.get(i)));
 			totalSimilarity += Math.abs(similarity);
 		}
