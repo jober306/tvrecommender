@@ -1,16 +1,29 @@
 package recommender.similarities;
 
+/**
+ * Singleton class that calculates cosine similarity between two vectors.
+ * @author Jonathan Bergeron
+ *
+ */
 public class CosineSimilarity implements Similarity{
 	
 	private static CosineSimilarity COSINE_SIMILARITY = new CosineSimilarity();
 	
 	private CosineSimilarity(){};
 	
+	/**
+	 * Method that gives access to the singleton CosineSimilarity.
+	 * @return The singleton CosineSimilarity object.
+	 */
 	public static CosineSimilarity getInstance(){
 		return COSINE_SIMILARITY;
 	}
 	
 	@Override
+	/**
+	 * Method that calculate the cosine similarity between two vectors.
+	 * They must be the same size. 
+	 */
 	public double calculateSimilarity(double[] vector1, double[] vector2) {
 		float dotProduct = 0.0f;
 		float norm1 = 0.0f;
