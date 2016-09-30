@@ -33,7 +33,7 @@ public class MemoryBasedPredictor implements Predictor{
 	
 	private void buildModel(UserItemMatrix X){
 		model = new UserItemMatrix(X.getNumberOfUsers(), X.getNumberOfItems());
-		UserSimilaritiesMatrix sm = X.getUserSimilaritiesMatrix(new CosineSimilarity());
+		UserSimilaritiesMatrix sm = X.getUserSimilaritiesMatrix(CosineSimilarity.getInstance());
 		for(int user = 0; user < X.getNumberOfUsers(); user++){
 			for(int item = 0; item < X.getNumberOfItems(); item++){
 				double rating = X.getRating(user, item);
