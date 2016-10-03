@@ -4,6 +4,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
@@ -158,7 +161,6 @@ public class UserItemMatrixTest {
 
 	@Test
 	public void testGetItemSimilarity() {
-		System.out.println(X);
 		Similarity sim = new Similarity() {
 
 			@Override
@@ -178,9 +180,24 @@ public class UserItemMatrixTest {
 				new Double(X.getItemsSimilarity(itemIndex1, itemIndex2, sim)),
 				expectedSimilarity);
 	}
+	
+	@Test
+	public void getItemIndexesSeenByUsersTest(){
+		double[][] data = {{1,0,4}, {0,0,2}, {1,3,4}, {0,0,0}};
+		List<Integer> expectedIndexForUser0 = Arrays.asList(0,2);
+		List<Integer> expectedIndexForUser1 = Arrays.asList(2);
+		List<Integer> expectedIndexForUser2 = Arrays.asList(0,1,2);
+		List<Integer> expectedIndexForUser3 = new ArrayList<Integer>();
+		UserItemMatrix U = new UserItemMatrix(data);
+		HashMap<Integer,List<Integer>> omega = U.getItemIndexesSeenByUsers();
+		assertEquals(expectedIndexForUser0, omega.get(0));
+		assertEquals(expectedIndexForUser1, omega.get(1));
+		assertEquals(expectedIndexForUser2, omega.get(2));
+		assertEquals(expectedIndexForUser3, omega.get(3));
+	}
 
 	@Test
-	public void testGetUserSimilaritiesMatrixTest() {
+	public void getetUserSimilaritiesMatrixTest() {
 		Similarity sim = new Similarity() {
 
 			@Override

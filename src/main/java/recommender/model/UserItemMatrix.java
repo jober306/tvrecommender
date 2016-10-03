@@ -1,6 +1,7 @@
 package recommender.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.spark.mllib.linalg.Vector;
@@ -286,6 +287,25 @@ public class UserItemMatrix {
 			Similarity similarity) {
 		return similarity.calculateSimilarity(getItemValues(itemIndex1),
 				getItemValues(itemIndex2));
+	}
+	
+	/**
+	 * Method that extract for each user all the item index with non-zero entry.
+	 * This set is often called omega in the litterature.
+	 * @return The map that for each user gives all the item already rated.
+	 */
+	public HashMap<Integer, List<Integer>> getItemIndexesSeenByUsers(){
+		HashMap<Integer, List<Integer>> omega = new HashMap<Integer, List<Integer>>();
+		for(int user = 0; user < getNumberOfUsers(); user++){
+			omega.put(user, new ArrayList<Integer>());
+			for(int item = 0; item < getNumberOfItems(); item++){
+				double rating = getRating(user, item);
+				if(rating != 0){
+					omega.get(user).add(item);
+				}
+			}
+		}
+		return omega;
 	}
 
 	/**

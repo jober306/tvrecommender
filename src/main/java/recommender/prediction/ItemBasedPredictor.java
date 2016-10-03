@@ -2,8 +2,10 @@ package recommender.prediction;
 
 import java.util.List;
 
+import data.recsys.loader.RecsysTVDataSetLoader;
 import recommender.model.ItemSimilaritiesMatrix;
 import recommender.model.UserItemMatrix;
+import recommender.similarities.CosineSimilarity;
 import recommender.similarities.Similarity;
 
 public class ItemBasedPredictor implements Predictor{
@@ -11,17 +13,20 @@ public class ItemBasedPredictor implements Predictor{
 	ItemSimilaritiesMatrix model;
 	Similarity similarity;
 	
-	int lastSeenItemIndex;
-	
-	public ItemBasedPredictor(UserItemMatrix U, Similarity similarity, int lastSeenItemIndex){
+	public ItemBasedPredictor(UserItemMatrix U, Similarity similarity){
 		this.similarity = similarity;
-		this.lastSeenItemIndex = lastSeenItemIndex;
 		model = new ItemSimilaritiesMatrix(U, this.similarity);
 	}
 	
 	@Override
-	public List<Integer> predict(int userID, int numberOfResults) {
-		return model.getTopNSimilarRowIndices(lastSeenItemIndex, numberOfResults);
+	public List<Integer> predict(int lastSeenItemId, int numberOfResults) {
+		return model.getTopNSimilarRowIndices(lastSeenItemId, numberOfResults);
+	}
+	
+	public static void main(String[] args){
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
+		ItemBasedPredictor p = new ItemBasedPredictor(loader.loadDataSet().convertToUserItemMatrix(), CosineSimilarity.getInstance());
+		p.predict(, );
 	}
 
 }
