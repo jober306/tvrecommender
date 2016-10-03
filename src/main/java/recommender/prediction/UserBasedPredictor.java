@@ -15,25 +15,28 @@ import recommender.aggregation.MeanFunction;
 import recommender.model.UserItemMatrix;
 import recommender.model.UserSimilaritiesMatrix;
 import recommender.similarities.CosineSimilarity;
+import recommender.similarities.Similarity;
 
-public class MemoryBasedPredictor implements Predictor{
+public class UserBasedPredictor implements Predictor{
 
 	
 	UserItemMatrix model;
 	HashMap<Integer, List<Integer>> alreadyRatedIndexesPerUser;
+	Similarity similarity;
 	AggregationFunction function;
 	int topN;
 	
-	public MemoryBasedPredictor(UserItemMatrix currentMatrix, AggregationFunction function, int topN) {
+	public UserBasedPredictor(UserItemMatrix currentMatrix, Similarity similarity, AggregationFunction function, int topN) {
 		this.function = function;
 		this.topN = topN;
+		this.similarity = similarity;
 		alreadyRatedIndexesPerUser = new HashMap<Integer, List<Integer>>();
 		buildModel(currentMatrix);
 	}
 	
 	private void buildModel(UserItemMatrix X){
 		model = new UserItemMatrix(X.getNumberOfUsers(), X.getNumberOfItems());
-		UserSimilaritiesMatrix sm = X.getUserSimilaritiesMatrix(CosineSimilarity.getInstance());
+		UserSimilaritiesMatrix sm = X.getUserSimilaritiesMatrix(similarity);
 		for(int user = 0; user < X.getNumberOfUsers(); user++){
 			for(int item = 0; item < X.getNumberOfItems(); item++){
 				double rating = X.getRating(user, item);
@@ -70,7 +73,7 @@ public class MemoryBasedPredictor implements Predictor{
 	public static void main(String[] args){
 		RecsysTVDataSetLoader dataSetLoader = new RecsysTVDataSetLoader();
 		RecsysTVDataSet dataSet = dataSetLoader.loadDataSet();
-		MemoryBasedPredictor predictor = new MemoryBasedPredictor(dataSet.convertToUserItemMatrix(), new MeanFunction(), 50);
+		UserBasedPredictor predictor = new UserBasedPredictor(dataSet.convertToUserItemMatrix(), CosineSimilarity.getInstance(), new MeanFunction(), 50);
 		List<Integer> predictedItems = predictor.predict(3, 10);
 	}
 }
