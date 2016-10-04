@@ -5,31 +5,14 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
+import recommender.similarities.SumSimilarity;
 
 public class UserSimilaritiesMatrixTest {
 
 	private static final double[][] DATA = { { 1, 2, 3, 4 }, { 5, 6, 7, 8 },
 			{ 9, 10, 11, 12 } };
-	private static final Similarity SUM_SIM = new Similarity() {
-
-		@Override
-		public double calculateSimilarity(double[] vector1, double[] vector2) {
-			double sum = 0.0d;
-			for (int i = 0; i < vector1.length; i++) {
-				sum += vector1[i];
-				sum += vector2[i];
-			}
-			return sum;
-		}
-
-		@Override
-		public double calculateSimilarity(SparseVector vector1,
-				SparseVector vector2) {
-			return 1;
-		}
-	};
+	private static final Similarity SUM_SIM = SumSimilarity.getInstance();
 
 	UserSimilaritiesMatrix U;
 

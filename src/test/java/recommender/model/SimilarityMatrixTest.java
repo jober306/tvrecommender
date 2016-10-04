@@ -10,25 +10,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import recommender.model.linalg.SparseVector;
+import recommender.similarities.OneSimilarity;
 import recommender.similarities.Similarity;
 
 public class SimilarityMatrixTest {
 
 	private static final double[][] DATA = { { 1, 2, 3 }, { 4, 5, 6 } };
-	private static final Similarity ONE_SIM = new Similarity() {
-
-		@Override
-		public double calculateSimilarity(double[] vector1, double[] vector2) {
-			return 1;
-		}
-
-		@Override
-		public double calculateSimilarity(SparseVector vector1,
-				SparseVector vector2) {
-			return 1;
-		}
-	};
+	private static final Similarity ONE_SIM = OneSimilarity.getInstance();
 
 	public class SimilarityMatrixMock extends SimilarityMatrix {
 

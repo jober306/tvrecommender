@@ -14,8 +14,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import recommender.model.linalg.SparseVector;
+import recommender.similarities.OneSimilarity;
 import recommender.similarities.Similarity;
+import recommender.similarities.SumSimilarity;
 
 public class UserItemMatrixTest {
 
@@ -138,24 +139,7 @@ public class UserItemMatrixTest {
 
 	@Test
 	public void testGetUsersSimilarity() {
-		Similarity sim = new Similarity() {
-
-			@Override
-			public double calculateSimilarity(double[] vector1, double[] vector2) {
-				double sum = 0.0d;
-				for (int i = 0; i < vector1.length; i++) {
-					sum += vector1[i];
-					sum += vector2[i];
-				}
-				return sum;
-			}
-
-			@Override
-			public double calculateSimilarity(SparseVector vector1,
-					SparseVector vector2) {
-				return 1;
-			}
-		};
+		Similarity sim = SumSimilarity.getInstance();
 		int user1Index = 0;
 		double[] user1Values = { 1, 2, 3, 4, 5 };
 		X.setUserValues(user1Index, user1Values);
@@ -168,24 +152,7 @@ public class UserItemMatrixTest {
 
 	@Test
 	public void testGetItemSimilarity() {
-		Similarity sim = new Similarity() {
-
-			@Override
-			public double calculateSimilarity(double[] vector1, double[] vector2) {
-				double sum = 0.0d;
-				for (int i = 0; i < vector1.length; i++) {
-					sum += vector1[i];
-					sum += vector2[i];
-				}
-				return sum;
-			}
-
-			@Override
-			public double calculateSimilarity(SparseVector vector1,
-					SparseVector vector2) {
-				return 1;
-			}
-		};
+		Similarity sim = SumSimilarity.getInstance();
 		int itemIndex1 = 1;
 		int itemIndex2 = 3;
 		Double expectedSimilarity = 76.0d;
@@ -211,19 +178,7 @@ public class UserItemMatrixTest {
 
 	@Test
 	public void getetUserSimilaritiesMatrixTest() {
-		Similarity sim = new Similarity() {
-
-			@Override
-			public double calculateSimilarity(double[] vector1, double[] vector2) {
-				return 1;
-			}
-
-			@Override
-			public double calculateSimilarity(SparseVector vector1,
-					SparseVector vector2) {
-				return 1;
-			}
-		};
+		Similarity sim = OneSimilarity.getInstance();
 		UserSimilaritiesMatrix U = X.getUserSimilaritiesMatrix(sim);
 		assertEquals(NUMBER_OF_USERS, U.getNumberOfRow());
 		assertEquals(NUMBER_OF_USERS, U.getNumberOfCol());
@@ -231,19 +186,7 @@ public class UserItemMatrixTest {
 
 	@Test
 	public void testGetItemSimilaritiesMatrixTest() {
-		Similarity sim = new Similarity() {
-
-			@Override
-			public double calculateSimilarity(double[] vector1, double[] vector2) {
-				return 1;
-			}
-
-			@Override
-			public double calculateSimilarity(SparseVector vector1,
-					SparseVector vector2) {
-				return 1;
-			}
-		};
+		Similarity sim = OneSimilarity.getInstance();
 		ItemSimilaritiesMatrix U = X.getItemSimilaritiesMatrix(sim);
 		assertEquals(NUMBER_OF_ITEMS, U.getNumberOfRow());
 		assertEquals(NUMBER_OF_ITEMS, U.getNumberOfCol());
