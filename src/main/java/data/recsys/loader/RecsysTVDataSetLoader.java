@@ -145,4 +145,9 @@ public class RecsysTVDataSetLoader implements Serializable {
 				Integer.parseInt(row[5]), Integer.parseInt(row[6]),
 				Integer.parseInt(row[7]), Integer.parseInt(row[8]));
 	}
+	
+	public static void main(String[] args){
+		RecsysTVDataSetLoader l = new RecsysTVDataSetLoader();
+		l.loadDataSet();
+	}
 }

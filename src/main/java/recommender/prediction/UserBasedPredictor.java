@@ -30,26 +30,17 @@ public class UserBasedPredictor implements Predictor{
 		this.function = function;
 		this.topN = topN;
 		this.similarity = similarity;
-		alreadyRatedIndexesPerUser = new HashMap<Integer, List<Integer>>();
-		buildModel(currentMatrix);
+		alreadyRatedIndexesPerUser = currentMatrix.getItemIndexesSeenByUsers();
+		model = currentMatrix;
+		buildModel();
 	}
 	
-	private void buildModel(UserItemMatrix X){
-		model = new UserItemMatrix(X.getNumberOfUsers(), X.getNumberOfItems());
-		UserSimilaritiesMatrix sm = X.getUserSimilaritiesMatrix(similarity);
-		for(int user = 0; user < X.getNumberOfUsers(); user++){
-			for(int item = 0; item < X.getNumberOfItems(); item++){
-				double rating = X.getRating(user, item);
-				if(rating != 0){
-					model.setUserItemValue(user, item, rating);
-					if(alreadyRatedIndexesPerUser.get(user)!=null){
-						alreadyRatedIndexesPerUser.get(user).add(item);
-					}
-					else{
-						alreadyRatedIndexesPerUser.put(user, new ArrayList<Integer>(item));
-					}
-				}else{
-					double value = function.aggregate(X, sm, user, item, topN);
+	private void buildModel(){
+		UserSimilaritiesMatrix sm = model.getUserSimilaritiesMatrix(similarity);
+		for(int user = 0; user < model.getNumberOfUsers(); user++){
+			for(int item = 0; item < model.getNumberOfItems(); item++){
+				if(!alreadyRatedIndexesPerUser.get(user).contains(item)){
+					double value = function.aggregate(model, sm, user, item, topN);
 					model.setUserItemValue(user, item, value);
 				}
 			}

@@ -26,7 +26,10 @@ public class ItemBasedPredictor implements Predictor{
 	public static void main(String[] args){
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
 		ItemBasedPredictor p = new ItemBasedPredictor(loader.loadDataSet().convertToUserItemMatrix(), CosineSimilarity.getInstance());
-		p.predict(, );
+		List<Integer> predictions = p.predict(10, 10);
+		for(int i = 0; i < predictions.size(); i++){
+			System.out.println(predictions.get(i));
+		}
 	}
 
 }

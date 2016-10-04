@@ -15,14 +15,6 @@
 		    </configuration>
 		</plugin>
 	</plugins>
-	<resources>
-      <resource>
-        <directory>src/main/resources/tv-audience-dataset</directory>
-        <excludes>
-          <exclude>tv-audience-dataset</exclude>
-        </excludes>
-      </resource>
-    </resources>
  </build>
   <dependencies>
 		<dependency>
