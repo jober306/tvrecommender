@@ -8,6 +8,7 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 
+import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
 
 /**
@@ -29,7 +30,7 @@ public class UserItemMatrix {
 	public static final int USER_NOT_SEEN_ITEM_VALUE = 0;
 
 	/**
-	 * The user itme matrix represented by double entries.
+	 * The user item matrix represented by compact representation.
 	 */
 	double[][] userItemMatrix;
 
@@ -288,24 +289,40 @@ public class UserItemMatrix {
 		return similarity.calculateSimilarity(getItemValues(itemIndex1),
 				getItemValues(itemIndex2));
 	}
-	
+
 	/**
 	 * Method that extract for each user all the item index with non-zero entry.
 	 * This set is often called omega in the litterature.
+	 * 
 	 * @return The map that for each user gives all the item already rated.
 	 */
-	public HashMap<Integer, List<Integer>> getItemIndexesSeenByUsers(){
+	public HashMap<Integer, List<Integer>> getItemIndexesSeenByUsers() {
 		HashMap<Integer, List<Integer>> omega = new HashMap<Integer, List<Integer>>();
-		for(int user = 0; user < getNumberOfUsers(); user++){
+		for (int user = 0; user < getNumberOfUsers(); user++) {
 			omega.put(user, new ArrayList<Integer>());
-			for(int item = 0; item < getNumberOfItems(); item++){
+			for (int item = 0; item < getNumberOfItems(); item++) {
 				double rating = getRating(user, item);
-				if(rating != 0){
+				if (rating != 0) {
 					omega.get(user).add(item);
 				}
 			}
 		}
 		return omega;
+	}
+
+	/**
+	 * Method that returns the sparse vector representation of the user item
+	 * matrix.
+	 * 
+	 * @return An array of sparse vectors. Each row index correspond to the same
+	 *         index in the user item matrix.
+	 */
+	public SparseVector[] getSparseVectorRepresentations() {
+		SparseVector[] userItemSparse = new SparseVector[userItemMatrix.length];
+		for (int i = 0; i < getNumberOfUsers(); i++) {
+			userItemSparse[i] = new SparseVector(getUserValues(i));
+		}
+		return userItemSparse;
 	}
 
 	/**
