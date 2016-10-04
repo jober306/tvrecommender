@@ -317,7 +317,7 @@ public class UserItemMatrix {
 	 * @return An array of sparse vectors. Each row index correspond to the same
 	 *         index in the user item matrix.
 	 */
-	public SparseVector[] getSparseVectorRepresentations() {
+	public SparseVector[] getSparseVectorRepresentation() {
 		SparseVector[] userItemSparse = new SparseVector[userItemMatrix.length];
 		for (int i = 0; i < getNumberOfUsers(); i++) {
 			userItemSparse[i] = new SparseVector(getUserValues(i));

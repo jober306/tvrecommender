@@ -3,6 +3,8 @@ package recommender.model.linalg;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import recommender.model.linalg.SparseVector.SparseVectorEntry;
+
 /**
  * Class that represents a vector in sparse representation, i.e. a vector
  * represented by a linked list where each nodes contains the index and the
@@ -12,7 +14,7 @@ import java.util.LinkedList;
  * @author Jonathan Bergeron
  *
  */
-public class SparseVector {
+public class SparseVector implements Iterable<SparseVectorEntry> {
 
 	LinkedList<SparseVectorEntry> vector;
 
@@ -48,7 +50,8 @@ public class SparseVector {
 	 * 
 	 * @return The iterator of <class>SparseVectorEntry</class> of this vector.
 	 */
-	public Iterator<SparseVectorEntry> getIterator() {
+	@Override
+	public Iterator<SparseVectorEntry> iterator() {
 		return vector.iterator();
 	}
 

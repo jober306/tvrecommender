@@ -62,8 +62,8 @@ public class CosineSimilarity implements Similarity {
 		if (vec1.isEmpty() || vec2.isEmpty()) {
 			return 0.0d;
 		}
-		Iterator<SparseVectorEntry> it1 = vec1.getIterator();
-		Iterator<SparseVectorEntry> it2 = vec2.getIterator();
+		Iterator<SparseVectorEntry> it1 = vec1.iterator();
+		Iterator<SparseVectorEntry> it2 = vec2.iterator();
 		float dotProduct = 0.0f;
 		float norm1 = 0.0f;
 		float norm2 = 0.0f;

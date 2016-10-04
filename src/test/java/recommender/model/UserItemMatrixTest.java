@@ -14,6 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import recommender.model.linalg.SparseVector;
+import recommender.model.linalg.SparseVector.SparseVectorEntry;
 import recommender.similarities.OneSimilarity;
 import recommender.similarities.Similarity;
 import recommender.similarities.SumSimilarity;
@@ -174,6 +176,25 @@ public class UserItemMatrixTest {
 		assertEquals(expectedIndexForUser1, omega.get(1));
 		assertEquals(expectedIndexForUser2, omega.get(2));
 		assertEquals(expectedIndexForUser3, omega.get(3));
+	}
+
+	@Test
+	public void getSparseVectorRepresentationTest() {
+		double[][] data = { { 1, 0, 4 }, { 0, 0, 2 }, { 1, 3, 4 }, { 0, 0, 0 } };
+		UserItemMatrix U = new UserItemMatrix(data);
+		SparseVector[] sparseRep = U.getSparseVectorRepresentation();
+		int[][] expectedIndexVector = { { 0, 2 }, { 2 }, { 0, 1, 2 }, {} };
+		double[][] expectedValueVector = { { 1, 4 }, { 2 }, { 1, 3, 4 }, {} };
+		for (int i = 0; i < sparseRep.length; i++) {
+			int index = 0;
+			for (SparseVectorEntry entry : sparseRep[i]) {
+				if (entry == null)
+					break;
+				assertTrue(entry.index == expectedIndexVector[i][index]);
+				assertTrue(entry.value == expectedValueVector[i][index]);
+				index++;
+			}
+		}
 	}
 
 	@Test

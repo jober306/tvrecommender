@@ -60,8 +60,8 @@ public class SumSimilarity implements Similarity {
 	 * @return The cosine similarity between vector1 and vector2
 	 */
 	public double calculateSimilarity(SparseVector v1, SparseVector v2) {
-		Iterator<SparseVectorEntry> it1 = v1.getIterator();
-		Iterator<SparseVectorEntry> it2 = v2.getIterator();
+		Iterator<SparseVectorEntry> it1 = v1.iterator();
+		Iterator<SparseVectorEntry> it2 = v2.iterator();
 		SparseVectorEntry entry1 = null;
 		SparseVectorEntry entry2 = null;
 		double sum = 0.0d;
