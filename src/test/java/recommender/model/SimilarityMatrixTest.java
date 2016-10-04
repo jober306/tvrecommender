@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
 
 public class SimilarityMatrixTest {
@@ -19,6 +20,12 @@ public class SimilarityMatrixTest {
 
 		@Override
 		public double calculateSimilarity(double[] vector1, double[] vector2) {
+			return 1;
+		}
+
+		@Override
+		public double calculateSimilarity(SparseVector vector1,
+				SparseVector vector2) {
 			return 1;
 		}
 	};

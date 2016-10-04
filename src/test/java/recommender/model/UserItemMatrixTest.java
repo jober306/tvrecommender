@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
 
 public class UserItemMatrixTest {
@@ -148,6 +149,12 @@ public class UserItemMatrixTest {
 				}
 				return sum;
 			}
+
+			@Override
+			public double calculateSimilarity(SparseVector vector1,
+					SparseVector vector2) {
+				return 1;
+			}
 		};
 		int user1Index = 0;
 		double[] user1Values = { 1, 2, 3, 4, 5 };
@@ -172,6 +179,12 @@ public class UserItemMatrixTest {
 				}
 				return sum;
 			}
+
+			@Override
+			public double calculateSimilarity(SparseVector vector1,
+					SparseVector vector2) {
+				return 1;
+			}
 		};
 		int itemIndex1 = 1;
 		int itemIndex2 = 3;
@@ -180,16 +193,16 @@ public class UserItemMatrixTest {
 				new Double(X.getItemsSimilarity(itemIndex1, itemIndex2, sim)),
 				expectedSimilarity);
 	}
-	
+
 	@Test
-	public void getItemIndexesSeenByUsersTest(){
-		double[][] data = {{1,0,4}, {0,0,2}, {1,3,4}, {0,0,0}};
-		List<Integer> expectedIndexForUser0 = Arrays.asList(0,2);
+	public void getItemIndexesSeenByUsersTest() {
+		double[][] data = { { 1, 0, 4 }, { 0, 0, 2 }, { 1, 3, 4 }, { 0, 0, 0 } };
+		List<Integer> expectedIndexForUser0 = Arrays.asList(0, 2);
 		List<Integer> expectedIndexForUser1 = Arrays.asList(2);
-		List<Integer> expectedIndexForUser2 = Arrays.asList(0,1,2);
+		List<Integer> expectedIndexForUser2 = Arrays.asList(0, 1, 2);
 		List<Integer> expectedIndexForUser3 = new ArrayList<Integer>();
 		UserItemMatrix U = new UserItemMatrix(data);
-		HashMap<Integer,List<Integer>> omega = U.getItemIndexesSeenByUsers();
+		HashMap<Integer, List<Integer>> omega = U.getItemIndexesSeenByUsers();
 		assertEquals(expectedIndexForUser0, omega.get(0));
 		assertEquals(expectedIndexForUser1, omega.get(1));
 		assertEquals(expectedIndexForUser2, omega.get(2));
@@ -204,6 +217,12 @@ public class UserItemMatrixTest {
 			public double calculateSimilarity(double[] vector1, double[] vector2) {
 				return 1;
 			}
+
+			@Override
+			public double calculateSimilarity(SparseVector vector1,
+					SparseVector vector2) {
+				return 1;
+			}
 		};
 		UserSimilaritiesMatrix U = X.getUserSimilaritiesMatrix(sim);
 		assertEquals(NUMBER_OF_USERS, U.getNumberOfRow());
@@ -216,6 +235,12 @@ public class UserItemMatrixTest {
 
 			@Override
 			public double calculateSimilarity(double[] vector1, double[] vector2) {
+				return 1;
+			}
+
+			@Override
+			public double calculateSimilarity(SparseVector vector1,
+					SparseVector vector2) {
 				return 1;
 			}
 		};
