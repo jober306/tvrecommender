@@ -1,5 +1,6 @@
 package recommender.model;
 
+import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
 
 /**
@@ -29,10 +30,12 @@ public class ItemSimilaritiesMatrix extends SimilarityMatrix {
 	private void calculateItemSimilaritiesMatrix(UserItemMatrix userItemMatrix) {
 		int nbItems = userItemMatrix.getNumberOfItems();
 		similaritiesMatrix = new double[nbItems][nbItems];
+		SparseVector[] sparseItems = userItemMatrix
+				.getItemsInSparseVectorRepresentation();
 		for (int i = 0; i < nbItems; i++) {
 			for (int j = 0; j < nbItems; j++) {
-				similaritiesMatrix[i][j] = userItemMatrix.getItemsSimilarity(i,
-						j, similarity);
+				similaritiesMatrix[i][j] = similarity.calculateSimilarity(
+						sparseItems[i], sparseItems[j]);
 			}
 		}
 	}

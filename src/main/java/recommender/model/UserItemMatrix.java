@@ -311,18 +311,33 @@ public class UserItemMatrix {
 	}
 
 	/**
-	 * Method that returns the sparse vector representation of the user item
-	 * matrix.
+	 * Method that returns the sparse vector representation of the users in the
+	 * user-item matrix.
 	 * 
 	 * @return An array of sparse vectors. Each row index correspond to the same
 	 *         index in the user item matrix.
 	 */
-	public SparseVector[] getSparseVectorRepresentation() {
-		SparseVector[] userItemSparse = new SparseVector[userItemMatrix.length];
+	public SparseVector[] getUsersInSparseVectorRepresentation() {
+		SparseVector[] userSparse = new SparseVector[userItemMatrix.length];
 		for (int i = 0; i < getNumberOfUsers(); i++) {
-			userItemSparse[i] = new SparseVector(getUserValues(i));
+			userSparse[i] = new SparseVector(getUserValues(i));
 		}
-		return userItemSparse;
+		return userSparse;
+	}
+
+	/**
+	 * Method that returns the sparse vector representation of the items in the
+	 * user-item matrix.
+	 * 
+	 * @return An array of sparse vectors. Each column index correspond to the
+	 *         same index in the user item matrix.
+	 */
+	public SparseVector[] getItemsInSparseVectorRepresentation() {
+		SparseVector[] itemSparse = new SparseVector[getNumberOfItems()];
+		for (int i = 0; i < getNumberOfItems(); i++) {
+			itemSparse[i] = new SparseVector(getItemValues(i));
+		}
+		return itemSparse;
 	}
 
 	/**

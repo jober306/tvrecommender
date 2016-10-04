@@ -182,7 +182,7 @@ public class UserItemMatrixTest {
 	public void getSparseVectorRepresentationTest() {
 		double[][] data = { { 1, 0, 4 }, { 0, 0, 2 }, { 1, 3, 4 }, { 0, 0, 0 } };
 		UserItemMatrix U = new UserItemMatrix(data);
-		SparseVector[] sparseRep = U.getSparseVectorRepresentation();
+		SparseVector[] sparseRep = U.getUsersInSparseVectorRepresentation();
 		int[][] expectedIndexVector = { { 0, 2 }, { 2 }, { 0, 1, 2 }, {} };
 		double[][] expectedValueVector = { { 1, 4 }, { 2 }, { 1, 3, 4 }, {} };
 		for (int i = 0; i < sparseRep.length; i++) {
