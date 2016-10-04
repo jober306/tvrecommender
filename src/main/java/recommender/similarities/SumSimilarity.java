@@ -29,6 +29,16 @@ public class SumSimilarity implements Similarity {
 	}
 
 	@Override
+	/**
+	 * Method that calculate the sum similarity between two vectors in compact
+	 * representation, i.e. it calculates the sum of each entries of both vectors.
+	 * 
+	 * @param vector1
+	 *            The fist vector.
+	 * @param vector2
+	 *            The second vector.
+	 * @return The cosine similarity between vector1 and vector2
+	 */
 	public double calculateSimilarity(double[] vector1, double[] vector2) {
 		double sum = 0.0d;
 		for (int i = 0; i < vector1.length; i++) {
@@ -39,6 +49,16 @@ public class SumSimilarity implements Similarity {
 	}
 
 	@Override
+	/**
+	 * Method that calculate the sum similarity between two vectors in compact
+	 * representation, i.e. it calculates the sum of each entries of both vectors.
+	 * 
+	 * @param v1
+	 *            The fist vector.
+	 * @param v2
+	 *            The second vector.
+	 * @return The cosine similarity between vector1 and vector2
+	 */
 	public double calculateSimilarity(SparseVector v1, SparseVector v2) {
 		Iterator<SparseVectorEntry> it1 = v1.getIterator();
 		Iterator<SparseVectorEntry> it2 = v2.getIterator();
