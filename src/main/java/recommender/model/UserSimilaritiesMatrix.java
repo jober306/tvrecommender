@@ -29,14 +29,16 @@ public class UserSimilaritiesMatrix extends SimilarityMatrix {
 
 	private void calculateUserSimilaritiesMatrix(UserItemMatrix userItemMatrix) {
 		int nbUsers = userItemMatrix.getNumberOfUsers();
-		similaritiesMatrix = new double[nbUsers][nbUsers];
+		similaritiesMatrix = new SparseVector[nbUsers];
 		SparseVector[] usersSparse = userItemMatrix
 				.getUsersInSparseVectorRepresentation();
 		for (int i = 0; i < nbUsers; i++) {
+			double[] userSimilarities = new double[nbUsers];
 			for (int j = 0; j < nbUsers; j++) {
-				similaritiesMatrix[i][j] = similarity.calculateSimilarity(
+				userSimilarities[j] = similarity.calculateSimilarity(
 						usersSparse[i], usersSparse[j]);
 			}
+			similaritiesMatrix[i] = new SparseVector(userSimilarities);
 		}
 	}
 }

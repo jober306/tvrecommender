@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import recommender.model.linalg.SparseVector;
 import recommender.similarities.OneSimilarity;
 import recommender.similarities.Similarity;
 
@@ -22,11 +23,9 @@ public class SimilarityMatrixTest {
 
 		public SimilarityMatrixMock(Similarity sim, double[][] similarities) {
 			this.similarity = sim;
-			similaritiesMatrix = new double[similarities.length][similarities[0].length];
+			similaritiesMatrix = new SparseVector[similarities.length];
 			for (int row = 0; row < similarities.length; row++) {
-				for (int col = 0; col < similarities[0].length; col++) {
-					similaritiesMatrix[row][col] = similarities[row][col];
-				}
+				similaritiesMatrix[row] = new SparseVector(similarities[row]);
 			}
 		}
 	}

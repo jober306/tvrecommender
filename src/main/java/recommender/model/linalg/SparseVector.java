@@ -17,6 +17,7 @@ import recommender.model.linalg.SparseVector.SparseVectorEntry;
 public class SparseVector implements Iterable<SparseVectorEntry> {
 
 	LinkedList<SparseVectorEntry> vector;
+	int length;
 
 	/**
 	 * Constructor of the class that builds the sparse representation given the
@@ -26,6 +27,7 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 	 *            The compact representation of a vector.
 	 */
 	public SparseVector(double[] compactVector) {
+		length = compactVector.length;
 		vector = new LinkedList<SparseVectorEntry>();
 		for (int i = 0; i < compactVector.length; i++) {
 			if (compactVector[i] != 0) {
@@ -43,6 +45,52 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 	 */
 	public boolean isEmpty() {
 		return vector.size() == 1;
+	}
+
+	/**
+	 * Method that returns the length of the vector.
+	 * 
+	 * @return The length of the vector.
+	 */
+	public int getLength() {
+		return length;
+	}
+
+	/**
+	 * Method that returns the value at the specified index.
+	 * 
+	 * @param index
+	 *            The index.
+	 * @return The value at the specified index.
+	 */
+	public double getValue(int index) {
+		for (SparseVectorEntry entry : vector) {
+			if (entry == null) {
+				break;
+			}
+			if (entry.index == index) {
+				return entry.value;
+			} else if (entry.index > index) {
+				break;
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Method that returns the compact representation of this vector in sparse
+	 * representation.
+	 * 
+	 * @return The array of double representing the entries of the vector.
+	 */
+	public double[] getCompactRepresentation() {
+		double[] compactVector = new double[length];
+		for (SparseVectorEntry entry : vector) {
+			if (entry != null) {
+				compactVector[entry.index] = entry.value;
+			}
+		}
+		return compactVector;
 	}
 
 	/**

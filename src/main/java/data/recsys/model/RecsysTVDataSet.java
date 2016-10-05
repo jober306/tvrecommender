@@ -44,6 +44,11 @@ public class RecsysTVDataSet implements DataSet {
 	RecSysMapReader idMap;
 
 	/**
+	 * Boolean to check if wether or not the map file have been erased.
+	 */
+	boolean mapClosed;
+
+	/**
 	 * Main constructor of the class. Use the
 	 * <class>RecsysTVDataSetLoader</class> to get the RDD off a csv file.
 	 * 
@@ -57,6 +62,7 @@ public class RecsysTVDataSet implements DataSet {
 		this.eventsData = eventsData;
 		this.sc = sc;
 		initializeMapReader();
+		mapClosed = false;
 	}
 
 	/**
@@ -304,7 +310,17 @@ public class RecsysTVDataSet implements DataSet {
 	 */
 	public void close() {
 		sc.close();
-		idMap.close();
+		if (!mapClosed) {
+			idMap.close();
+			mapClosed = true;
+		}
 		eventsData = null;
+	}
+
+	@Override
+	public void finalize() {
+		if (!mapClosed) {
+			idMap.close();
+		}
 	}
 }

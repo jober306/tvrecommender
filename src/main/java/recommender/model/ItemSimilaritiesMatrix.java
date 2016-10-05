@@ -1,7 +1,10 @@
 package recommender.model;
 
 import recommender.model.linalg.SparseVector;
+import recommender.similarities.CosineSimilarity;
 import recommender.similarities.Similarity;
+import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.model.RecsysTVDataSet;
 
 /**
  * Class the represents an item similarity matrix.
@@ -29,14 +32,27 @@ public class ItemSimilaritiesMatrix extends SimilarityMatrix {
 
 	private void calculateItemSimilaritiesMatrix(UserItemMatrix userItemMatrix) {
 		int nbItems = userItemMatrix.getNumberOfItems();
-		similaritiesMatrix = new double[nbItems][nbItems];
+		similaritiesMatrix = new SparseVector[userItemMatrix.getNumberOfItems()];
 		SparseVector[] sparseItems = userItemMatrix
 				.getItemsInSparseVectorRepresentation();
 		for (int i = 0; i < nbItems; i++) {
+			double[] itemSimilarities = new double[userItemMatrix
+					.getNumberOfItems()];
 			for (int j = 0; j < nbItems; j++) {
-				similaritiesMatrix[i][j] = similarity.calculateSimilarity(
+				itemSimilarities[j] = similarity.calculateSimilarity(
 						sparseItems[i], sparseItems[j]);
 			}
+			similaritiesMatrix[i] = new SparseVector(itemSimilarities);
 		}
+	}
+
+	public static void main(String[] args) {
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
+		RecsysTVDataSet dataSet = loader.loadDataSet();
+		ItemSimilaritiesMatrix I = new ItemSimilaritiesMatrix(
+				dataSet.convertToUserItemMatrix(),
+				CosineSimilarity.getInstance());
+		System.out.println(I.getNumberOfCol());
+		System.out.println(I.getNumberOfRow());
 	}
 }

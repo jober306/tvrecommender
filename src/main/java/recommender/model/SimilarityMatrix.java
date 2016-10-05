@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
 import algorithm.QuickSelect;
 
@@ -22,9 +23,9 @@ public abstract class SimilarityMatrix {
 	protected Similarity similarity;
 
 	/**
-	 * The matrix data.
+	 * The matrix data in sparse vector representation.
 	 */
-	protected double[][] similaritiesMatrix;
+	protected SparseVector[] similaritiesMatrix;
 
 	/**
 	 * Getter method that returns the similarity used to calculate matrix
@@ -52,7 +53,7 @@ public abstract class SimilarityMatrix {
 	 * @return The number of column.
 	 */
 	public int getNumberOfCol() {
-		return similaritiesMatrix[0].length;
+		return similaritiesMatrix[0].getLength();
 	}
 
 	/**
@@ -66,7 +67,7 @@ public abstract class SimilarityMatrix {
 	 * @return The similarity calculated at row and col coordinate.
 	 */
 	public double getSimilarityValue(int index1, int index2) {
-		return similaritiesMatrix[index1][index2];
+		return similaritiesMatrix[index1].getValue(index2);
 	}
 
 	/**
@@ -80,7 +81,7 @@ public abstract class SimilarityMatrix {
 	public double[] getColumn(int columnIndex) {
 		double[] column = new double[similaritiesMatrix.length];
 		for (int i = 0; i < similaritiesMatrix.length; i++) {
-			column[i] = similaritiesMatrix[i][columnIndex];
+			column[i] = similaritiesMatrix[i].getValue(columnIndex);
 		}
 		return column;
 	}
@@ -94,7 +95,7 @@ public abstract class SimilarityMatrix {
 	 *         row.
 	 */
 	public double[] getRow(int rowIndex) {
-		return similaritiesMatrix[rowIndex];
+		return similaritiesMatrix[rowIndex].getCompactRepresentation();
 	}
 
 	/**
