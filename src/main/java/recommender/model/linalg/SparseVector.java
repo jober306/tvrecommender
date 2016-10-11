@@ -1,9 +1,13 @@
 package recommender.model.linalg;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 import recommender.model.linalg.SparseVector.SparseVectorEntry;
+import scala.Tuple2;
 
 /**
  * Class that represents a vector in sparse representation, i.e. a vector
@@ -75,6 +79,46 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 			}
 		}
 		return 0;
+	}
+	
+	public List<Tuple2<Integer,Double>> getAllIndexesValues(){
+		List<Tuple2<Integer,Double>> indexesValues = new ArrayList<Tuple2<Integer,Double>>();
+		for(SparseVectorEntry entry : vector){
+			indexesValues.add(new Tuple2<Integer,Double>(entry.index, entry.value));
+		}
+		return indexesValues;
+	}
+	
+	public boolean setEntry(int index, double value){
+		if(index >= length){
+			return false;
+		}
+		ListIterator<SparseVectorEntry> it = vector.listIterator();
+		while(it.hasNext()){
+			SparseVectorEntry entry = it.next();
+			if(entry.index > index){
+				it.previous();
+				it.add(new SparseVectorEntry(index, value));
+				return true;
+			}
+		}
+		it.add(new SparseVectorEntry(index, value));
+		return true;
+	}
+	
+	public boolean removeEntry(int index){
+		Iterator<SparseVectorEntry> it = vector.iterator();
+		while(it.hasNext()){
+			SparseVectorEntry entry = it.next();
+			if(entry.index == index){
+				it.remove();
+				return true;
+			}
+			if(entry.index > index){
+				return false;
+			}
+		}
+		return false;
 	}
 
 	/**

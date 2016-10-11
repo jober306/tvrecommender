@@ -3,6 +3,7 @@ package recommender.prediction;
 import java.util.List;
 
 import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.model.RecsysTVDataSet;
 import recommender.model.ItemSimilaritiesMatrix;
 import recommender.model.UserItemMatrix;
 import recommender.similarities.CosineSimilarity;
@@ -25,7 +26,11 @@ public class ItemBasedPredictor implements Predictor{
 	
 	public static void main(String[] args){
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
-		ItemBasedPredictor p = new ItemBasedPredictor(loader.loadDataSet().convertToUserItemMatrix(), CosineSimilarity.getInstance());
+		RecsysTVDataSet dataSet = loader.loadDataSet();
+		double[] ratios = {0.01,0.99};
+		RecsysTVDataSet trainingSet = dataSet.splitDataDistributed(ratios)[0];
+		System.out.println(trainingSet.getNumberOfItems());
+		ItemBasedPredictor p = new ItemBasedPredictor(trainingSet.convertToUserItemMatrix(), CosineSimilarity.getInstance());
 		List<Integer> predictions = p.predict(10, 10);
 		for(int i = 0; i < predictions.size(); i++){
 			System.out.println(predictions.get(i));

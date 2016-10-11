@@ -3,6 +3,7 @@ package mllib.recommender;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.ALS;
 import org.apache.spark.mllib.recommendation.MatrixFactorizationModel;
 import org.apache.spark.mllib.recommendation.Rating;
@@ -10,13 +11,22 @@ import org.apache.spark.mllib.recommendation.Rating;
 import scala.Tuple2;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
+import recommender.model.UserItemMatrix;
 
 public class MllibWrapper {
 
-	public static MatrixFactorizationModel train(JavaRDD<Rating> ratings,
+	public static MatrixFactorizationModel trainExplicit(JavaRDD<Rating> ratings,
 			int matrixRank, int numIter) {
 		return ALS.train(JavaRDD.toRDD(ratings), matrixRank, numIter);
 	}
+	
+	public static MatrixFactorizationModel trainImplicit(JavaRDD<Rating> ratings, int matrixRank, int numIter, double lambda, double alpha){
+		return ALS.trainImplicit(JavaRDD.toRDD(ratings), matrixRank, numIter, lambda, alpha);
+	}
+	
+	//public static IndexedRowMatrix getIndexedRowMatrix(UserItemMatrix U){
+	//	
+	//}
 
 	public static void evaluateModel(MatrixFactorizationModel model,
 			RecsysTVDataSet dataSet) {
@@ -46,7 +56,7 @@ public class MllibWrapper {
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader dataLoader = new RecsysTVDataSetLoader();
 		RecsysTVDataSet dataSet = dataLoader.loadDataSet();
-		MatrixFactorizationModel model = MllibWrapper.train(dataSet.convertToMLlibRatings(), 10, 20);
+		MatrixFactorizationModel model = MllibWrapper.trainExplicit(dataSet.convertToMLlibRatings(), 10, 20);
 		MllibWrapper.evaluateModel(model, dataSet);
 	}
 }

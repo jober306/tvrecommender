@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
@@ -32,7 +33,8 @@ public class UserItemMatrix {
 	/**
 	 * The user item matrix represented by compact representation.
 	 */
-	double[][] userItemMatrix;
+	List<SparseVector> userItemMatrix;
+	int numberOfItems;
 
 	/**
 	 * Constructor of the class. Matrix is initialized with zeros.
@@ -43,7 +45,11 @@ public class UserItemMatrix {
 	 *            The number of distinct items.
 	 */
 	public UserItemMatrix(int numberOfUsers, int numberOfItems) {
-		userItemMatrix = new double[numberOfUsers][numberOfItems];
+		userItemMatrix = new ArrayList<SparseVector>(numberOfUsers);
+		this.numberOfItems = numberOfItems;
+		for(int i = 0; i < numberOfUsers; i++){
+			userItemMatrix.add(new SparseVector(new double[]{}));
+		}
 	}
 
 	/**
@@ -53,11 +59,9 @@ public class UserItemMatrix {
 	 *            The data with wich the userItemMatrix will be initialized.
 	 */
 	public UserItemMatrix(double[][] data) {
-		userItemMatrix = new double[data.length][data[0].length];
-		for (int row = 0; row < data.length; row++) {
-			for (int col = 0; col < data[0].length; col++) {
-				userItemMatrix[row][col] = data[row][col];
-			}
+		userItemMatrix = new ArrayList<SparseVector>(data.length);
+		for(double[] userValues : data) {
+			userItemMatrix.add(new SparseVector(userValues));
 		}
 	}
 
@@ -67,7 +71,7 @@ public class UserItemMatrix {
 	 * @return
 	 */
 	public int getNumberOfUsers() {
-		return userItemMatrix.length;
+		return userItemMatrix.size();
 	}
 
 	/**
@@ -77,7 +81,7 @@ public class UserItemMatrix {
 	 */
 	public int getNumberOfItems() {
 		// Assuming there is at least one user in the User-Item matrix.
-		return userItemMatrix[0].length;
+		return numberOfItems;
 	}
 
 	/**
@@ -90,33 +94,33 @@ public class UserItemMatrix {
 	 * @return The rating given by the user for the item.
 	 */
 	public double getRating(int userID, int itemID) {
-		return userItemMatrix[userID][itemID];
+		return userItemMatrix.get(userID).getValue(itemID);
 	}
 
 	/**
-	 * Getter method that return all the value of the specified item.
+	 * Getter method that return all the value of the specified item in dense representation.
 	 * 
 	 * @param itemIndex
 	 *            the item index.
 	 * @return All the values given to this item.
 	 */
 	public double[] getItemValues(int itemIndex) {
-		double[] itemValues = new double[userItemMatrix.length];
+		double[] itemValues = new double[userItemMatrix.size()];
 		for (int i = 0; i < itemValues.length; i++) {
-			itemValues[i] = userItemMatrix[i][itemIndex];
+			itemValues[i] = userItemMatrix.get(i).getValue(itemIndex);
 		}
 		return itemValues;
 	}
 
 	/**
-	 * Getter method that return all the value given by the specified user.
+	 * Getter method that return all the value given by the specified user in dense representation.
 	 * 
 	 * @param userIndex
 	 *            the user index.
 	 * @return All the values given by this user.
 	 */
 	public double[] getUserValues(int userIndex) {
-		return userItemMatrix[userIndex];
+		return userItemMatrix.get(userIndex).getCompactRepresentation();
 	}
 
 	/**
@@ -131,9 +135,7 @@ public class UserItemMatrix {
 		int numberOfItems = getNumberOfItems();
 		double[] matrixData = new double[numberOfUsers * numberOfItems];
 		for (int col = 0; col < numberOfItems; col++) {
-			for (int row = 0; row < numberOfUsers; row++) {
-				matrixData[col * numberOfUsers + row] = userItemMatrix[row][col];
-			}
+			matrixData = ArrayUtils.addAll(matrixData, getItemValues(col));
 		}
 		return matrixData;
 	}
@@ -149,9 +151,7 @@ public class UserItemMatrix {
 		int numberOfItems = getNumberOfItems();
 		double[] matrixData = new double[numberOfUsers * numberOfItems];
 		for (int row = 0; row < numberOfUsers; row++) {
-			for (int col = 0; col < numberOfItems; col++) {
-				matrixData[row * numberOfItems + col] = userItemMatrix[row][col];
-			}
+				matrixData = ArrayUtils.addAll(matrixData, getUserValues(row));
 		}
 		return matrixData;
 	}
@@ -165,7 +165,7 @@ public class UserItemMatrix {
 	public List<IndexedRow> getUsersAsVector() {
 		List<IndexedRow> rows = new ArrayList<IndexedRow>();
 		for (int row = 0; row < getNumberOfUsers(); row++) {
-			Vector vectorRow = Vectors.dense(getUserValues(row));
+			Vector vectorRow = Vectors.sparse(numberOfItems, userItemMatrix.get(row).getAllIndexesValues());
 			rows.add(new IndexedRow(row, vectorRow));
 		}
 		return rows;
@@ -174,13 +174,14 @@ public class UserItemMatrix {
 	/**
 	 * Getter method that returns all the items in the mllib format.
 	 * 
-	 * @return The list of all items in mllib format
+	 * @return The list of all items in mllib sparse vector format.
 	 *         (<class>IndexedRow</class>).
 	 */
 	public List<IndexedRow> getItemsAsVector() {
 		List<IndexedRow> columns = new ArrayList<IndexedRow>();
-		for (int col = 0; col < getNumberOfItems(); col++) {
-			Vector vectorCol = Vectors.dense(getItemValues(col));
+		SparseVector[] items = getItemsInSparseVectorRepresentation();
+		for (int col = 0; col < items.length; col++) {
+			Vector vectorCol = Vectors.sparse(userItemMatrix.size(), items[col].getAllIndexesValues());
 			columns.add(new IndexedRow(col, vectorCol));
 		}
 		return columns;
@@ -196,7 +197,7 @@ public class UserItemMatrix {
 	 *            The item id.
 	 */
 	public void setUserSeenItem(int userID, int itemID) {
-		userItemMatrix[userID][itemID] = USER_SEEN_ITEM_VALUE;
+		userItemMatrix.get(userID).setEntry(itemID, USER_SEEN_ITEM_VALUE);
 	}
 
 	/**
@@ -209,7 +210,7 @@ public class UserItemMatrix {
 	 *            The item id.
 	 */
 	public void setUserNotSeenItem(int userID, int itemID) {
-		userItemMatrix[userID][itemID] = USER_NOT_SEEN_ITEM_VALUE;
+		userItemMatrix.get(userID).removeEntry(itemID);
 	}
 
 	/**
@@ -223,7 +224,7 @@ public class UserItemMatrix {
 	 *            The value given by the user for the item.
 	 */
 	public void setUserItemValue(int userID, int itemID, double value) {
-		userItemMatrix[userID][itemID] = value;
+		userItemMatrix.get(userID).setEntry(itemID, value);
 	}
 
 	/**
@@ -237,7 +238,7 @@ public class UserItemMatrix {
 	 */
 	public void setUserValues(int userID, double[] values) {
 		for (int i = 0; i < values.length; i++) {
-			userItemMatrix[userID][i] = values[i];
+			userItemMatrix.get(userID).setEntry(i, values[i]);
 		}
 	}
 
@@ -252,7 +253,7 @@ public class UserItemMatrix {
 	 */
 	public void setItemValues(int itemID, double[] values) {
 		for (int i = 0; i < values.length; i++) {
-			userItemMatrix[i][itemID] = values[i];
+			userItemMatrix.get(i).setEntry(itemID, values[i]);
 		}
 	}
 
@@ -318,9 +319,9 @@ public class UserItemMatrix {
 	 *         index in the user item matrix.
 	 */
 	public SparseVector[] getUsersInSparseVectorRepresentation() {
-		SparseVector[] userSparse = new SparseVector[userItemMatrix.length];
+		SparseVector[] userSparse = new SparseVector[userItemMatrix.size()];
 		for (int i = 0; i < getNumberOfUsers(); i++) {
-			userSparse[i] = new SparseVector(getUserValues(i));
+			userSparse[i] = userItemMatrix.get(i);
 		}
 		return userSparse;
 	}
@@ -377,9 +378,9 @@ public class UserItemMatrix {
 	@Override
 	public String toString() {
 		String str = "";
-		for (int row = 0; row < userItemMatrix.length; row++) {
-			for (int col = 0; col < userItemMatrix[0].length; col++) {
-				str += userItemMatrix[row][col] + " ";
+		for (int row = 0; row < userItemMatrix.size(); row++) {
+			for (int col = 0; col < numberOfItems; col++) {
+				str += userItemMatrix.get(row).getValue(col) + " ";
 			}
 			str += "\n";
 		}
