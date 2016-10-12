@@ -76,6 +76,13 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 		return 0;
 	}
 
+	/**
+	 * Method that returns all the pair of index and value contained in this
+	 * sparse vector.
+	 * 
+	 * @return A List of tuple containing the index and the value of a sparse
+	 *         vector entry.
+	 */
 	public List<Tuple2<Integer, Double>> getAllIndexesValues() {
 		List<Tuple2<Integer, Double>> indexesValues = new ArrayList<Tuple2<Integer, Double>>();
 		for (SparseVectorEntry entry : vector) {
@@ -85,9 +92,23 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 		return indexesValues;
 	}
 
+	/**
+	 * Method that set the given value to the specified index in the sparse
+	 * vector.
+	 * 
+	 * @param index
+	 *            The index at which the value will be set.
+	 * @param value
+	 *            The value of the entry.
+	 * @return True if the value was set correctly, false otherwise. (i.e. index
+	 *         is larger than length of the vector).
+	 */
 	public boolean setEntry(int index, double value) {
 		if (index >= length) {
 			return false;
+		}
+		if (value == 0.0d) {
+			return removeEntry(index);
 		}
 		ListIterator<SparseVectorEntry> it = vector.listIterator();
 		while (it.hasNext()) {
@@ -106,6 +127,14 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 		return true;
 	}
 
+	/**
+	 * Method that removes the entry at the specified index equivalent to
+	 * setting it to 0.
+	 * 
+	 * @param index
+	 *            The index of the entry to be removed.
+	 * @return True if the entry was successfully removed, false otherwise.
+	 */
 	public boolean removeEntry(int index) {
 		Iterator<SparseVectorEntry> it = vector.iterator();
 		while (it.hasNext()) {
