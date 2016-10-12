@@ -69,28 +69,42 @@ public class CosineSimilarity implements Similarity {
 		float norm2 = 0.0f;
 		SparseVectorEntry entry1 = it1.next();
 		SparseVectorEntry entry2 = it2.next();
-		while (entry1 != null && entry2 != null) {
+		while (true) {
 			if (entry1.index == entry2.index) {
 				dotProduct += entry1.value * entry2.value;
 				norm1 += entry1.value * entry1.value;
 				norm2 += entry2.value * entry2.value;
-				entry1 = it1.next();
-				entry2 = it2.next();
+				if (it1.hasNext() && it2.hasNext()) {
+					entry1 = it1.next();
+					entry2 = it2.next();
+				} else {
+					break;
+				}
 			} else if (entry1.index < entry2.index) {
 				norm1 += entry1.value * entry1.value;
-				entry1 = it1.next();
+				if (it1.hasNext()) {
+					entry1 = it1.next();
+				} else {
+					norm2 += entry2.value * entry2.value;
+					break;
+				}
 			} else {
 				norm2 += entry2.value * entry2.value;
-				entry2 = it2.next();
+				if (it2.hasNext()) {
+					entry2 = it2.next();
+				} else {
+					norm1 += entry1.value * entry1.value;
+					break;
+				}
 			}
 		}
-		while (entry1 != null) {
-			norm1 += entry1.value * entry1.value;
+		while (it1.hasNext()) {
 			entry1 = it1.next();
+			norm1 += entry1.value * entry1.value;
 		}
-		while (entry2 != null) {
-			norm2 += entry2.value * entry2.value;
+		while (it2.hasNext()) {
 			entry2 = it2.next();
+			norm2 += entry2.value * entry2.value;
 		}
 		return (dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2)));
 	}

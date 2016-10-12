@@ -45,7 +45,7 @@ public class SparseVectorTest {
 	public void getCompactRepresentationTest() {
 		double[] data = { 0, 1, 2, 0, 3, 4, 5, 0 };
 		SparseVector v = new SparseVector(data);
-		double[] compactV = v.getCompactRepresentation();
+		double[] compactV = v.getDenseRepresentation();
 		assertArrayEquals(data, compactV, 0.0d);
 	}
 }

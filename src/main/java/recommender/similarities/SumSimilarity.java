@@ -62,14 +62,12 @@ public class SumSimilarity implements Similarity {
 	public double calculateSimilarity(SparseVector v1, SparseVector v2) {
 		Iterator<SparseVectorEntry> it1 = v1.iterator();
 		Iterator<SparseVectorEntry> it2 = v2.iterator();
-		SparseVectorEntry entry1 = null;
-		SparseVectorEntry entry2 = null;
 		double sum = 0.0d;
-		while ((entry1 = it1.next()) != null) {
-			sum += entry1.value;
+		while (it1.hasNext()) {
+			sum += it1.next().value;
 		}
-		while ((entry2 = it2.next()) != null) {
-			sum += entry2.value;
+		while (it2.hasNext()) {
+			sum += it2.next().value;
 		}
 		return sum;
 	}

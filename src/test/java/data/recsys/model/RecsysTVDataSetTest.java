@@ -1,5 +1,6 @@
 package data.recsys.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -201,8 +202,8 @@ public class RecsysTVDataSetTest {
 				.getMappedProgramID(tvEvent3.getProgramID())] = 1;
 		for (int user = 0; user < 2; user++) {
 			for (int program = 0; program < 2; program++) {
-				assertTrue(expectedMatrix[user][program] == (userItemMatrix
-						.getRating(user, program)));
+				assertEquals(expectedMatrix[user][program],
+						userItemMatrix.getRating(user, program), 0.00d);
 			}
 		}
 	}

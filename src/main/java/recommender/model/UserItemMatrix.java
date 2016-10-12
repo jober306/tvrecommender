@@ -11,6 +11,7 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 
 import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
+import scala.Tuple2;
 
 /**
  * Class that models a user-item matrix.
@@ -47,8 +48,8 @@ public class UserItemMatrix {
 	public UserItemMatrix(int numberOfUsers, int numberOfItems) {
 		userItemMatrix = new ArrayList<SparseVector>(numberOfUsers);
 		this.numberOfItems = numberOfItems;
-		for(int i = 0; i < numberOfUsers; i++){
-			userItemMatrix.add(new SparseVector(new double[]{}));
+		for (int i = 0; i < numberOfUsers; i++) {
+			userItemMatrix.add(new SparseVector(new double[numberOfItems]));
 		}
 	}
 
@@ -60,9 +61,10 @@ public class UserItemMatrix {
 	 */
 	public UserItemMatrix(double[][] data) {
 		userItemMatrix = new ArrayList<SparseVector>(data.length);
-		for(double[] userValues : data) {
+		for (double[] userValues : data) {
 			userItemMatrix.add(new SparseVector(userValues));
 		}
+		numberOfItems = data[0].length;
 	}
 
 	/**
@@ -98,7 +100,8 @@ public class UserItemMatrix {
 	}
 
 	/**
-	 * Getter method that return all the value of the specified item in dense representation.
+	 * Getter method that return all the value of the specified item in dense
+	 * representation.
 	 * 
 	 * @param itemIndex
 	 *            the item index.
@@ -113,14 +116,15 @@ public class UserItemMatrix {
 	}
 
 	/**
-	 * Getter method that return all the value given by the specified user in dense representation.
+	 * Getter method that return all the value given by the specified user in
+	 * dense representation.
 	 * 
 	 * @param userIndex
 	 *            the user index.
 	 * @return All the values given by this user.
 	 */
 	public double[] getUserValues(int userIndex) {
-		return userItemMatrix.get(userIndex).getCompactRepresentation();
+		return userItemMatrix.get(userIndex).getDenseRepresentation();
 	}
 
 	/**
@@ -131,9 +135,8 @@ public class UserItemMatrix {
 	 *         format.
 	 */
 	public double[] getDataMajorColumn() {
-		int numberOfUsers = getNumberOfUsers();
 		int numberOfItems = getNumberOfItems();
-		double[] matrixData = new double[numberOfUsers * numberOfItems];
+		double[] matrixData = new double[] {};
 		for (int col = 0; col < numberOfItems; col++) {
 			matrixData = ArrayUtils.addAll(matrixData, getItemValues(col));
 		}
@@ -148,10 +151,9 @@ public class UserItemMatrix {
 	 */
 	public double[] getDataMajorRow() {
 		int numberOfUsers = getNumberOfUsers();
-		int numberOfItems = getNumberOfItems();
-		double[] matrixData = new double[numberOfUsers * numberOfItems];
+		double[] matrixData = new double[] {};
 		for (int row = 0; row < numberOfUsers; row++) {
-				matrixData = ArrayUtils.addAll(matrixData, getUserValues(row));
+			matrixData = ArrayUtils.addAll(matrixData, getUserValues(row));
 		}
 		return matrixData;
 	}
@@ -165,7 +167,8 @@ public class UserItemMatrix {
 	public List<IndexedRow> getUsersAsVector() {
 		List<IndexedRow> rows = new ArrayList<IndexedRow>();
 		for (int row = 0; row < getNumberOfUsers(); row++) {
-			Vector vectorRow = Vectors.sparse(numberOfItems, userItemMatrix.get(row).getAllIndexesValues());
+			Vector vectorRow = Vectors.sparse(numberOfItems, userItemMatrix
+					.get(row).getAllIndexesValues());
 			rows.add(new IndexedRow(row, vectorRow));
 		}
 		return rows;
@@ -181,7 +184,8 @@ public class UserItemMatrix {
 		List<IndexedRow> columns = new ArrayList<IndexedRow>();
 		SparseVector[] items = getItemsInSparseVectorRepresentation();
 		for (int col = 0; col < items.length; col++) {
-			Vector vectorCol = Vectors.sparse(userItemMatrix.size(), items[col].getAllIndexesValues());
+			Vector vectorCol = Vectors.sparse(userItemMatrix.size(),
+					items[col].getAllIndexesValues());
 			columns.add(new IndexedRow(col, vectorCol));
 		}
 		return columns;
@@ -300,13 +304,12 @@ public class UserItemMatrix {
 	public HashMap<Integer, List<Integer>> getItemIndexesSeenByUsers() {
 		HashMap<Integer, List<Integer>> omega = new HashMap<Integer, List<Integer>>();
 		for (int user = 0; user < getNumberOfUsers(); user++) {
-			omega.put(user, new ArrayList<Integer>());
-			for (int item = 0; item < getNumberOfItems(); item++) {
-				double rating = getRating(user, item);
-				if (rating != 0) {
-					omega.get(user).add(item);
-				}
+			List<Integer> indexes = new ArrayList<Integer>();
+			for (Tuple2<Integer, Double> indexValue : userItemMatrix.get(user)
+					.getAllIndexesValues()) {
+				indexes.add(indexValue._1);
 			}
+			omega.put(user, indexes);
 		}
 		return omega;
 	}

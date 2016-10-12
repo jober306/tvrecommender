@@ -12,8 +12,7 @@ import scala.Tuple2;
 /**
  * Class that represents a vector in sparse representation, i.e. a vector
  * represented by a linked list where each nodes contains the index and the
- * value of the vector entry. Other entries are considered to be zeros. The last
- * node of the SparseVector is a sentinel one containing null.
+ * value of the vector entry. Other entries are considered to be zeros.
  * 
  * @author Jonathan Bergeron
  *
@@ -38,7 +37,6 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 				vector.add(new SparseVectorEntry(i, compactVector[i]));
 			}
 		}
-		vector.add(null);
 	}
 
 	/**
@@ -48,7 +46,7 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 	 * @return True if the vector is empty true otherwise.
 	 */
 	public boolean isEmpty() {
-		return vector.size() == 1;
+		return vector.isEmpty();
 	}
 
 	/**
@@ -69,9 +67,6 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 	 */
 	public double getValue(int index) {
 		for (SparseVectorEntry entry : vector) {
-			if (entry == null) {
-				break;
-			}
 			if (entry.index == index) {
 				return entry.value;
 			} else if (entry.index > index) {
@@ -80,23 +75,28 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 		}
 		return 0;
 	}
-	
-	public List<Tuple2<Integer,Double>> getAllIndexesValues(){
-		List<Tuple2<Integer,Double>> indexesValues = new ArrayList<Tuple2<Integer,Double>>();
-		for(SparseVectorEntry entry : vector){
-			indexesValues.add(new Tuple2<Integer,Double>(entry.index, entry.value));
+
+	public List<Tuple2<Integer, Double>> getAllIndexesValues() {
+		List<Tuple2<Integer, Double>> indexesValues = new ArrayList<Tuple2<Integer, Double>>();
+		for (SparseVectorEntry entry : vector) {
+			indexesValues.add(new Tuple2<Integer, Double>(entry.index,
+					entry.value));
 		}
 		return indexesValues;
 	}
-	
-	public boolean setEntry(int index, double value){
-		if(index >= length){
+
+	public boolean setEntry(int index, double value) {
+		if (index >= length) {
 			return false;
 		}
 		ListIterator<SparseVectorEntry> it = vector.listIterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			SparseVectorEntry entry = it.next();
-			if(entry.index > index){
+			if (entry.index == index) {
+				it.remove();
+				it.add(new SparseVectorEntry(index, value));
+				return true;
+			} else if (entry.index > index) {
 				it.previous();
 				it.add(new SparseVectorEntry(index, value));
 				return true;
@@ -105,16 +105,16 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 		it.add(new SparseVectorEntry(index, value));
 		return true;
 	}
-	
-	public boolean removeEntry(int index){
+
+	public boolean removeEntry(int index) {
 		Iterator<SparseVectorEntry> it = vector.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			SparseVectorEntry entry = it.next();
-			if(entry.index == index){
+			if (entry.index == index) {
 				it.remove();
 				return true;
 			}
-			if(entry.index > index){
+			if (entry.index > index) {
 				return false;
 			}
 		}
@@ -127,14 +127,14 @@ public class SparseVector implements Iterable<SparseVectorEntry> {
 	 * 
 	 * @return The array of double representing the entries of the vector.
 	 */
-	public double[] getCompactRepresentation() {
-		double[] compactVector = new double[length];
+	public double[] getDenseRepresentation() {
+		double[] denseVector = new double[length];
+		// Only need to parse all of the node because the array is initialized
+		// with 0s by default.
 		for (SparseVectorEntry entry : vector) {
-			if (entry != null) {
-				compactVector[entry.index] = entry.value;
-			}
+			denseVector[entry.index] = entry.value;
 		}
-		return compactVector;
+		return denseVector;
 	}
 
 	/**

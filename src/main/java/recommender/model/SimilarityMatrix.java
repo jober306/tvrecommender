@@ -95,7 +95,7 @@ public abstract class SimilarityMatrix {
 	 *         row.
 	 */
 	public double[] getRow(int rowIndex) {
-		return similaritiesMatrix[rowIndex].getCompactRepresentation();
+		return similaritiesMatrix[rowIndex].getDenseRepresentation();
 	}
 
 	/**
