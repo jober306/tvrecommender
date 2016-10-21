@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.recommendation.Rating;
 
+import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
 public interface DataSet {
@@ -14,6 +15,7 @@ public interface DataSet {
 	
 	//----------ML lib convertion methods----------------
 	public JavaRDD<Rating> convertToMLlibRatings();
+	//public DistributedUserItemMatrix convertToDistUserItemMatrix();
 	
 	//--------General Utilities methods--------------------
 	public int getNumberOfUsers();

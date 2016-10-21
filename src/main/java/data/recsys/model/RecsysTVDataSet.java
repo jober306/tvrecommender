@@ -1,5 +1,6 @@
 package data.recsys.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,13 +10,20 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.recommendation.Rating;
+import org.apache.spark.util.AccumulatorV2;
+import org.apache.spark.util.CollectionAccumulator;
 
 import recommender.model.UserItemMatrix;
+import scala.Tuple2;
 import spark.utilities.SparkUtilities;
 import data.model.DataSet;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
+import mllib.model.DistributedUserItemMatrix;
 
 /**
  * Class that represents a data set of recsys tv event. The class holds the
@@ -25,12 +33,14 @@ import data.recsys.mapper.RecSysMapReader;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet implements DataSet {
+public class RecsysTVDataSet implements DataSet, Serializable{
+	
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The data set in JavaRDD format.
 	 */
-	JavaRDD<RecsysTVEvent> eventsData;
+	transient JavaRDD<RecsysTVEvent> eventsData;
 
 	/**
 	 * The spark context in which the data was loaded.
@@ -41,12 +51,17 @@ public class RecsysTVDataSet implements DataSet {
 	 * The map reader that maps userID of the recsysTVDataset to an unique id
 	 * between 1 and #of users.
 	 */
-	RecSysMapReader idMap;
+	transient RecSysMapReader idMap;
+	
+	/**
+	 * The broadcasted map reader to be used when the map is used with spark actions.
+	 */
+	Broadcast<RecSysMapReader> broadcastedIdMap;
 
 	/**
 	 * Boolean to check if wether or not the map file have been erased.
 	 */
-	boolean mapClosed;
+	transient boolean mapClosed;
 
 	/**
 	 * Main constructor of the class. Use the
@@ -62,6 +77,7 @@ public class RecsysTVDataSet implements DataSet {
 		this.eventsData = eventsData;
 		this.sc = sc;
 		initializeMapReader();
+		broadcastedIdMap = sc.broadcast(idMap);
 		mapClosed = false;
 	}
 
@@ -219,15 +235,13 @@ public class RecsysTVDataSet implements DataSet {
 	public RecsysTVDataSet[] splitDataDistributed(double[] ratios) {
 		RecsysTVDataSet[] splittedData = new RecsysTVDataSet[ratios.length];
 		int[] indexes = getIndexesCorrespondingToRatios(ratios);
-		Broadcast<Map<Integer, Integer>> broadcastedEventIdMap = sc
-				.broadcast(idMap.getEventIDtoIDMap());
 		for (int i = 1; i <= ratios.length; i++) {
 			final int lowerLimit = indexes[i - 1];
 			final int upperLimit = indexes[i];
 			JavaRDD<RecsysTVEvent> splitData = eventsData
-					.filter(tvEvent -> lowerLimit <= broadcastedEventIdMap
-							.value().get(tvEvent.getEventID())
-							&& broadcastedEventIdMap.value().get(
+					.filter(tvEvent -> lowerLimit <= broadcastedIdMap.getValue().getEventIDtoIDMap()
+							.get(tvEvent.getEventID())
+							&& broadcastedIdMap.getValue().getEventIDtoIDMap().get(
 									tvEvent.getEventID()) < upperLimit);
 			splittedData[i - 1] = new RecsysTVDataSet(splitData, sc);
 		}
@@ -264,6 +278,24 @@ public class RecsysTVDataSet implements DataSet {
 		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(event
 				.getUserID(), event.getProgramID(), 1.0));
 		return ratings;
+	}
+	
+	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
+		ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>> indexedRowAccumulators = new ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>>();
+		for(int i = 0; i < getNumberOfUsers(); i++){
+			indexedRowAccumulators.add(new CollectionAccumulator<Tuple2<Integer,Double>>());
+		}
+		eventsData.foreach(tvEvent -> {
+			int mappedUserId = broadcastedIdMap.value().getUserIDToIdMap().get(tvEvent.getUserID());
+			int mappedProgramId = broadcastedIdMap.value().getProgramIDtoIDMap().get(tvEvent.getProgramID());
+			indexedRowAccumulators.get(mappedUserId).add(new Tuple2<Integer,Double>(mappedProgramId, 1.0d));}
+		);
+		ArrayList<IndexedRow> indexedRows = new ArrayList<IndexedRow>();
+		int numberOfItems = getNumberOfItems();
+		for(int row = 0; row < indexedRowAccumulators.size(); row++){
+			indexedRows.add(new IndexedRow(row, Vectors.sparse(numberOfItems, indexedRowAccumulators.get(row).value())));
+		}
+		return new DistributedUserItemMatrix(SparkUtilities.elementsToJavaRDD(indexedRows, sc));
 	}
 
 	public UserItemMatrix convertToUserItemMatrix() {

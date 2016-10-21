@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +13,9 @@ import java.util.Map;
  * @author Jonathan
  *
  */
-public class RecSysMapReader {
+public class RecSysMapReader implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	private Map<Integer, Integer> userIDToIdMap;
 	private Map<Integer, Integer> programIDtoIDMap;
