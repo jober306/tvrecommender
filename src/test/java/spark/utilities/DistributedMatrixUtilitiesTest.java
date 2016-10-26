@@ -14,8 +14,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import mllib.model.DistributedUserItemMatrix;
-
 public class DistributedMatrixUtilitiesTest {
 	
 	private static final double[][] matrixValues = {{1.0d,2.0d,5.0d,2.0d},{3.0d,2.0d,4.0d,1.0d}};

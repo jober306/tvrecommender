@@ -21,7 +21,11 @@ import scala.Tuple3;
  */
 public class DistributedMatrixUtilities {
 	
-	
+	/**
+	 * Method that transposes the given matrix.
+	 * @param M The matrix to be transposed.
+	 * @return The transpose of the given matrix.
+	 */
 	public static IndexedRowMatrix transpose(IndexedRowMatrix M){
 		JavaRDD<IndexedRow> transposedMatrix = M.rows().toJavaRDD().<Tuple3<Integer,Integer,Double>>flatMap(row -> mapRowToData(row)).mapToPair(triplet -> new Tuple2<Integer, Tuple2<Integer,Double>>(triplet._2(), new Tuple2<Integer,Double>(triplet._1(),triplet._3())))
 		.aggregateByKey(new ArrayList<Tuple2<Integer,Double>>(), (list, tuple) -> {list.add(tuple); return list;}, (list1,list2)-> {list1.addAll(list2); return list1;})
@@ -45,5 +49,38 @@ public class DistributedMatrixUtilities {
 			rowValues[data._2.get(i)._1] = data._2.get(i)._2;
 		}
 		return new IndexedRow(data._1, Vectors.dense(rowValues).compressed());
+	}
+	
+	/**
+	 * Method that inverse a diagonal matrix.
+	 * @param M The diagonal matrix.
+	 * @return The inverse of the diagonal matrix.
+	 */
+	public static IndexedRowMatrix inverseDiagonalMatrix(IndexedRowMatrix M){
+		JavaRDD<IndexedRow> inverse = M.rows().toJavaRDD().map(row -> {
+			int exactIndex = toIntExact(row.index());
+			double[] data = row.vector().toArray();
+			data[exactIndex] = 1.0d / data[exactIndex];
+			return new IndexedRow(row.index(), Vectors.dense(data));
+			});
+		return new IndexedRowMatrix(inverse.rdd());
+	}
+	
+	/**
+	 * Method that applies the hard thresholding operator, i.e. keeping only the top r eigen value, the rest is set to zero.
+	 * @param M The matrix to hard threshold.
+	 * @param r The hard threshold.
+	 * @return The hard thresholded matrix.
+	 */
+	public static IndexedRowMatrix hardThreshold(IndexedRowMatrix M, int r){
+		JavaRDD<IndexedRow> hardThresholdedMatrix = M.rows().toJavaRDD().map(row -> {
+			int exactIndex = toIntExact(row.index());
+			double[] data = row.vector().toArray();
+			if(exactIndex > r){
+				data[exactIndex] = 0.0d;
+			}
+			return new IndexedRow(row.index(), Vectors.dense(data));
+			});
+		return new IndexedRowMatrix(hardThresholdedMatrix.rdd());
 	}
 }
