@@ -60,7 +60,8 @@ public class DistributedMatrixUtilities {
 		JavaRDD<IndexedRow> inverse = M.rows().toJavaRDD().map(row -> {
 			int exactIndex = toIntExact(row.index());
 			double[] data = row.vector().toArray();
-			data[exactIndex] = 1.0d / data[exactIndex];
+			if(exactIndex <= data.length)
+				data[exactIndex] = 1.0d / data[exactIndex];
 			return new IndexedRow(row.index(), Vectors.dense(data));
 			});
 		return new IndexedRowMatrix(inverse.rdd());
@@ -76,11 +77,11 @@ public class DistributedMatrixUtilities {
 		JavaRDD<IndexedRow> hardThresholdedMatrix = M.rows().toJavaRDD().map(row -> {
 			int exactIndex = toIntExact(row.index());
 			double[] data = row.vector().toArray();
-			if(exactIndex > r){
+			if(exactIndex < r && exactIndex <= data.length)
 				data[exactIndex] = 0.0d;
-			}
 			return new IndexedRow(row.index(), Vectors.dense(data));
 			});
+		
 		return new IndexedRowMatrix(hardThresholdedMatrix.rdd());
 	}
 }

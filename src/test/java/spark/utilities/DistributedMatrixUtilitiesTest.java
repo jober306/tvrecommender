@@ -1,6 +1,9 @@
 package spark.utilities;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static java.lang.Math.toIntExact;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +44,40 @@ public class DistributedMatrixUtilitiesTest {
 			final int rowIndexFinal = rowIndex;
 			assertArrayEquals(expectedValues[rowIndex], Rt.rows().toJavaRDD().filter(row -> row.index() == rowIndexFinal).collect().get(0).vector().toArray(),0.0d);
 		}
+	}
+	
+	@Test
+	public void inverseDiagonalMatrixTest(){
+		IndexedRowMatrix inv = DistributedMatrixUtilities.inverseDiagonalMatrix(R);
+		double[] expectedValues = {1.0d, 0.5d};
+		inv.rows().toJavaRDD().foreach(row ->{
+			if(row.index() == 0){
+				assertEquals(expectedValues[0], row.vector().apply(0),0.0d);
+			}
+			else if(row.index() == 1){
+				assertEquals(expectedValues[1], row.vector().apply(1), 0.0d);
+			}
+			for(int i = 0; i < matrixValues[0].length; i++){
+				if(i != row.index()){
+					assertEquals(matrixValues[toIntExact(row.index())][i], row.vector().apply(i),0.0d);
+				}
+			}
+		});
+	}
+	
+	@Test
+	public void hardThresholdTest(){
+		IndexedRowMatrix hardThresholdedMat = DistributedMatrixUtilities.hardThreshold(R, 1);
+		hardThresholdedMat.rows().toJavaRDD().foreach(row ->{
+			if(row.index() == 0){
+				assertEquals(0.0d, row.vector().apply(0),0.0d);
+			}
+			for(int i = 0; i < matrixValues[0].length; i++){
+				if(row.index() == 0)
+					i++;
+				assertEquals(matrixValues[toIntExact(row.index())][i], row.vector().apply(i),0.0d);
+			}
+		});
 	}
 	
 	@AfterClass
