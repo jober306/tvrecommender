@@ -1,11 +1,20 @@
 package mllib.model;
 
+import static java.lang.Math.toIntExact;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.mllib.linalg.Matrices;
+import org.apache.spark.mllib.linalg.SparseVector;
+import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+
+import scala.Tuple3;
 
 
 public class DistributedUserItemMatrix {

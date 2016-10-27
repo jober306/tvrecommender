@@ -7,15 +7,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.graphx.TripletFields;
-import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.mllib.linalg.Matrices;
+import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.mllib.linalg.SparseVector;
+import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
-import org.apache.spark.sql.execution.vectorized.ColumnarBatch.Row;
 
+import scala.Function1;
 import scala.Tuple2;
 import scala.Tuple3;
+import spire.optional.vectorOrder;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix object.
@@ -88,6 +91,20 @@ public class DistributedMatrixUtilities {
 		return new IndexedRowMatrix(hardThresholdedMatrix.rdd());
 	}
 	
+	/**
+	 * Method that applies the hard thresholding operator, i.e. keeping only the top r eigen value, the rest is set to zero.
+	 * @param v The vector to hard threshold.
+	 * @param r The hard threshold.
+	 * @return The hard thresholded vector.
+	 */
+	public static Vector hardThreshold(Vector v, int r){
+		double[] values = v.toArray();
+		for(int i = r; i < values.length; i++){
+			values[i] = 0.0d;
+		}
+		return Vectors.dense(values).compressed();
+	}
+	
 	public static IndexedRowMatrix multiplicateByLeftDiagonalMatrix(Vector diagMatrix, IndexedRowMatrix mat){
 		final double[] diagMatValues = diagMatrix.toArray();
 		JavaRDD<IndexedRow> result = mat.rows().toJavaRDD().map(row -> {
@@ -110,5 +127,38 @@ public class DistributedMatrixUtilities {
 			return new IndexedRow(row.index(), Vectors.dense(rowValues));
 		});
 		return new IndexedRowMatrix(result.rdd());
+	}
+	
+	private static double scalarProduct(double[] v1, double[] v2){
+		double total = 0;
+		for(int i = 0; i < v1.length; i++){
+			total += v1[i] * v2[i];
+		}
+		return total;
+	}
+	
+	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat){
+		List<Tuple3<Integer, Integer, Double>> triplets = mat.rows().toJavaRDD().flatMap(row -> extractTripletFromRow(row)).collect();
+		int[] rowIndices = new int[triplets.size()];
+		int[] colIndices = new int[triplets.size()];
+		double[] values = new double[triplets.size()];
+		for(int i = 0 ; i < triplets.size(); i++){
+			rowIndices[i] = triplets.get(i)._1();
+			colIndices[i] = triplets.get(i)._2();
+			values[i] = triplets.get(i)._3();
+		}
+		return Matrices.sparse(toIntExact(mat.numRows()), toIntExact(mat.numCols()), rowIndices, colIndices, values);
+	}
+	
+	private static Iterator<Tuple3<Integer, Integer,Double>> extractTripletFromRow(IndexedRow row){
+		List<Tuple3<Integer, Integer, Double>> triplets = new ArrayList<Tuple3<Integer, Integer, Double>>();
+		int rowIndex = toIntExact(row.index());
+		SparseVector sparceRow = row.vector().toSparse();
+		int[] indices = sparceRow.indices();
+		double[] values = sparceRow.values();
+		for(int i = 0; i < indices.length; i++){
+			triplets.add(new Tuple3<Integer, Integer, Double>(rowIndex, indices[i], values[i]));
+		}
+		return triplets.iterator();
 	}
 }
