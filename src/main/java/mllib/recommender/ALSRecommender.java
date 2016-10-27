@@ -13,7 +13,7 @@ import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 import recommender.model.UserItemMatrix;
 
-public class MllibWrapper {
+public class ALSRecommender {
 
 	public static MatrixFactorizationModel trainExplicit(JavaRDD<Rating> ratings,
 			int matrixRank, int numIter) {
@@ -56,7 +56,7 @@ public class MllibWrapper {
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader dataLoader = new RecsysTVDataSetLoader();
 		RecsysTVDataSet dataSet = dataLoader.loadDataSet();
-		MatrixFactorizationModel model = MllibWrapper.trainExplicit(dataSet.convertToMLlibRatings(), 10, 20);
-		MllibWrapper.evaluateModel(model, dataSet);
+		MatrixFactorizationModel model = ALSRecommender.trainExplicit(dataSet.convertToMLlibRatings(), 10, 20);
+		ALSRecommender.evaluateModel(model, dataSet);
 	}
 }
