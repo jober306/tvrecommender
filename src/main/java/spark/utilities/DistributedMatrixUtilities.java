@@ -7,9 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.graphx.TripletFields;
+import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.sql.execution.vectorized.ColumnarBatch.Row;
 
 import scala.Tuple2;
 import scala.Tuple3;
@@ -83,5 +86,29 @@ public class DistributedMatrixUtilities {
 			});
 		
 		return new IndexedRowMatrix(hardThresholdedMatrix.rdd());
+	}
+	
+	public static IndexedRowMatrix multiplicateByLeftDiagonalMatrix(Vector diagMatrix, IndexedRowMatrix mat){
+		final double[] diagMatValues = diagMatrix.toArray();
+		JavaRDD<IndexedRow> result = mat.rows().toJavaRDD().map(row -> {
+			double[] rowValues = row.vector().toArray();
+			for(int i = 0; i < rowValues.length; i++){
+				rowValues[i] = rowValues[i] * diagMatValues[toIntExact(row.index())];
+			}
+			return new IndexedRow(row.index(), Vectors.dense(rowValues));
+		});
+		return new IndexedRowMatrix(result.rdd());
+	}
+	
+	public static IndexedRowMatrix multiplicateByRightDiagonalMatrix(IndexedRowMatrix mat, Vector diagMatrix){
+		final double[] diagMatValues = diagMatrix.toArray();
+		JavaRDD<IndexedRow> result = mat.rows().toJavaRDD().map(row -> {
+			double[] rowValues = row.vector().toArray();
+			for(int i = 0; i < rowValues.length; i++){
+				rowValues[i] = rowValues[i] * diagMatValues[i];
+			}
+			return new IndexedRow(row.index(), Vectors.dense(rowValues));
+		});
+		return new IndexedRowMatrix(result.rdd());
 	}
 }
