@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
@@ -14,11 +16,11 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.sql.catalyst.expressions.aggregate.Final;
+import org.apache.spark.sql.execution.vectorized.ColumnarBatch.Row;
 
-import scala.Function1;
 import scala.Tuple2;
 import scala.Tuple3;
-import spire.optional.vectorOrder;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix object.
@@ -129,12 +131,16 @@ public class DistributedMatrixUtilities {
 		return new IndexedRowMatrix(result.rdd());
 	}
 	
-	private static double scalarProduct(double[] v1, double[] v2){
+	public static double scalarProduct(double[] v1, double[] v2){
 		double total = 0;
 		for(int i = 0; i < v1.length; i++){
 			total += v1[i] * v2[i];
 		}
 		return total;
+	}
+	
+	public static double scalarProduct(Vector v1, Vector v2){
+		return scalarProduct(v1.toArray(), v2.toArray());
 	}
 	
 	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat){
@@ -148,6 +154,16 @@ public class DistributedMatrixUtilities {
 			values[i] = triplets.get(i)._3();
 		}
 		return Matrices.sparse(toIntExact(mat.numRows()), toIntExact(mat.numCols()), rowIndices, colIndices, values);
+	}
+	
+	public static Vector multiplyVectorByMatrix(Vector vec, IndexedRowMatrix mat){
+		final double[] vecValues = vec.toArray();
+		List<Double> results = mat.rows().toJavaRDD().mapToDouble(row -> scalarProduct(vecValues, row.vector().toArray())).collect();
+		return Vectors.dense(ArrayUtils.toPrimitive(results.toArray(new Double[results.size()]))).compressed();
+	}
+	
+	public static Vector indexedRowToVector(IndexedRow row){
+		return Vectors.dense(row.vector().toArray());
 	}
 	
 	private static Iterator<Tuple3<Integer, Integer,Double>> extractTripletFromRow(IndexedRow row){

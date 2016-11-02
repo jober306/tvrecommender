@@ -3,15 +3,9 @@ package mllib.recommender;
 import static java.lang.Math.toIntExact;
 
 import org.apache.spark.mllib.linalg.Vector;
-import org.apache.commons.io.output.ThresholdingOutputStream;
-import org.apache.spark.mllib.linalg.DenseMatrix;
-import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vectors;
-import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
-import org.apache.spark.mllib.linalg.distributed.DistributedMatrix;
-import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import mllib.model.DistributedUserItemMatrix;
@@ -51,6 +45,11 @@ public class SpaceAlignmentPredictor {
 		IndexedRowMatrix QtVt = DistributedMatrixUtilities.transpose(Q).multiply(Vt);
 		IndexedRowMatrix VQ = DistributedMatrixUtilities.transpose(QtVt);
 		Mprime = DistributedMatrixUtilities.multiplicateByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(DistributedMatrixUtilities.toSparseLocalMatrix(QtVt));
+	}
+	
+	public double predictItemsSimilarity(Vector itemContent, int targetItemIndex){
+		Vector targetItem = DistributedMatrixUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == targetItemIndex).collect().get(0));
+		return DistributedMatrixUtilities.scalarProduct(DistributedMatrixUtilities.multiplyVectorByMatrix(itemContent, Mprime),targetItem);
 	}
 	
 	private Vector invertVector(Vector v){
