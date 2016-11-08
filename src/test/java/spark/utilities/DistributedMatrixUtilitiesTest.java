@@ -130,6 +130,17 @@ public class DistributedMatrixUtilitiesTest {
 			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
 		});
 	}
+	
+	@Test
+	public void multiplicateByRightDiagonalMatrixGoodSizeTest(){
+		Vector diagMat = Vectors.dense(new double[]{1.0d,2.0d,3.0d,4.0d});
+		double[][] expectedValues = {{1,4,15,8},{3,4,12,4}};
+		IndexedRowMatrix result = DistributedMatrixUtilities.multiplicateByRightDiagonalMatrix(R, diagMat);
+		result.rows().toJavaRDD().foreach(row -> {
+			int rowIndex = toIntExact(row.index());
+			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
+		});
+	}
 
 	@AfterClass
 	public static void tearDownOnce() {

@@ -146,7 +146,7 @@ public class DistributedMatrixUtilities {
 	/**
 	 * Method that do the right multiplication of a diagonal matrix to an arbitrary matrix.
 	 * Assume the diagonal matrix D is a m x n matrix and A is an arbitrary matrix of size m' x n'.
-	 * Then we must have n = m'.
+	 * Then we must have n' = m.
 	 * @param mat The arbitrary matrix.
 	 * @param diagMatrix The diagonal matrix in vector form.
 	 * @return The matrix AD of size m x n'.
