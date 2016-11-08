@@ -117,7 +117,15 @@ public class DistributedMatrixUtilities {
 		}
 		return Vectors.dense(values).compressed();
 	}
-
+	
+	/**
+	 * Method that do the left multiplication of a diagonal matrix to an arbitrary matrix.
+	 * Assume the diagonal matrix D is a m x n matrix and A is an arbitrary matrix of size m' x n'.
+	 * Then we must have n = m'.
+	 * @param diagMatrix The diagonal matrix in vector form.
+	 * @param mat The arbitrary matrix.
+	 * @return The matrix DA of size m x n'.
+	 */
 	public static IndexedRowMatrix multiplicateByLeftDiagonalMatrix(
 			Vector diagMatrix, IndexedRowMatrix mat) {
 		final double[] diagMatValues = diagMatrix.toArray();
@@ -134,7 +142,15 @@ public class DistributedMatrixUtilities {
 				});
 		return new IndexedRowMatrix(result.rdd());
 	}
-
+	
+	/**
+	 * Method that do the right multiplication of a diagonal matrix to an arbitrary matrix.
+	 * Assume the diagonal matrix D is a m x n matrix and A is an arbitrary matrix of size m' x n'.
+	 * Then we must have n = m'.
+	 * @param mat The arbitrary matrix.
+	 * @param diagMatrix The diagonal matrix in vector form.
+	 * @return The matrix AD of size m x n'.
+	 */
 	public static IndexedRowMatrix multiplicateByRightDiagonalMatrix(
 			IndexedRowMatrix mat, Vector diagMatrix) {
 		final double[] diagMatValues = diagMatrix.toArray();

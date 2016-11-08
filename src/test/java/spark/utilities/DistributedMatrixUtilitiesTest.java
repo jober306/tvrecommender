@@ -19,6 +19,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import breeze.linalg.VectorOps;
+
 public class DistributedMatrixUtilitiesTest {
 
 	private static final double[][] matrixValues = {
@@ -116,6 +118,17 @@ public class DistributedMatrixUtilitiesTest {
 				assertEquals(matrixValues[0][i], hardThresholdedValues[i], 0.0d);
 			}
 		}
+	}
+	
+	@Test
+	public void multiplicateByLeftDiagonalMatrixGoodSizeTest(){
+		Vector diagMat = Vectors.dense(new double[]{1.0d,2.0d});
+		double[][] expectedValues = {{1,2,5,2},{6,4,8,2}};
+		IndexedRowMatrix result = DistributedMatrixUtilities.multiplicateByLeftDiagonalMatrix(diagMat, R);
+		result.rows().toJavaRDD().foreach(row -> {
+			int rowIndex = toIntExact(row.index());
+			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
+		});
 	}
 
 	@AfterClass
