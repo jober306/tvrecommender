@@ -141,6 +141,15 @@ public class DistributedMatrixUtilitiesTest {
 			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
 		});
 	}
+	
+	@Test
+	public void scalarProductTest(){
+		Vector v1 = Vectors.dense(new double[]{1,2,3,4});
+		Vector v2 = Vectors.dense(new double[]{4,3,2,1});
+		double expectedValue = 20.0d;
+		double actualValue = DistributedMatrixUtilities.scalarProduct(v1, v2);
+		assertEquals(expectedValue, actualValue,0.0d);
+	}
 
 	@AfterClass
 	public static void tearDownOnce() {

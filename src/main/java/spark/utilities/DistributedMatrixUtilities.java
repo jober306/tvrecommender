@@ -163,17 +163,22 @@ public class DistributedMatrixUtilities {
 		});
 		return new IndexedRowMatrix(result.rdd());
 	}
-
-	public static double scalarProduct(double[] v1, double[] v2) {
+	
+	/**
+	 * Method that performs the scalar product between two double arrays.
+	 * They must be the same size.
+	 * @param v1 The first array of double.
+	 * @param v2 The second array of double
+	 * @return The scalar product between the arrays.
+	 */
+	public static double scalarProduct(Vector v1, Vector v2) {
+		double[] v1Values = v1.toArray();
+		double[] v2Values = v2.toArray();
 		double total = 0;
-		for (int i = 0; i < v1.length; i++) {
-			total += v1[i] * v2[i];
+		for (int i = 0; i < v1Values.length; i++) {
+			total += v1Values[i] * v2Values[i];
 		}
 		return total;
-	}
-
-	public static double scalarProduct(Vector v1, Vector v2) {
-		return scalarProduct(v1.toArray(), v2.toArray());
 	}
 
 	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat) {
@@ -193,12 +198,11 @@ public class DistributedMatrixUtilities {
 	}
 
 	public static Vector multiplyVectorByMatrix(Vector vec, IndexedRowMatrix mat) {
-		final double[] vecValues = vec.toArray();
 		List<Double> results = mat
 				.rows()
 				.toJavaRDD()
 				.mapToDouble(
-						row -> scalarProduct(vecValues, row.vector().toArray()))
+						row -> scalarProduct(vec, row.vector()))
 				.collect();
 		return Vectors.dense(
 				ArrayUtils.toPrimitive(results.toArray(new Double[results
