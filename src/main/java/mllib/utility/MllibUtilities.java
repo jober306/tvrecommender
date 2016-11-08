@@ -3,6 +3,9 @@ package mllib.utility;
 import static java.lang.Math.toIntExact;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +21,7 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.annotation.implicitNotFound;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix
@@ -180,11 +184,18 @@ public class MllibUtilities {
 		}
 		return total;
 	}
-
+	
+	/**
+	 * Method that transforms an IndexedRowMatrix into a local Matrix.
+	 * @param mat The matrix in distributed form.
+	 * @return The matrix in local form.
+	 */
 	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat) {
-		List<Tuple3<Integer, Integer, Double>> triplets = mat.rows()
+		ArrayList<Tuple3<Integer, Integer, Double>> triplets = new ArrayList<Tuple3<Integer, Integer, Double>>();
+		triplets.addAll(mat.rows()
 				.toJavaRDD().flatMap(row -> mapRowToSparseTriplets(row))
-				.collect();
+				.collect());
+		sortTripletsByColumn(triplets);
 		int[] rowIndices = new int[triplets.size()];
 		int[] colIndices = new int[triplets.size()];
 		double[] values = new double[triplets.size()];
@@ -193,8 +204,11 @@ public class MllibUtilities {
 			colIndices[i] = triplets.get(i)._2();
 			values[i] = triplets.get(i)._3();
 		}
-		return Matrices.sparse(toIntExact(mat.numRows()),
-				toIntExact(mat.numCols()), rowIndices, colIndices, values);
+		int numRow = toIntExact(mat.numRows());
+		int numCol = toIntExact(mat.numCols());
+		int[] colPtrs = getColPtrsFromColIndices(colIndices, numCol);
+		return Matrices.sparse(numRow,
+				numCol, colPtrs, rowIndices, values);
 	}
 
 	public static Vector multiplyVectorByMatrix(Vector vec, IndexedRowMatrix mat) {
@@ -211,6 +225,29 @@ public class MllibUtilities {
 
 	public static Vector indexedRowToVector(IndexedRow row) {
 		return Vectors.dense(row.vector().toArray());
+	}
+	
+	private static void sortTripletsByColumn(List<Tuple3<Integer, Integer, Double>> triplets){
+		Collections.sort(triplets, new Comparator<Tuple3<Integer, Integer, Double>>() {
+
+			@Override
+			public int compare(Tuple3<Integer, Integer, Double> triplet1, Tuple3<Integer, Integer, Double> triplet2) {
+				return triplet1._2().compareTo(triplet2._2());
+			}
+		});
+	}
+	
+	private static int[] getColPtrsFromColIndices(int[] colIndices, int numCol){
+		int[] numberOfNonZerosPerColumn = new int[numCol];
+		for(int colIndice : colIndices){
+			numberOfNonZerosPerColumn[colIndice]++;
+		}
+		int[] colPtrs = new int[numCol+1];
+		colPtrs[0] = 0;
+		for(int i = 1; i < numCol+1 ; i++){
+			colPtrs[i] = colPtrs[i-1] + numberOfNonZerosPerColumn[i-1];
+		}
+		return colPtrs;
 	}
 
 	private static IndexedRow mapDataToRow(

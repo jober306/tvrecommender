@@ -10,7 +10,6 @@ import java.util.List;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrix;
-import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
@@ -19,7 +18,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import breeze.linalg.VectorOps;
 import mllib.utility.MllibUtilities;
 import spark.utilities.SparkUtilities;
 
@@ -151,6 +149,32 @@ public class MllibUtilitiesTest {
 		double expectedValue = 20.0d;
 		double actualValue = MllibUtilities.scalarProduct(v1, v2);
 		assertEquals(expectedValue, actualValue,0.0d);
+	}
+	
+	@Test
+	public void toSparseLocalMatrixTest(){
+		Matrix actualMatrix = MllibUtilities.toSparseLocalMatrix(R);
+		for(int rowIndex = 0; rowIndex < matrixValues.length; rowIndex++){
+			for(int colIndex = 0; colIndex < matrixValues[0].length; colIndex++){
+				assertEquals(matrixValues[rowIndex][colIndex], actualMatrix.apply(rowIndex, colIndex),0.0d);
+			}
+		}
+	}
+	
+	@Test
+	public void toSparseLocalMatrixWithEmptyColTest(){
+		double[][] emptyColValues = {{0,3,0,0}, {0,0,4,5}, {0,4,0,0}};
+		List<IndexedRow> rowList = new ArrayList<IndexedRow>();
+		for (int i = 0; i < emptyColValues.length; i++) {
+			rowList.add(new IndexedRow(i, Vectors.dense(emptyColValues[i])));
+		}
+		IndexedRowMatrix emptyColMatrix = new IndexedRowMatrix(SparkUtilities.<IndexedRow> elementsToJavaRDD(rowList, sc).rdd());
+		Matrix actualMatrix = MllibUtilities.toSparseLocalMatrix(emptyColMatrix);
+		for(int rowIndex = 0; rowIndex < emptyColValues.length; rowIndex++){
+			for(int colIndex = 0; colIndex < emptyColValues[0].length; colIndex++){
+				assertEquals(emptyColValues[rowIndex][colIndex], actualMatrix.apply(rowIndex, colIndex),0.0d);
+			}
+		}
 	}
 
 	@AfterClass
