@@ -9,7 +9,7 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import mllib.model.DistributedUserItemMatrix;
-import spark.utilities.DistributedMatrixUtilities;
+import mllib.utility.MllibUtilities;
 
 public class SpaceAlignmentPredictor {
 	
@@ -33,23 +33,23 @@ public class SpaceAlignmentPredictor {
 		IndexedRowMatrix S = R.getItemSimilarities().toIndexedRowMatrix();
 		Vector sigma = Csvd.s();
 		Vector invertedSigma = invertVector(sigma);
-		IndexedRowMatrix Ut = DistributedMatrixUtilities.transpose(U);
+		IndexedRowMatrix Ut = MllibUtilities.transpose(U);
 		//*********************************Intermediate operations*********************************************
-		IndexedRowMatrix leftMat = DistributedMatrixUtilities.multiplicateByLeftDiagonalMatrix(invertedSigma, Ut);
-		IndexedRowMatrix rightMat = DistributedMatrixUtilities.multiplicateByRightDiagonalMatrix(U, Csvd.s());
-		IndexedRowMatrix intermediateMat = leftMat.multiply(DistributedMatrixUtilities.toSparseLocalMatrix(S)).multiply(DistributedMatrixUtilities.toSparseLocalMatrix(rightMat));
+		IndexedRowMatrix leftMat = MllibUtilities.multiplicateByLeftDiagonalMatrix(invertedSigma, Ut);
+		IndexedRowMatrix rightMat = MllibUtilities.multiplicateByRightDiagonalMatrix(U, Csvd.s());
+		IndexedRowMatrix intermediateMat = leftMat.multiply(MllibUtilities.toSparseLocalMatrix(S)).multiply(MllibUtilities.toSparseLocalMatrix(rightMat));
 		//***************************************************************************************************
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat.computeSVD(toIntExact(intermediateMat.numRows()), true, 1.0E-9d);
 		IndexedRowMatrix Q = intMatsvd.U();
-		Vector hardTrhesholdedLambda = DistributedMatrixUtilities.hardThreshold(intMatsvd.s(),r);
-		IndexedRowMatrix QtVt = DistributedMatrixUtilities.transpose(Q).multiply(Vt);
-		IndexedRowMatrix VQ = DistributedMatrixUtilities.transpose(QtVt);
-		Mprime = DistributedMatrixUtilities.multiplicateByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(DistributedMatrixUtilities.toSparseLocalMatrix(QtVt));
+		Vector hardTrhesholdedLambda = MllibUtilities.hardThreshold(intMatsvd.s(),r);
+		IndexedRowMatrix QtVt = MllibUtilities.transpose(Q).multiply(Vt);
+		IndexedRowMatrix VQ = MllibUtilities.transpose(QtVt);
+		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(MllibUtilities.toSparseLocalMatrix(QtVt));
 	}
 	
 	public double predictItemsSimilarity(Vector itemContent, int targetItemIndex){
-		Vector targetItem = DistributedMatrixUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == targetItemIndex).collect().get(0));
-		return DistributedMatrixUtilities.scalarProduct(DistributedMatrixUtilities.multiplyVectorByMatrix(itemContent, Mprime),targetItem);
+		Vector targetItem = MllibUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == targetItemIndex).collect().get(0));
+		return MllibUtilities.scalarProduct(MllibUtilities.multiplyVectorByMatrix(itemContent, Mprime),targetItem);
 	}
 	
 	private Vector invertVector(Vector v){

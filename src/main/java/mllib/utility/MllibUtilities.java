@@ -1,4 +1,4 @@
-package spark.utilities;
+package mllib.utility;
 
 import static java.lang.Math.toIntExact;
 
@@ -26,7 +26,7 @@ import scala.Tuple3;
  * @author Jonathan Bergeron
  *
  */
-public class DistributedMatrixUtilities {
+public class MllibUtilities {
 
 	/**
 	 * Method that transposes the given matrix.

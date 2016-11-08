@@ -1,4 +1,4 @@
-package spark.utilities;
+package mllib.utility;
 
 import static java.lang.Math.toIntExact;
 import static org.junit.Assert.assertArrayEquals;
@@ -20,8 +20,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import breeze.linalg.VectorOps;
+import mllib.utility.MllibUtilities;
+import spark.utilities.SparkUtilities;
 
-public class DistributedMatrixUtilitiesTest {
+public class MllibUtilitiesTest {
 
 	private static final double[][] matrixValues = {
 			{ 1.0d, 2.0d, 5.0d, 2.0d }, { 3.0d, 2.0d, 4.0d, 1.0d } };
@@ -43,7 +45,7 @@ public class DistributedMatrixUtilitiesTest {
 
 	@Test
 	public void transposeTest() {
-		IndexedRowMatrix Rt = DistributedMatrixUtilities.transpose(R);
+		IndexedRowMatrix Rt = MllibUtilities.transpose(R);
 		double[][] expectedValues = { { 1.0d, 3.0d }, { 2.0d, 2.0d },
 				{ 5.0d, 4.0d }, { 2.0d, 1.0d } };
 		for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
@@ -58,7 +60,7 @@ public class DistributedMatrixUtilitiesTest {
 
 	@Test
 	public void inverseDiagonalMatrixTest() {
-		IndexedRowMatrix inv = DistributedMatrixUtilities
+		IndexedRowMatrix inv = MllibUtilities
 				.inverseDiagonalMatrix(R);
 		double[] expectedValues = { 1.0d, 0.5d };
 		inv.rows()
@@ -85,7 +87,7 @@ public class DistributedMatrixUtilitiesTest {
 	@Test
 	public void hardThresholdMatrixTest() {
 		int hardThresholdValue = 1;
-		IndexedRowMatrix hardThresholdedMat = DistributedMatrixUtilities
+		IndexedRowMatrix hardThresholdedMat = MllibUtilities
 				.hardThreshold(R, hardThresholdValue);
 		hardThresholdedMat
 				.rows()
@@ -108,7 +110,7 @@ public class DistributedMatrixUtilitiesTest {
 	@Test
 	public void hardThresholdVectorTest() {
 		int hardThresholdValue = 2;
-		Vector hardThresholdedMat = DistributedMatrixUtilities.hardThreshold(
+		Vector hardThresholdedMat = MllibUtilities.hardThreshold(
 				Vectors.dense(matrixValues[0]), 2);
 		double[] hardThresholdedValues = hardThresholdedMat.toArray();
 		for (int i = 0; i < hardThresholdedValues.length; i++) {
@@ -124,7 +126,7 @@ public class DistributedMatrixUtilitiesTest {
 	public void multiplicateByLeftDiagonalMatrixGoodSizeTest(){
 		Vector diagMat = Vectors.dense(new double[]{1.0d,2.0d});
 		double[][] expectedValues = {{1,2,5,2},{6,4,8,2}};
-		IndexedRowMatrix result = DistributedMatrixUtilities.multiplicateByLeftDiagonalMatrix(diagMat, R);
+		IndexedRowMatrix result = MllibUtilities.multiplicateByLeftDiagonalMatrix(diagMat, R);
 		result.rows().toJavaRDD().foreach(row -> {
 			int rowIndex = toIntExact(row.index());
 			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
@@ -135,7 +137,7 @@ public class DistributedMatrixUtilitiesTest {
 	public void multiplicateByRightDiagonalMatrixGoodSizeTest(){
 		Vector diagMat = Vectors.dense(new double[]{1.0d,2.0d,3.0d,4.0d});
 		double[][] expectedValues = {{1,4,15,8},{3,4,12,4}};
-		IndexedRowMatrix result = DistributedMatrixUtilities.multiplicateByRightDiagonalMatrix(R, diagMat);
+		IndexedRowMatrix result = MllibUtilities.multiplicateByRightDiagonalMatrix(R, diagMat);
 		result.rows().toJavaRDD().foreach(row -> {
 			int rowIndex = toIntExact(row.index());
 			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
@@ -147,7 +149,7 @@ public class DistributedMatrixUtilitiesTest {
 		Vector v1 = Vectors.dense(new double[]{1,2,3,4});
 		Vector v2 = Vectors.dense(new double[]{4,3,2,1});
 		double expectedValue = 20.0d;
-		double actualValue = DistributedMatrixUtilities.scalarProduct(v1, v2);
+		double actualValue = MllibUtilities.scalarProduct(v1, v2);
 		assertEquals(expectedValue, actualValue,0.0d);
 	}
 
