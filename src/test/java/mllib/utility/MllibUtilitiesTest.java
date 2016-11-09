@@ -176,6 +176,25 @@ public class MllibUtilitiesTest {
 			}
 		}
 	}
+	
+	@Test
+	public void multiplyColumnVectorByMatrixTest(){
+		Vector vec = Vectors.dense(new double[]{1,0,2,3});
+		double[] expectedValues = {17,14};
+		double[] actualValues = MllibUtilities.multiplyColumnVectorByMatrix(R, vec).toArray();
+		assertEquals(expectedValues.length, actualValues.length);
+		assertArrayEquals(expectedValues, actualValues,0.0d);
+	}
+	
+	@Test
+	public void multiplyRowVectorByMatrixTest(){
+		Vector vec = Vectors.dense(new double[]{2,3});
+		double[] expectedValues = {11,10,22,7};
+		double[] actualValues = MllibUtilities.multiplyRowVectorByMatrix(vec, R).toArray();
+		assertEquals(expectedValues.length, actualValues.length);
+		assertArrayEquals(expectedValues, actualValues,0.0d);
+		
+	}
 
 	@AfterClass
 	public static void tearDownOnce() {

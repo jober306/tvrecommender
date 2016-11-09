@@ -47,9 +47,9 @@ public class SpaceAlignmentPredictor {
 		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(MllibUtilities.toSparseLocalMatrix(QtVt));
 	}
 	
-	public double predictItemsSimilarity(Vector itemContent, int targetItemIndex){
-		Vector targetItem = MllibUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == targetItemIndex).collect().get(0));
-		return MllibUtilities.scalarProduct(MllibUtilities.multiplyVectorByMatrix(itemContent, Mprime),targetItem);
+	public double predictItemsSimilarity(Vector coldStartItemContent, int oldItemIndex){
+		Vector targetItem = MllibUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
+		return MllibUtilities.scalarProduct(MllibUtilities.multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),targetItem);
 	}
 	
 	private Vector invertVector(Vector v){

@@ -210,8 +210,15 @@ public class MllibUtilities {
 		return Matrices.sparse(numRow,
 				numCol, colPtrs, rowIndices, values);
 	}
-
-	public static Vector multiplyVectorByMatrix(Vector vec, IndexedRowMatrix mat) {
+	
+	/**
+	 * Method that multiplies a row vector by a matrix. Assuming the vector v is of size m x 1 and
+	 * the matrix A m' x n', we must have m = n'.
+	 * @param mat The matrix to multiply.
+	 * @param vec The vector to multiply.
+	 * @return The compressed Vector given by A * v of size m' x 1.
+	 */
+	public static Vector multiplyColumnVectorByMatrix(IndexedRowMatrix mat, Vector vec) {
 		List<Double> results = mat
 				.rows()
 				.toJavaRDD()
@@ -221,6 +228,18 @@ public class MllibUtilities {
 		return Vectors.dense(
 				ArrayUtils.toPrimitive(results.toArray(new Double[results
 						.size()]))).compressed();
+	}
+	
+	/**
+	 * Method that multiplies a row vector by a matrix. Assuming the vector v is of size 1 x n and
+	 * the matrix A m' x n', we must have m = m'
+	 * @param vec The vector to multiply.
+	 * @param mat The matrix to multiply.
+	 * @return The compressed Vector given by v * A of size 1 x n'.
+	 */
+	public static Vector multiplyRowVectorByMatrix(Vector vec, IndexedRowMatrix mat) {
+		IndexedRowMatrix transposedMat = transpose(mat);
+		return multiplyColumnVectorByMatrix(transposedMat, vec);
 	}
 
 	public static Vector indexedRowToVector(IndexedRow row) {
