@@ -11,18 +11,63 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
 
+/**
+ * Class that finds the optimal mapping between item content and the item similarities matrix as proposed by the following article:
+ * http://www.ijcai.org/Proceedings/15/Papers/475.pdf
+ * It can then predicts the similarity between already seen items and new items by using this mapping. 
+ * @author Jonathan Bergeron
+ *
+ */
 public class SpaceAlignmentPredictor {
 	
+	/**
+	 * The rating matrix of size m x n. Where m is number of users and n number of items.
+	 */
 	DistributedUserItemMatrix R;
+	
+	/**
+	 * The already seen item contents matrix. Suppose each item is represented by d features, then
+	 * the matrix C is of size n x d.
+	 */
 	IndexedRowMatrix C;
+	
+	/**
+	 * This parameter indicates the maximum rank that the matrix Mprime can have. Note that by its size Mprime
+	 * has maximum rank d, So r should be between 1 and d. The higher it is the best it will fit the item similarity
+	 * matrix but the higher the chance it will overfit. On the other hand if it is too high it could be impossible to
+	 * represent the item similarity distribution properly.
+	 */
 	int r;
+	
+	/**
+	 * This matrix of size d x d represents the model to map a new item content and an ancient item content to their similarity
+	 * in the collaborative filtering sense. It is calculated once the class is created.
+	 */
 	IndexedRowMatrix Mprime;
 	
+	/**
+	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates the matrix Mprime with the ratings matrix and the corresponding
+	 * content matrix and also takes into account the parameter r. 
+	 * @param R The rating matrix.
+	 * @param r The maximum rank the matrix Mprime can have.
+	 * @param C The content matrix of all the items.
+	 */
 	public SpaceAlignmentPredictor(DistributedUserItemMatrix R, int r, IndexedRowMatrix C){
 		this.R = R;
 		this.r = r;
 		this.C = C;
 		calculateMprime();
+	}
+	
+	/**
+	 * Method that predicts the similarity between two items with the Mprime that was calculated.
+	 * @param coldStartItemContent The content vector of the cold start item.
+	 * @param oldItemIndex The old item index in the content matrix C.
+	 * @return The approximated similarity in a collaborative filtering sense between the new item and the old item.
+	 */
+	public double predictItemsSimilarity(Vector coldStartItemContent, int oldItemIndex){
+		Vector targetItem = MllibUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
+		return MllibUtilities.scalarProduct(MllibUtilities.multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),targetItem);
 	}
 	
 	private void calculateMprime(){
@@ -45,11 +90,6 @@ public class SpaceAlignmentPredictor {
 		IndexedRowMatrix QtVt = MllibUtilities.transpose(Q).multiply(Vt);
 		IndexedRowMatrix VQ = MllibUtilities.transpose(QtVt);
 		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(MllibUtilities.toSparseLocalMatrix(QtVt));
-	}
-	
-	public double predictItemsSimilarity(Vector coldStartItemContent, int oldItemIndex){
-		Vector targetItem = MllibUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
-		return MllibUtilities.scalarProduct(MllibUtilities.multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),targetItem);
 	}
 	
 	private Vector invertVector(Vector v){

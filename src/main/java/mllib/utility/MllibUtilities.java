@@ -3,7 +3,6 @@ package mllib.utility;
 import static java.lang.Math.toIntExact;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -21,7 +20,6 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import scala.Tuple2;
 import scala.Tuple3;
-import scala.annotation.implicitNotFound;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix
