@@ -8,6 +8,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import spark.utilities.SparkUtilities;
 
 /**
  * Class used to load data in the form of the recsys tv data set. The loader is
@@ -43,7 +44,7 @@ public class RecsysTVDataSetLoader implements Serializable {
 	 */
 	public RecsysTVDataSetLoader() {
 		pathToDataSet = DEFAULT_DATASET_LOCATION;
-		initializeSparkContext();
+		sc = SparkUtilities.getADefaultSparkContext();
 	}
 
 	/**
@@ -55,7 +56,7 @@ public class RecsysTVDataSetLoader implements Serializable {
 	 */
 	public RecsysTVDataSetLoader(String pathToDataSet) {
 		this.pathToDataSet = pathToDataSet;
-		initializeSparkContext();
+		sc = SparkUtilities.getADefaultSparkContext();
 	}
 
 	/**
@@ -82,17 +83,6 @@ public class RecsysTVDataSetLoader implements Serializable {
 	public RecsysTVDataSetLoader(JavaSparkContext sc) {
 		pathToDataSet = DEFAULT_DATASET_LOCATION;
 		this.sc = sc;
-	}
-
-	/**
-	 * Method that initializes the default spark context. This spark context is
-	 * local and is using all available hearts of the machine. The application
-	 * is also named "Recsys TV Data Set Loader".
-	 */
-	private void initializeSparkContext() {
-		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName(
-				"Recsys TV Data Set Loader");
-		sc = new JavaSparkContext(conf);
 	}
 
 	/**

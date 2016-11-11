@@ -3,6 +3,8 @@ package data.model;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.mllib.linalg.distributed.IndexedRow;
+import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
 import mllib.model.DistributedUserItemMatrix;
@@ -15,7 +17,8 @@ public interface DataSet {
 	
 	//----------ML lib convertion methods----------------
 	public JavaRDD<Rating> convertToMLlibRatings();
-	//public DistributedUserItemMatrix convertToDistUserItemMatrix();
+	public DistributedUserItemMatrix convertToDistUserItemMatrix();
+	public IndexedRowMatrix getContentMatrix();
 	
 	//--------General Utilities methods--------------------
 	public int getNumberOfUsers();

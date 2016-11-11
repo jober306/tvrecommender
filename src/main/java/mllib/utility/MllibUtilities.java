@@ -9,17 +9,23 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.spi.ThrowableInformation;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
+import ch.epfl.lamp.fjbg.JConstantPool.Entry;
 import scala.Tuple2;
 import scala.Tuple3;
+import spark.utilities.SparkUtilities;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix
@@ -38,24 +44,26 @@ public class MllibUtilities {
 	 * @return The transpose of the given matrix.
 	 */
 	public static IndexedRowMatrix transpose(IndexedRowMatrix M) {
-		JavaRDD<IndexedRow> transposedMatrix = M
-				.rows()
-				.toJavaRDD()
-				.<Tuple3<Integer, Integer, Double>> flatMap(
-						row -> mapRowToDenseTriplets(row))
-				.mapToPair(
-						triplet -> new Tuple2<Integer, Tuple2<Integer, Double>>(
-								triplet._2(), new Tuple2<Integer, Double>(
-										triplet._1(), triplet._3())))
-				.aggregateByKey(new ArrayList<Tuple2<Integer, Double>>(),
-						(list, tuple) -> {
-							list.add(tuple);
-							return list;
-						}, (list1, list2) -> {
-							list1.addAll(list2);
-							return list1;
-						}).map(data -> mapDataToRow(data));
-		return new IndexedRowMatrix(transposedMatrix.rdd());
+		System.out.println(M.rows().count());
+		JavaRDD<Tuple3<Integer, Integer, Double>> denseMatrix = M.rows().toJavaRDD().flatMap(row -> mapRowToDenseTriplets(row));
+		System.out.println("Number of triplets after flattening: " + denseMatrix.count());
+		JavaPairRDD<Integer, Tuple2<Integer,Double>> denseMatrixRowColInverted = denseMatrix.mapToPair(
+				triplet -> new Tuple2<Integer, Tuple2<Integer, Double>>(
+						triplet._2(), new Tuple2<Integer, Double>(
+								triplet._1(), triplet._3())));
+		System.out.println("Number of triplets after inversing row and col: " + denseMatrixRowColInverted.count());
+		JavaPairRDD<Integer, ArrayList<Tuple2<Integer, Double>>> denseMatrixAggregatedByCol = denseMatrixRowColInverted.aggregateByKey(new ArrayList<Tuple2<Integer,Double>>(),
+				(list, tuple) -> {
+					list.add(tuple);
+					return list;
+				}, (list1, list2) -> {
+					list1.addAll(list2);
+					return list1;
+				});
+		System.out.println("Number of cols after aggregating: " + denseMatrixAggregatedByCol.count());
+		JavaRDD<IndexedRow> transposedMatrix = denseMatrixAggregatedByCol.map(data -> mapDataToRow(data));
+		System.out.println("Number of cols after mapping col data to indexed row: " + transposedMatrix.count());
+		return new IndexedRowMatrix(transposedMatrix.rdd(), M.numCols(), toIntExact(M.numRows()));
 	}
 
 	/**
@@ -184,9 +192,9 @@ public class MllibUtilities {
 	}
 	
 	/**
-	 * Method that transforms an IndexedRowMatrix into a local Matrix.
+	 * Method that transforms an IndexedRowMatrix into a sparse local Matrix.
 	 * @param mat The matrix in distributed form.
-	 * @return The matrix in local form.
+	 * @return The matrix in sparse local form.
 	 */
 	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat) {
 		ArrayList<Tuple3<Integer, Integer, Double>> triplets = new ArrayList<Tuple3<Integer, Integer, Double>>();
@@ -207,6 +215,26 @@ public class MllibUtilities {
 		int[] colPtrs = getColPtrsFromColIndices(colIndices, numCol);
 		return Matrices.sparse(numRow,
 				numCol, colPtrs, rowIndices, values);
+	}
+	
+	/**
+	 * Method that transforms an IndexedRowMatrix into a dense local Matrix.
+	 * @param mat The matrix in distributed form.
+	 * @return The matrix in dense local form.
+	 */
+	public static Matrix toDenseLocalMatrix(IndexedRowMatrix mat) {
+		int numRow = toIntExact(mat.numRows());
+		int numCol = toIntExact(mat.numCols());
+		System.out.println("To Dense matrix num of row:" + mat.rows().count());
+		double[] denseData = new double[numRow * numCol];
+		List<IndexedRow> cols = transpose(mat).rows().toJavaRDD().collect();
+		for(IndexedRow col : cols){
+			int colIndex = toIntExact(col.index());
+			int destPos =  colIndex * numRow;
+			double[] colValues = col.vector().toArray();
+			System.arraycopy(colValues, 0, denseData, destPos, colValues.length);
+		}
+		return Matrices.dense(numRow, numCol, denseData);
 	}
 	
 	/**
@@ -244,6 +272,22 @@ public class MllibUtilities {
 		return Vectors.dense(row.vector().toArray());
 	}
 	
+	public static IndexedRowMatrix getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(CoordinateMatrix M, JavaSparkContext sc){
+		final int numCol = toIntExact(M.numCols());
+		JavaRDD<IndexedRow> indexedRowMatrix = M.entries().toJavaRDD().mapToPair(matEntry -> new Tuple2<Integer,Tuple2<Integer,Double>>(toIntExact(matEntry.i()), new Tuple2<Integer, Double>(toIntExact(matEntry.j()),matEntry.value())))
+		.groupByKey().map(rowAndSeqValues -> new IndexedRow(rowAndSeqValues._1(), Vectors.sparse(numCol, rowAndSeqValues._2())));
+		//Adding the possible rows that had only zeros.
+		List<Integer> rowIndexes = indexedRowMatrix.map(row -> toIntExact(row.index())).collect();
+		List<IndexedRow> rowsToAdd = new ArrayList<IndexedRow>();
+		for(int i = 0; i < toIntExact(M.numRows());i++){
+			if(!rowIndexes.contains(i)){
+				rowsToAdd.add(new IndexedRow(i, Vectors.sparse(numCol, new int[]{}, new double[]{})));
+			}
+		}
+		JavaRDD<IndexedRow> addedRows = SparkUtilities.elementsToJavaRDD(rowsToAdd, sc);
+		return new IndexedRowMatrix(indexedRowMatrix.union(addedRows).rdd());
+	}
+	
 	private static void sortTripletsByColumn(List<Tuple3<Integer, Integer, Double>> triplets){
 		Collections.sort(triplets, new Comparator<Tuple3<Integer, Integer, Double>>() {
 
@@ -270,6 +314,7 @@ public class MllibUtilities {
 	private static IndexedRow mapDataToRow(
 			Tuple2<Integer, ArrayList<Tuple2<Integer, Double>>> data) {
 		int rowSize = data._2.size();
+		System.out.println("Row Size: " + rowSize);
 		double[] rowValues = new double[rowSize];
 		for (int i = 0; i < rowSize; i++) {
 			rowValues[data._2.get(i)._1] = data._2.get(i)._2;
@@ -295,9 +340,9 @@ public class MllibUtilities {
 			IndexedRow row) {
 		List<Tuple3<Integer, Integer, Double>> values = new ArrayList<Tuple3<Integer, Integer, Double>>();
 		double[] colValues = row.vector().toArray();
+		int rowIndex = toIntExact(row.index());
 		for (int col = 0; col < colValues.length; col++) {
-			values.add(new Tuple3<Integer, Integer, Double>(toIntExact(row
-					.index()), col, colValues[col]));
+			values.add(new Tuple3<Integer, Integer, Double>(rowIndex, col, colValues[col]));
 		}
 		return values.iterator();
 	}

@@ -1,20 +1,14 @@
 package mllib.model;
 
-import static java.lang.Math.toIntExact;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.mllib.linalg.Matrices;
-import org.apache.spark.mllib.linalg.SparseVector;
-import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
-
-import scala.Tuple3;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 
 public class DistributedUserItemMatrix {
@@ -46,11 +40,29 @@ public class DistributedUserItemMatrix {
 		return getRow(rowIndex).vector().toArray()[columnIndex];
 	}
 	
+	public long getNumRows(){
+		return data.numRows();
+	}
+	
+	public long getNumCols(){
+		return data.numCols();
+	}
+	
 	/**
 	 * Wrapper method that return cosine similarity between columns.
 	 * @return A coordinate matrix containing similarities between columns.
 	 */
 	public CoordinateMatrix getItemSimilarities(){
-		return data.columnSimilarities();
+		JavaRDD<MatrixEntry> simMat = data.columnSimilarities().entries().toJavaRDD().flatMap(entry -> {
+			List<MatrixEntry> entries = new ArrayList<MatrixEntry>();
+			entries.add(entry);
+			if(entry.i() != entry.j())
+			{
+				entries.add(new MatrixEntry(entry.j(), entry.i(), entry.value()));
+			}
+			return entries.iterator();
+		});
+		CoordinateMatrix fullSpecifiedItemSim = new CoordinateMatrix(simMat.rdd(), data.numCols(), data.numCols());
+		return fullSpecifiedItemSim;
 	}
 }

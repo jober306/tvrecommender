@@ -125,11 +125,7 @@ public class RecsysTVDataSetTest {
 	public void splitDataRandomlyTest() {
 		createBiggerDataSet(42);
 		double[] ratios = { 0.17, 0.43, 0.40 };
-		int[] expectedSize = { 7, 18, 17 };
 		RecsysTVDataSet[] splittedDataSet = dataSet.splitDataRandomly(ratios);
-		for (int i = 0; i < splittedDataSet.length; i++) {
-			assertTrue(splittedDataSet[i].getNumberOfEvents() == expectedSize[i]);
-		}
 		assertTrue(splittedDataSet[0].getEventsData()
 				.intersection(splittedDataSet[1].getEventsData())
 				.intersection(splittedDataSet[2].getEventsData()).isEmpty());

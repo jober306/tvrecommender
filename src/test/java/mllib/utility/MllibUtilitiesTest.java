@@ -162,6 +162,16 @@ public class MllibUtilitiesTest {
 	}
 	
 	@Test
+	public void toDenseLocalMatrixTest(){
+		Matrix actualMatrix = MllibUtilities.toDenseLocalMatrix(R);
+		for(int rowIndex = 0; rowIndex < matrixValues.length; rowIndex++){
+			for(int colIndex = 0; colIndex < matrixValues[0].length; colIndex++){
+				assertEquals(matrixValues[rowIndex][colIndex], actualMatrix.apply(rowIndex, colIndex),0.0d);
+			}
+		}
+	}
+	
+	@Test
 	public void toSparseLocalMatrixWithEmptyColTest(){
 		double[][] emptyColValues = {{0,3,0,0}, {0,0,4,5}, {0,4,0,0}};
 		List<IndexedRow> rowList = new ArrayList<IndexedRow>();

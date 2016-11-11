@@ -5,18 +5,27 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.validation.constraints.AssertTrue;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import ch.epfl.lamp.fjbg.JConstantPool.Entry;
+import scala.Tuple2;
 import spark.utilities.SparkUtilities;
 
 public class DistributedUserItemMatrixTest {
@@ -64,6 +73,17 @@ public class DistributedUserItemMatrixTest {
 				}
 			}
 		}
+	}
+	
+	@Test
+	public void getItemSimilaritiesTest(){
+		CoordinateMatrix S = R.getItemSimilarities();
+		List<MatrixEntry> entries = S.entries().toJavaRDD().collect();
+		Set<Tuple2<Long,Long>> entriesSet = new HashSet<Tuple2<Long,Long>>();
+		for(MatrixEntry entry : entries){
+			entriesSet.add(new Tuple2<Long, Long>(entry.i(), entry.j()));
+		}
+		assertEquals(entriesSet.size(), entries.size());
 	}
 	
 	@AfterClass

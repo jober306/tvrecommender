@@ -3,6 +3,7 @@ package data.recsys.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
+import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 import org.apache.spark.util.AccumulatorV2;
 import org.apache.spark.util.CollectionAccumulator;
@@ -207,21 +209,12 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	 * @return An array of RecsysTVDataSet.
 	 */
 	public RecsysTVDataSet[] splitDataRandomly(double[] ratios) {
-		RecsysTVDataSet[] splittedData = new RecsysTVDataSet[ratios.length];
-		int[] tvEventsInFolder = getIndexesCorrespondingToRatios(ratios);
-		List<RecsysTVEvent> tvEvents = new ArrayList<RecsysTVEvent>(
-				eventsData.collect());
-		Collections.shuffle(tvEvents);
-		for (int i = 1; i < tvEventsInFolder.length; i++) {
-			List<RecsysTVEvent> folder = new ArrayList<RecsysTVEvent>();
-			for (int j = tvEventsInFolder[i - 1]; j < tvEventsInFolder[i]; j++) {
-				folder.add(tvEvents.get(j));
-			}
-			JavaRDD<RecsysTVEvent> rddTvEventFolder = SparkUtilities
-					.<RecsysTVEvent> elementsToJavaRDD(folder, sc);
-			splittedData[i - 1] = new RecsysTVDataSet(rddTvEventFolder, sc);
+		JavaRDD<RecsysTVEvent>[] split = eventsData.randomSplit(ratios);
+		RecsysTVDataSet[] splittedDataSet = new RecsysTVDataSet[split.length];
+		for(int i = 0; i < split.length; i++){
+			splittedDataSet[i] = new RecsysTVDataSet(split[i], sc);
 		}
-		return splittedData;
+		return splittedDataSet;
 	}
 
 	/**
@@ -280,22 +273,55 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 		return ratings;
 	}
 	
+//	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
+//		ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>> indexedRowAccumulators = new ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>>();
+//		for(int i = 0; i < getNumberOfUsers(); i++){
+//			indexedRowAccumulators.add(new CollectionAccumulator<Tuple2<Integer,Double>>());
+//		}
+//		eventsData.foreach(tvEvent -> {
+//			int mappedUserId = broadcastedIdMap.value().getUserIDToIdMap().get(tvEvent.getUserID());
+//			int mappedProgramId = broadcastedIdMap.value().getProgramIDtoIDMap().get(tvEvent.getProgramID());
+//			indexedRowAccumulators.get(mappedUserId).add(new Tuple2<Integer,Double>(mappedProgramId, 1.0d));}
+//		);
+//		ArrayList<IndexedRow> indexedRows = new ArrayList<IndexedRow>();
+//		int numberOfItems = getNumberOfItems();
+//		for(int row = 0; row < indexedRowAccumulators.size(); row++){
+//			indexedRows.add(new IndexedRow(row, Vectors.sparse(numberOfItems, indexedRowAccumulators.get(row).value())));
+//		}
+//		return new DistributedUserItemMatrix(SparkUtilities.elementsToJavaRDD(indexedRows, sc));
+//	}
+	
+	/**
+	 * TODO: Test this method.
+	 */
 	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
-		ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>> indexedRowAccumulators = new ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>>();
-		for(int i = 0; i < getNumberOfUsers(); i++){
-			indexedRowAccumulators.add(new CollectionAccumulator<Tuple2<Integer,Double>>());
-		}
-		eventsData.foreach(tvEvent -> {
-			int mappedUserId = broadcastedIdMap.value().getUserIDToIdMap().get(tvEvent.getUserID());
-			int mappedProgramId = broadcastedIdMap.value().getProgramIDtoIDMap().get(tvEvent.getProgramID());
-			indexedRowAccumulators.get(mappedUserId).add(new Tuple2<Integer,Double>(mappedProgramId, 1.0d));}
-		);
-		ArrayList<IndexedRow> indexedRows = new ArrayList<IndexedRow>();
-		int numberOfItems = getNumberOfItems();
-		for(int row = 0; row < indexedRowAccumulators.size(); row++){
-			indexedRows.add(new IndexedRow(row, Vectors.sparse(numberOfItems, indexedRowAccumulators.get(row).value())));
-		}
-		return new DistributedUserItemMatrix(SparkUtilities.elementsToJavaRDD(indexedRows, sc));
+		final int numberOfTvShows = getNumberOfItems();
+		JavaRDD<IndexedRow> ratingMatrix = eventsData.mapToPair(event -> new Tuple2<Integer, RecsysTVEvent>(broadcastedIdMap.getValue().getUserIDToIdMap().get(event.getUserID()), event))
+		.aggregateByKey(new HashSet<Tuple2<Integer, Double>>(), (list, event) -> {list.add(new Tuple2<Integer,Double>(broadcastedIdMap.getValue().getProgramIDtoIDMap().get(event.getProgramID()), 1.0d)); return list;}, (list1,list2)->{list1.addAll(list2); return list1;})
+		.map(sparseRowRepresenation -> new IndexedRow(sparseRowRepresenation._1(), Vectors.sparse(numberOfTvShows, sparseRowRepresenation._2())));
+		return new DistributedUserItemMatrix(ratingMatrix);
+	}
+	
+	/**
+	 * Method that returns the content matrix of each tv show.
+	 */
+	public IndexedRowMatrix getContentMatrix(){
+		JavaRDD<IndexedRow> contentMatrix = eventsData.mapToPair(tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent.getProgramID(), tvEvent))
+		.reduceByKey((tvEvent1,tvEvent2) -> tvEvent1).map( pair -> {		
+			RecsysTVEvent event =  pair._2();
+			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramID());
+			return new IndexedRow(programIndex, Vectors.dense(extractFeaturesFromShow(event)));
+		});
+		return new IndexedRowMatrix(contentMatrix.rdd());
+	}
+	
+	private double[] extractFeaturesFromShow(RecsysTVEvent event){
+		double[] features = new double[4];
+		features[0] = event.getChannelID();
+		features[1] = event.getSlot();
+		features[2] = event.getGenreID();
+		features[3] = event.getSubgenreID();
+		return features;
 	}
 
 	public UserItemMatrix convertToUserItemMatrix() {
