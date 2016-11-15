@@ -94,14 +94,18 @@ public class RecsysTVDataSetTest {
 
 	@Test
 	public void filterByMinTimeViewTest() {
-		JavaRDD<RecsysTVEvent> filtered_0 = dataSet.filterByMinTimeView(0);
+		RecsysTVDataSet filtered_0 = dataSet.filterByMinTimeView(0);
 		assertTrue(filtered_0.count() == 3);
-		JavaRDD<RecsysTVEvent> filtered_10 = dataSet.filterByMinTimeView(10);
+		RecsysTVDataSet filtered_10 = dataSet.filterByMinTimeView(10);
 		assertTrue(filtered_10.count() == 2);
-		JavaRDD<RecsysTVEvent> filtered_20 = dataSet.filterByMinTimeView(20);
+		RecsysTVDataSet filtered_20 = dataSet.filterByMinTimeView(20);
 		assertTrue(filtered_20.count() == 1);
-		JavaRDD<RecsysTVEvent> filtered_30 = dataSet.filterByMinTimeView(30);
+		RecsysTVDataSet filtered_30 = dataSet.filterByMinTimeView(30);
 		assertTrue(filtered_30.count() == 0);
+		filtered_0.close();
+		filtered_10.close();
+		filtered_20.close();
+		filtered_30.close();
 	}
 
 	@Test

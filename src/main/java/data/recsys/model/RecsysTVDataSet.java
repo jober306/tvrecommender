@@ -185,6 +185,13 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	public int getNumberOfEvents() {
 		return (int) eventsData.count();
 	}
+	
+	/**
+	 * Method that return the size of the data set. It is the same as getNumberOfEvents.
+	 */
+	public int count(){
+		return (int) eventsData.count();
+	}
 
 	/**
 	 * Randomly split data with respect to the given ratios. The tv events are
@@ -256,10 +263,9 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	 * @return A JavaRDD of recsys tv events that have been viewed at least
 	 *         minTimeView time.
 	 */
-	public JavaRDD<RecsysTVEvent> filterByMinTimeView(int minTimeView) {
-		return eventsData
-				.filter(tvEvent -> tvEvent.getDuration() >= minTimeView);
-	}
+	public RecsysTVDataSet filterByMinTimeView(int minTimeView) {
+		return new RecsysTVDataSet(eventsData.filter(tvEvent -> tvEvent.getDuration() >= minTimeView), sc);
+	} 
 
 	/**
 	 * Method that converts the data set into the good format for using mllib
@@ -274,7 +280,8 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	}
 	
 	/**
-	 * TODO: Test this method.
+	 * Method that converts the data set into a distributed user item matrix.
+	 * @return return the user item matrix in a distributed form corresponding to this data set.
 	 */
 	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
 		final int numberOfTvShows = getNumberOfItems();
