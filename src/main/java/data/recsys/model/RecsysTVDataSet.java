@@ -265,7 +265,17 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	 */
 	public RecsysTVDataSet filterByMinTimeView(int minTimeView) {
 		return new RecsysTVDataSet(eventsData.filter(tvEvent -> tvEvent.getDuration() >= minTimeView), sc);
-	} 
+	}
+	
+	/**
+	 * Method that filter out all the events that occured strictly before min week and after max week inclusively.
+	 * @param minWeek The minimum week number
+	 * @param maxWeek The maximum week number.
+	 * @return The filtered data set.
+	 */
+	public RecsysTVDataSet filterByIntervalOfWeek(int minWeek, int maxWeek){
+		return new RecsysTVDataSet(eventsData.filter(tvEvent -> tvEvent.getWeek() >= minWeek && tvEvent.getWeek() < maxWeek), sc);
+	}
 
 	/**
 	 * Method that converts the data set into the good format for using mllib

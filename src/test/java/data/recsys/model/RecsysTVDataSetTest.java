@@ -107,6 +107,15 @@ public class RecsysTVDataSetTest {
 		filtered_20.close();
 		filtered_30.close();
 	}
+	
+	@Test
+	public void filterByIntervalOfWeekTest(){
+		RecsysTVDataSet filtered = dataSet.filterByIntervalOfWeek(1, 3);
+		assertEquals(2, filtered.count());
+		assertTrue(filtered.contains(tvEvent2));
+		assertTrue(filtered.contains(tvEvent3));
+		filtered.close();
+	}
 
 	@Test
 	public void getNumberOfEntitiesTest() {
