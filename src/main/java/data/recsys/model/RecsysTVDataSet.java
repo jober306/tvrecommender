@@ -268,13 +268,23 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	}
 	
 	/**
-	 * Method that filter out all the events that occured strictly before min week and after max week inclusively.
-	 * @param minWeek The minimum week number
+	 * Method that filters out all the events that occurred before min week and after max week.
+	 * @param minWeek The minimum week number.
 	 * @param maxWeek The maximum week number.
 	 * @return The filtered data set.
 	 */
 	public RecsysTVDataSet filterByIntervalOfWeek(int minWeek, int maxWeek){
-		return new RecsysTVDataSet(eventsData.filter(tvEvent -> tvEvent.getWeek() >= minWeek && tvEvent.getWeek() < maxWeek), sc);
+		return new RecsysTVDataSet(eventsData.filter(tvEvent -> tvEvent.getWeek() >= minWeek && tvEvent.getWeek() <= maxWeek), sc);
+	}
+	
+	/**
+	 * Method that filters out all the events that occurred before min slot and after max slot.
+	 * @param minWeek The minimum week number.
+	 * @param maxWeek The maximum week number.
+	 * @return The filtered data set.
+	 */
+	public RecsysTVDataSet filterByIntervalOfSlot(int minSlot, int maxSlot){
+		return new RecsysTVDataSet(eventsData.filter(tvEvent -> tvEvent.getSlot() >= minSlot && tvEvent.getSlot() <= maxSlot), sc);
 	}
 
 	/**
