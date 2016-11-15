@@ -159,20 +159,6 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 	}
 
 	/**
-	 * Method that returns tv events that have at least been viewed minTimeView
-	 * time.
-	 * 
-	 * @param minTimeView
-	 *            The minimum viewing time.
-	 * @return A JavaRDD of recsys tv events that have been viewed at least
-	 *         minTimeView time.
-	 */
-	public JavaRDD<RecsysTVEvent> filterByMinTimeView(int minTimeView) {
-		return eventsData
-				.filter(tvEvent -> tvEvent.getDuration() >= minTimeView);
-	}
-
-	/**
 	 * Method that count all distinct user in the data set.
 	 * 
 	 * @return The number of distinct users.
@@ -260,6 +246,20 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 		}
 		return indexes;
 	}
+	
+	/**
+	 * Method that returns tv events that have at least been viewed minTimeView
+	 * time.
+	 * 
+	 * @param minTimeView
+	 *            The minimum viewing time.
+	 * @return A JavaRDD of recsys tv events that have been viewed at least
+	 *         minTimeView time.
+	 */
+	public JavaRDD<RecsysTVEvent> filterByMinTimeView(int minTimeView) {
+		return eventsData
+				.filter(tvEvent -> tvEvent.getDuration() >= minTimeView);
+	}
 
 	/**
 	 * Method that converts the data set into the good format for using mllib
@@ -272,24 +272,6 @@ public class RecsysTVDataSet implements DataSet, Serializable{
 				.getUserID(), event.getProgramID(), 1.0));
 		return ratings;
 	}
-	
-//	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
-//		ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>> indexedRowAccumulators = new ArrayList<CollectionAccumulator<Tuple2<Integer,Double>>>();
-//		for(int i = 0; i < getNumberOfUsers(); i++){
-//			indexedRowAccumulators.add(new CollectionAccumulator<Tuple2<Integer,Double>>());
-//		}
-//		eventsData.foreach(tvEvent -> {
-//			int mappedUserId = broadcastedIdMap.value().getUserIDToIdMap().get(tvEvent.getUserID());
-//			int mappedProgramId = broadcastedIdMap.value().getProgramIDtoIDMap().get(tvEvent.getProgramID());
-//			indexedRowAccumulators.get(mappedUserId).add(new Tuple2<Integer,Double>(mappedProgramId, 1.0d));}
-//		);
-//		ArrayList<IndexedRow> indexedRows = new ArrayList<IndexedRow>();
-//		int numberOfItems = getNumberOfItems();
-//		for(int row = 0; row < indexedRowAccumulators.size(); row++){
-//			indexedRows.add(new IndexedRow(row, Vectors.sparse(numberOfItems, indexedRowAccumulators.get(row).value())));
-//		}
-//		return new DistributedUserItemMatrix(SparkUtilities.elementsToJavaRDD(indexedRows, sc));
-//	}
 	
 	/**
 	 * TODO: Test this method.
