@@ -109,7 +109,7 @@ public class RecsysTVDataSetTest {
 	}
 	
 	@Test
-	public void filterByIntervalOfWeekTest(){
+	public void aggregateByIntervalOfWeekTest(){
 		RecsysTVDataSet filtered = dataSet.filterByIntervalOfWeek(1, 3);
 		assertEquals(2, filtered.count());
 		assertTrue(filtered.contains(tvEvent2));
@@ -118,10 +118,18 @@ public class RecsysTVDataSetTest {
 	}
 	
 	@Test
-	public void filterByIntervalOfSlotTest(){
+	public void aggregateByIntervalOfSlotTest(){
 		RecsysTVDataSet filtered = dataSet.filterByIntervalOfSlot(7, 7);
 		assertEquals(1, filtered.count());
 		assertTrue(filtered.contains(tvEvent2));
+		filtered.close();
+	}
+	
+	@Test
+	public void aggregateByIntervalOfDayTest(){
+		RecsysTVDataSet filtered = dataSet.filterByIntervalOfDay(2, 7);
+		assertEquals(1, filtered.count());
+		assertTrue(filtered.contains(tvEvent3));
 		filtered.close();
 	}
 
