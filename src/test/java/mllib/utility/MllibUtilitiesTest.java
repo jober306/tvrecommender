@@ -203,6 +203,10 @@ public class MllibUtilitiesTest {
 		double[] actualValues = MllibUtilities.multiplyRowVectorByMatrix(vec, R).toArray();
 		assertEquals(expectedValues.length, actualValues.length);
 		assertArrayEquals(expectedValues, actualValues,0.0d);
+	}
+	
+	@Test
+	public void getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrixTest(){
 		
 	}
 

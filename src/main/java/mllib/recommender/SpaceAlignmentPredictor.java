@@ -70,59 +70,31 @@ public class SpaceAlignmentPredictor {
 	 * @return The approximated similarity in a collaborative filtering sense between the new item and the old item.
 	 */
 	public double predictItemsSimilarity(Vector coldStartItemContent, int oldItemIndex){
-		Vector targetItem = MllibUtilities.indexedRowToVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
+		Vector targetItem = MllibUtilities.indexedRowToDenseVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
 		return MllibUtilities.scalarProduct(MllibUtilities.multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),targetItem);
 	}
 	
 	private void calculateMprime(){
-		System.out.println("CALCULATING SVD OF MATRIX C");
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> Csvd= C.computeSVD(toIntExact(C.numCols()), true, 0.0d);
-		System.out.println("DONE!\n");
 		IndexedRowMatrix U = Csvd.U();
 		Matrix V = Csvd.V();
 		Matrix Vt = V.transpose();
-		System.out.println("CALCULATING ITEM SIMILARITIES MATRIX");
 		IndexedRowMatrix S = MllibUtilities.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(R.getItemSimilarities(), sc);
-		System.out.println("S matrix dim: " + S.numRows() + " " + S.numCols());
-		System.out.println("DONE!\n");
 		Vector sigma = Csvd.s();
-		System.out.println("U matrix dim: " + U.numRows() + " " + U.numCols());
-		System.out.println("Sigma dim: " + sigma.size());
-		System.out.println("V matrix dim: " + V.numRows() + " " + V.numCols());
 		Vector invertedSigma = invertVector(sigma);
-		System.out.println("Inverted Sigma dim: " + invertedSigma.size());
-		System.out.println("TRANSPOSING U");
 		IndexedRowMatrix Ut = MllibUtilities.transpose(U);
-		System.out.println("U transpose matrix dim: " + Ut.numRows() + " " + Ut.numCols());
-		System.out.println("DONE!\n");
-		System.out.println("CALCULATING INTERMEDIATE MATRIX");
 		//*********************************Intermediate operations*********************************************
 		IndexedRowMatrix leftMat = MllibUtilities.multiplicateByLeftDiagonalMatrix(invertedSigma, Ut);
-		System.out.println("Left matrix dim: " + leftMat.numRows() + " " + leftMat.numCols());
 		IndexedRowMatrix rightMat = MllibUtilities.multiplicateByRightDiagonalMatrix(U, Csvd.s());
-		System.out.println("Right matrix dim: " + rightMat.numRows() + " " + rightMat.numCols());
-		System.out.println("MAKING S LOCAL.");
 		Matrix localS = MllibUtilities.toDenseLocalMatrix(S);
-		System.out.println("S local matrix dim: " + localS.numRows() + " " + localS.numCols());
-		System.out.println("DONE!\n");
-		System.out.println("MAKING RIGHT MAT LOCAL.");
 		Matrix localRightMat = MllibUtilities.toDenseLocalMatrix(rightMat);
-		System.out.println("Local right matrix dim: " + localRightMat.numRows() + " " + localRightMat.numCols());
-		System.out.println("DONE!\n");
 		IndexedRowMatrix intermediateMat = leftMat.multiply(localS).multiply(localRightMat);
 		//***************************************************************************************************
-		System.out.println("DONE!\n");
-		System.out.println("CALCULATING SVD OF ITERMEDIATE MATRIX");
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat.computeSVD(toIntExact(intermediateMat.numRows()), true, 1.0E-9d);
-		System.out.println("DONE!\n");
 		IndexedRowMatrix Q = intMatsvd.U();
-		System.out.println("HARD THRESHOLDING DIAG MATRIX.");
 		Vector hardTrhesholdedLambda = MllibUtilities.hardThreshold(intMatsvd.s(),r);
-		System.out.println("DONE!\n");
-		System.out.println("CALCULATING QTVT AND VQ");
 		IndexedRowMatrix QtVt = MllibUtilities.transpose(Q).multiply(Vt);
 		IndexedRowMatrix VQ = MllibUtilities.transpose(QtVt);
-		System.out.println("DONE!\n");
 		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(MllibUtilities.toDenseLocalMatrix(QtVt));
 	}
 	
