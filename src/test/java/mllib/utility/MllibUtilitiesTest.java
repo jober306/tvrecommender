@@ -12,8 +12,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -207,7 +209,26 @@ public class MllibUtilitiesTest {
 	
 	@Test
 	public void getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrixTest(){
-		
+		List<MatrixEntry> matrixEntries = new ArrayList<MatrixEntry>();
+		int numberOfRow = 3;
+		int numberOfCol = 2;
+		/**
+		 * Creating the following coordinate matrix 
+		 * 			0 1
+		 * 			1 0
+		 * 			0 0
+		 */
+		double[][] coordMatValues = {{0,1},{1,0},{0,0}};
+		matrixEntries.add(new MatrixEntry(0, 1, coordMatValues[0][1]));
+		matrixEntries.add(new MatrixEntry(1, 0, coordMatValues[1][0]));
+		CoordinateMatrix coordMatrix =  new CoordinateMatrix(SparkUtilities.elementsToJavaRDD(matrixEntries, sc).rdd(),numberOfRow, numberOfCol);
+		IndexedRowMatrix actualMatrix = MllibUtilities.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(coordMatrix, sc);
+		List<IndexedRow> rows = actualMatrix.rows().toJavaRDD().collect();
+		assertEquals(numberOfRow, rows.size());
+		for(IndexedRow row : rows){
+			int rowIndex = toIntExact(row.index());
+			assertArrayEquals(coordMatValues[rowIndex], row.vector().toArray(),0.0d);
+		}
 	}
 
 	@AfterClass
