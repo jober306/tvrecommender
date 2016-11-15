@@ -16,6 +16,7 @@ import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -111,7 +112,7 @@ public class MllibUtilitiesTest {
 	public void hardThresholdVectorTest() {
 		int hardThresholdValue = 2;
 		Vector hardThresholdedMat = MllibUtilities.hardThreshold(
-				Vectors.dense(matrixValues[0]), 2);
+				Vectors.dense(new double[]{1.0d,2.0d,5.0d,2.0d}), 2);
 		double[] hardThresholdedValues = hardThresholdedMat.toArray();
 		for (int i = 0; i < hardThresholdedValues.length; i++) {
 			if (i >= hardThresholdValue) {
@@ -230,7 +231,17 @@ public class MllibUtilitiesTest {
 			assertArrayEquals(coordMatValues[rowIndex], row.vector().toArray(),0.0d);
 		}
 	}
-
+	
+	@After
+	public void verifyMatrixRInvariant(){
+		List<IndexedRow> rows = R.rows().toJavaRDD().collect();
+		assertEquals(matrixValues.length, rows.size());
+		for(IndexedRow row : rows){
+			int rowIndex = toIntExact(row.index());
+			assertArrayEquals(matrixValues[rowIndex], row.vector().toArray(), 0.0d);
+		}
+	}
+	
 	@AfterClass
 	public static void tearDownOnce() {
 		sc.close();
