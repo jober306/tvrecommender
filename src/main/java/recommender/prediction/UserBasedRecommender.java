@@ -17,7 +17,7 @@ import recommender.model.UserSimilaritiesMatrix;
 import recommender.similarities.CosineSimilarity;
 import recommender.similarities.Similarity;
 
-public class UserBasedPredictor implements Predictor{
+public class UserBasedRecommender implements Recommender{
 
 	
 	UserItemMatrix model;
@@ -26,7 +26,7 @@ public class UserBasedPredictor implements Predictor{
 	AggregationFunction function;
 	int topN;
 	
-	public UserBasedPredictor(UserItemMatrix currentMatrix, Similarity similarity, AggregationFunction function, int topN) {
+	public UserBasedRecommender(UserItemMatrix currentMatrix, Similarity similarity, AggregationFunction function, int topN) {
 		this.function = function;
 		this.topN = topN;
 		this.similarity = similarity;
@@ -64,7 +64,7 @@ public class UserBasedPredictor implements Predictor{
 	public static void main(String[] args){
 		RecsysTVDataSetLoader dataSetLoader = new RecsysTVDataSetLoader();
 		RecsysTVDataSet dataSet = dataSetLoader.loadDataSet();
-		UserBasedPredictor predictor = new UserBasedPredictor(dataSet.convertToUserItemMatrix(), CosineSimilarity.getInstance(), new MeanFunction(), 50);
+		UserBasedRecommender predictor = new UserBasedRecommender(dataSet.convertToUserItemMatrix(), CosineSimilarity.getInstance(), new MeanFunction(), 50);
 		List<Integer> predictedItems = predictor.predict(3, 10);
 	}
 }
