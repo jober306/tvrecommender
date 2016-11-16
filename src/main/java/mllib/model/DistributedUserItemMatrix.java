@@ -36,22 +36,6 @@ public class DistributedUserItemMatrix {
 	}
 
 	/**
-	 * Method that returns the row of the specified index
-	 * 
-	 * @param rowIndex
-	 *            The row index in the matrix from 0 to numRow-1.
-	 * @return The Indexed Row corresponding to rowIndex.
-	 */
-	public IndexedRow getRow(int rowIndex) {
-		List<IndexedRow> rows = data.rows().toJavaRDD()
-				.filter(indexedRow -> indexedRow.index() == rowIndex).collect();
-		if (rows.size() == 1) {
-			return rows.get(0);
-		}
-		return null;
-	}
-
-	/**
 	 * Method that returns the value at specified row index and column index.
 	 * 
 	 * @param rowIndex
@@ -80,6 +64,34 @@ public class DistributedUserItemMatrix {
 	 */
 	public long getNumCols() {
 		return data.numCols();
+	}
+
+	/**
+	 * Method that returns the row of the specified index
+	 * 
+	 * @param rowIndex
+	 *            The row index in the matrix from 0 to numRow-1.
+	 * @return The Indexed Row corresponding to rowIndex.
+	 */
+	public IndexedRow getRow(int rowIndex) {
+		List<IndexedRow> rows = data.rows().toJavaRDD()
+				.filter(indexedRow -> indexedRow.index() == rowIndex).collect();
+		if (rows.size() == 1) {
+			return rows.get(0);
+		}
+		return null;
+	}
+
+	/**
+	 * Method that returns all the item indexes seen by a specific user.
+	 * 
+	 * @param userIndex
+	 *            The index of the user in the user item matrix.
+	 * @return The array of item indexes seen by the user.
+	 */
+	public int[] getItemIndexesSeenByUser(int userIndex) {
+		IndexedRow row = getRow(userIndex);
+		return row.vector().toSparse().indices();
 	}
 
 	/**
