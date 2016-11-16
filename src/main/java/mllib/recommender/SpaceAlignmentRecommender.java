@@ -26,7 +26,7 @@ import algorithm.QuickSelect;
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentPredictor {
+public class SpaceAlignmentRecommender {
 
 	/**
 	 * The rating matrix of size m x n. Where m is number of users and n number
@@ -71,7 +71,7 @@ public class SpaceAlignmentPredictor {
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentPredictor(DistributedUserItemMatrix R, int r,
+	public SpaceAlignmentRecommender(DistributedUserItemMatrix R, int r,
 			IndexedRowMatrix C, JavaSparkContext sc) {
 		this.R = R;
 		this.r = r;

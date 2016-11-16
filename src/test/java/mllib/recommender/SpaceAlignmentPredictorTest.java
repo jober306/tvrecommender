@@ -28,7 +28,7 @@ public class SpaceAlignmentPredictorTest {
 	static IndexedRowMatrix C;
 	static JavaSparkContext sc;
 	static RecsysTVDataSet dataSet;
-	static SpaceAlignmentPredictor predictor;
+	static SpaceAlignmentRecommender predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {
@@ -37,7 +37,7 @@ public class SpaceAlignmentPredictorTest {
 		dataSet = loader.loadDataSet();
 		R = dataSet.convertToDistUserItemMatrix();
 		C = dataSet.getContentMatrix();
-		predictor = new SpaceAlignmentPredictor(R, r, C, sc);
+		predictor = new SpaceAlignmentRecommender(R, r, C, sc);
 	}
 
 	@Test

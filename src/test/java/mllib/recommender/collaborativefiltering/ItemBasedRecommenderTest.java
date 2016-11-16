@@ -31,7 +31,7 @@ public class ItemBasedRecommenderTest {
 
 	@Test
 	public void predictItemNeighborhoodForUserTest() {
-		int userIndex = 0;
+		int userIndex = 2;
 		int itemIndex = 4;
 		int n = 16;
 		List<Pair<Integer, Double>> neighborhood = recommender
@@ -41,9 +41,6 @@ public class ItemBasedRecommenderTest {
 			Pair<Integer, Double> posValue = neighborhood.get(i);
 			int pos = posValue.getFirst();
 			double value = posValue.getSecond();
-			System.out.println("Item " + pos
-					+ " is in the neighboorhood of item " + itemIndex
-					+ " with similarity " + value);
 			assertTrue(arrayContains(itemIndexesSeenByUser, pos));
 			assertTrue(value >= 0);
 			assertTrue(value <= 1);

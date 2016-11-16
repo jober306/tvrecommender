@@ -13,6 +13,7 @@ import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import algorithm.QuickSelect;
+import ch.epfl.lamp.fjbg.JConstantPool.Entry;
 
 /**
  * Class that recommends items for a specific user using collaborative filtering
@@ -62,12 +63,7 @@ public class ItemBasedRecommender {
 	 */
 	public List<Pair<Integer, Double>> getItemNeighborhoodForUser(
 			int userIndex, int itemIndex, int n) {
-		System.out.println("Neighboorhood of user " + userIndex + " for item "
-				+ itemIndex);
 		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
-		System.out.println("User " + userIndex + " has seen "
-				+ itemIndexesSeenByUser.length + " tv shows.");
-		System.out.println(Arrays.toString(itemIndexesSeenByUser));
 		int[] targetItemIndex = new int[itemIndexesSeenByUser.length];
 		Arrays.fill(targetItemIndex, itemIndex);
 		MllibUtilities.convertToUpperTriangularMatrixIndices(
