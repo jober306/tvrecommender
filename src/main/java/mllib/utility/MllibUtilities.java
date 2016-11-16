@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.log4j.spi.ThrowableInformation;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -22,7 +21,6 @@ import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
-import ch.epfl.lamp.fjbg.JConstantPool.Entry;
 import scala.Tuple2;
 import scala.Tuple3;
 import spark.utilities.SparkUtilities;
@@ -44,21 +42,25 @@ public class MllibUtilities {
 	 * @return The transpose of the given matrix.
 	 */
 	public static IndexedRowMatrix transpose(IndexedRowMatrix M) {
-		JavaRDD<Tuple3<Integer, Integer, Double>> denseMatrix = M.rows().toJavaRDD().flatMap(row -> mapRowToDenseTriplets(row));
-		JavaPairRDD<Integer, Tuple2<Integer,Double>> denseMatrixRowColInverted = denseMatrix.mapToPair(
-				triplet -> new Tuple2<Integer, Tuple2<Integer, Double>>(
-						triplet._2(), new Tuple2<Integer, Double>(
-								triplet._1(), triplet._3())));
-		JavaPairRDD<Integer, ArrayList<Tuple2<Integer, Double>>> denseMatrixAggregatedByCol = denseMatrixRowColInverted.aggregateByKey(new ArrayList<Tuple2<Integer,Double>>(),
-				(list, tuple) -> {
+		JavaRDD<Tuple3<Integer, Integer, Double>> denseMatrix = M.rows()
+				.toJavaRDD().flatMap(row -> mapRowToDenseTriplets(row));
+		JavaPairRDD<Integer, Tuple2<Integer, Double>> denseMatrixRowColInverted = denseMatrix
+				.mapToPair(triplet -> new Tuple2<Integer, Tuple2<Integer, Double>>(
+						triplet._2(), new Tuple2<Integer, Double>(triplet._1(),
+								triplet._3())));
+		JavaPairRDD<Integer, ArrayList<Tuple2<Integer, Double>>> denseMatrixAggregatedByCol = denseMatrixRowColInverted
+				.aggregateByKey(new ArrayList<Tuple2<Integer, Double>>(), (
+						list, tuple) -> {
 					list.add(tuple);
 					return list;
 				}, (list1, list2) -> {
 					list1.addAll(list2);
 					return list1;
 				});
-		JavaRDD<IndexedRow> transposedMatrix = denseMatrixAggregatedByCol.map(data -> mapDataToRow(data));
-		return new IndexedRowMatrix(transposedMatrix.rdd(), M.numCols(), toIntExact(M.numRows()));
+		JavaRDD<IndexedRow> transposedMatrix = denseMatrixAggregatedByCol
+				.map(data -> mapDataToRow(data));
+		return new IndexedRowMatrix(transposedMatrix.rdd(), M.numCols(),
+				toIntExact(M.numRows()));
 	}
 
 	/**
@@ -122,13 +124,16 @@ public class MllibUtilities {
 		}
 		return Vectors.dense(values).compressed();
 	}
-	
+
 	/**
-	 * Method that do the left multiplication of a diagonal matrix to an arbitrary matrix.
-	 * Assume the diagonal matrix D is a m x n matrix and A is an arbitrary matrix of size m' x n'.
-	 * Then we must have n = m'.
-	 * @param diagMatrix The diagonal matrix in vector form.
-	 * @param mat The arbitrary matrix.
+	 * Method that do the left multiplication of a diagonal matrix to an
+	 * arbitrary matrix. Assume the diagonal matrix D is a m x n matrix and A is
+	 * an arbitrary matrix of size m' x n'. Then we must have n = m'.
+	 * 
+	 * @param diagMatrix
+	 *            The diagonal matrix in vector form.
+	 * @param mat
+	 *            The arbitrary matrix.
 	 * @return The matrix DA of size m x n'.
 	 */
 	public static IndexedRowMatrix multiplicateByLeftDiagonalMatrix(
@@ -147,13 +152,16 @@ public class MllibUtilities {
 				});
 		return new IndexedRowMatrix(result.rdd());
 	}
-	
+
 	/**
-	 * Method that do the right multiplication of a diagonal matrix to an arbitrary matrix.
-	 * Assume the diagonal matrix D is a m x n matrix and A is an arbitrary matrix of size m' x n'.
-	 * Then we must have n' = m.
-	 * @param mat The arbitrary matrix.
-	 * @param diagMatrix The diagonal matrix in vector form.
+	 * Method that do the right multiplication of a diagonal matrix to an
+	 * arbitrary matrix. Assume the diagonal matrix D is a m x n matrix and A is
+	 * an arbitrary matrix of size m' x n'. Then we must have n' = m.
+	 * 
+	 * @param mat
+	 *            The arbitrary matrix.
+	 * @param diagMatrix
+	 *            The diagonal matrix in vector form.
 	 * @return The matrix AD of size m x n'.
 	 */
 	public static IndexedRowMatrix multiplicateByRightDiagonalMatrix(
@@ -168,12 +176,15 @@ public class MllibUtilities {
 		});
 		return new IndexedRowMatrix(result.rdd());
 	}
-	
+
 	/**
-	 * Method that performs the scalar product between two double arrays.
-	 * They must be the same size.
-	 * @param v1 The first array of double.
-	 * @param v2 The second array of double
+	 * Method that performs the scalar product between two double arrays. They
+	 * must be the same size.
+	 * 
+	 * @param v1
+	 *            The first array of double.
+	 * @param v2
+	 *            The second array of double
 	 * @return The scalar product between the arrays.
 	 */
 	public static double scalarProduct(Vector v1, Vector v2) {
@@ -185,17 +196,18 @@ public class MllibUtilities {
 		}
 		return total;
 	}
-	
+
 	/**
 	 * Method that transforms an IndexedRowMatrix into a sparse local Matrix.
-	 * @param mat The matrix in distributed form.
+	 * 
+	 * @param mat
+	 *            The matrix in distributed form.
 	 * @return The matrix in sparse local form.
 	 */
 	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat) {
 		ArrayList<Tuple3<Integer, Integer, Double>> triplets = new ArrayList<Tuple3<Integer, Integer, Double>>();
-		triplets.addAll(mat.rows()
-				.toJavaRDD().flatMap(row -> mapRowToSparseTriplets(row))
-				.collect());
+		triplets.addAll(mat.rows().toJavaRDD()
+				.flatMap(row -> mapRowToSparseTriplets(row)).collect());
 		sortTripletsByColumn(triplets);
 		int[] rowIndices = new int[triplets.size()];
 		int[] colIndices = new int[triplets.size()];
@@ -208,13 +220,14 @@ public class MllibUtilities {
 		int numRow = toIntExact(mat.numRows());
 		int numCol = toIntExact(mat.numCols());
 		int[] colPtrs = getColPtrsFromColIndices(colIndices, numCol);
-		return Matrices.sparse(numRow,
-				numCol, colPtrs, rowIndices, values);
+		return Matrices.sparse(numRow, numCol, colPtrs, rowIndices, values);
 	}
-	
+
 	/**
 	 * Method that transforms an IndexedRowMatrix into a dense local Matrix.
-	 * @param mat The matrix in distributed form.
+	 * 
+	 * @param mat
+	 *            The matrix in distributed form.
 	 * @return The matrix in dense local form.
 	 */
 	public static Matrix toDenseLocalMatrix(IndexedRowMatrix mat) {
@@ -222,98 +235,174 @@ public class MllibUtilities {
 		int numCol = toIntExact(mat.numCols());
 		double[] denseData = new double[numRow * numCol];
 		List<IndexedRow> cols = transpose(mat).rows().toJavaRDD().collect();
-		for(IndexedRow col : cols){
+		for (IndexedRow col : cols) {
 			int colIndex = toIntExact(col.index());
-			int destPos =  colIndex * numRow;
+			int destPos = colIndex * numRow;
 			double[] colValues = col.vector().toArray();
 			System.arraycopy(colValues, 0, denseData, destPos, colValues.length);
 		}
 		return Matrices.dense(numRow, numCol, denseData);
 	}
-	
+
 	/**
-	 * Method that multiplies a row vector by a matrix. Assuming the vector v is of size m x 1 and
-	 * the matrix A m' x n', we must have m = n'.
-	 * @param mat The matrix to multiply.
-	 * @param vec The vector to multiply.
+	 * Method that multiplies a row vector by a matrix. Assuming the vector v is
+	 * of size m x 1 and the matrix A m' x n', we must have m = n'.
+	 * 
+	 * @param mat
+	 *            The matrix to multiply.
+	 * @param vec
+	 *            The vector to multiply.
 	 * @return The compressed Vector given by A * v of size m' x 1.
 	 */
-	public static Vector multiplyColumnVectorByMatrix(IndexedRowMatrix mat, Vector vec) {
-		List<Double> results = mat
-				.rows()
-				.toJavaRDD()
-				.mapToDouble(
-						row -> scalarProduct(vec, row.vector()))
-				.collect();
+	public static Vector multiplyColumnVectorByMatrix(IndexedRowMatrix mat,
+			Vector vec) {
+		List<Double> results = mat.rows().toJavaRDD()
+				.mapToDouble(row -> scalarProduct(vec, row.vector())).collect();
 		return Vectors.dense(
 				ArrayUtils.toPrimitive(results.toArray(new Double[results
 						.size()]))).compressed();
 	}
-	
+
 	/**
-	 * Method that multiplies a row vector by a matrix. Assuming the vector v is of size 1 x n and
-	 * the matrix A m' x n', we must have m = m'
-	 * @param vec The vector to multiply.
-	 * @param mat The matrix to multiply.
+	 * Method that multiplies a row vector by a matrix. Assuming the vector v is
+	 * of size 1 x n and the matrix A m' x n', we must have m = m'
+	 * 
+	 * @param vec
+	 *            The vector to multiply.
+	 * @param mat
+	 *            The matrix to multiply.
 	 * @return The compressed Vector given by v * A of size 1 x n'.
 	 */
-	public static Vector multiplyRowVectorByMatrix(Vector vec, IndexedRowMatrix mat) {
+	public static Vector multiplyRowVectorByMatrix(Vector vec,
+			IndexedRowMatrix mat) {
 		IndexedRowMatrix transposedMat = transpose(mat);
 		return multiplyColumnVectorByMatrix(transposedMat, vec);
 	}
-	
+
 	/**
 	 * Method that creates a dense vector from an indexed row.
-	 * @param row The indexed row.
+	 * 
+	 * @param row
+	 *            The indexed row.
 	 * @return A vector in dense representation.
 	 */
 	public static Vector indexedRowToDenseVector(IndexedRow row) {
 		return Vectors.dense(row.vector().toArray());
 	}
-	
+
 	/**
-	 * Method that adds the missing row when converting a Coordinate matrix into an indexed row matrix.
-	 * This is because the indexed row are in sparse representation, and if no matrix entries of the
-	 * coordinate matrix corresponds to row 'i', then there won't be an indexed row of index i. 
-	 * @param M The coordinated matrix to be converted.
-	 * @param sc The java spark context that was used to create the coordinate matrix, it is necessary to create the new rows.
+	 * Method that adds the missing row when converting a Coordinate matrix into
+	 * an indexed row matrix. This is because the indexed row are in sparse
+	 * representation, and if no matrix entries of the coordinate matrix
+	 * corresponds to row 'i', then there won't be an indexed row of index i.
+	 * 
+	 * @param M
+	 *            The coordinated matrix to be converted.
+	 * @param sc
+	 *            The java spark context that was used to create the coordinate
+	 *            matrix, it is necessary to create the new rows.
 	 * @return The indexed row matrix with an indexed row for each row index.
 	 */
-	public static IndexedRowMatrix getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(CoordinateMatrix M, JavaSparkContext sc){
+	public static IndexedRowMatrix getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(
+			CoordinateMatrix M, JavaSparkContext sc) {
 		final int numCol = toIntExact(M.numCols());
-		JavaRDD<IndexedRow> indexedRowMatrix = M.entries().toJavaRDD().mapToPair(matEntry -> new Tuple2<Integer,Tuple2<Integer,Double>>(toIntExact(matEntry.i()), new Tuple2<Integer, Double>(toIntExact(matEntry.j()),matEntry.value())))
-		.groupByKey().map(rowAndSeqValues -> new IndexedRow(rowAndSeqValues._1(), Vectors.sparse(numCol, rowAndSeqValues._2())));
-		//Adding the possible rows that had only zeros.
-		List<Integer> rowIndexes = indexedRowMatrix.map(row -> toIntExact(row.index())).collect();
+		JavaRDD<IndexedRow> indexedRowMatrix = M
+				.entries()
+				.toJavaRDD()
+				.mapToPair(
+						matEntry -> new Tuple2<Integer, Tuple2<Integer, Double>>(
+								toIntExact(matEntry.i()),
+								new Tuple2<Integer, Double>(toIntExact(matEntry
+										.j()), matEntry.value())))
+				.groupByKey()
+				.map(rowAndSeqValues -> new IndexedRow(rowAndSeqValues._1(),
+						Vectors.sparse(numCol, rowAndSeqValues._2())));
+		// Adding the possible rows that had only zeros.
+		List<Integer> rowIndexes = indexedRowMatrix.map(
+				row -> toIntExact(row.index())).collect();
 		List<IndexedRow> rowsToAdd = new ArrayList<IndexedRow>();
-		for(int i = 0; i < toIntExact(M.numRows());i++){
-			if(!rowIndexes.contains(i)){
-				rowsToAdd.add(new IndexedRow(i, Vectors.sparse(numCol, new int[]{}, new double[]{})));
+		for (int i = 0; i < toIntExact(M.numRows()); i++) {
+			if (!rowIndexes.contains(i)) {
+				rowsToAdd.add(new IndexedRow(i, Vectors.sparse(numCol,
+						new int[] {}, new double[] {})));
 			}
 		}
-		JavaRDD<IndexedRow> addedRows = SparkUtilities.elementsToJavaRDD(rowsToAdd, sc);
+		JavaRDD<IndexedRow> addedRows = SparkUtilities.elementsToJavaRDD(
+				rowsToAdd, sc);
 		return new IndexedRowMatrix(indexedRowMatrix.union(addedRows).rdd());
 	}
-	
-	private static void sortTripletsByColumn(List<Tuple3<Integer, Integer, Double>> triplets){
-		Collections.sort(triplets, new Comparator<Tuple3<Integer, Integer, Double>>() {
 
-			@Override
-			public int compare(Tuple3<Integer, Integer, Double> triplet1, Tuple3<Integer, Integer, Double> triplet2) {
-				return triplet1._2().compareTo(triplet2._2());
+	/**
+	 * Method that return the correct indices for a symmetric matrix represented
+	 * as an upper triangular matrices. For example the indices (2,0) would
+	 * become (0,2).
+	 * 
+	 * @param rowIndexes
+	 *            The row indexes of the entries.
+	 * @param colIndexes
+	 *            The col indexes of the entries.
+	 */
+	public static void convertToUpperTriangularMatrixIndices(int[] rowIndexes,
+			int[] colIndexes) {
+		for (int i = 0; i < rowIndexes.length; i++) {
+			int oldRowIndex = rowIndexes[i];
+			if (colIndexes[i] < rowIndexes[i]) {
+				rowIndexes[i] = colIndexes[i];
+				colIndexes[i] = oldRowIndex;
 			}
-		});
+		}
 	}
-	
-	private static int[] getColPtrsFromColIndices(int[] colIndices, int numCol){
+
+	/**
+	 * Method that verifies if a given entry is in another set of entry.
+	 * 
+	 * @param entryRowIndex
+	 *            The row of the entry being verified
+	 * @param entryColIndex
+	 *            The col of the entry being verified
+	 * @param entriesRow
+	 *            The list of row indices of entries.
+	 * @param entriesCol
+	 *            The list of col indices of entries.
+	 * @return True if the entry beigin verified is in the list of other
+	 *         entries.
+	 */
+	public static boolean entryContainedInListOfEntries(int entryRowIndex,
+			int entryColIndex, int[] entryRowIndexes, int[] entryColIndexes) {
+		boolean contain = false;
+		for (int i = 0; i < entryRowIndexes.length; i++) {
+			if (entryRowIndex == entryRowIndexes[i]
+					&& entryColIndex == entryColIndexes[i]) {
+				contain = true;
+				break;
+			}
+		}
+		return contain;
+	}
+
+	private static void sortTripletsByColumn(
+			List<Tuple3<Integer, Integer, Double>> triplets) {
+		Collections.sort(triplets,
+				new Comparator<Tuple3<Integer, Integer, Double>>() {
+
+					@Override
+					public int compare(
+							Tuple3<Integer, Integer, Double> triplet1,
+							Tuple3<Integer, Integer, Double> triplet2) {
+						return triplet1._2().compareTo(triplet2._2());
+					}
+				});
+	}
+
+	private static int[] getColPtrsFromColIndices(int[] colIndices, int numCol) {
 		int[] numberOfNonZerosPerColumn = new int[numCol];
-		for(int colIndice : colIndices){
+		for (int colIndice : colIndices) {
 			numberOfNonZerosPerColumn[colIndice]++;
 		}
-		int[] colPtrs = new int[numCol+1];
+		int[] colPtrs = new int[numCol + 1];
 		colPtrs[0] = 0;
-		for(int i = 1; i < numCol+1 ; i++){
-			colPtrs[i] = colPtrs[i-1] + numberOfNonZerosPerColumn[i-1];
+		for (int i = 1; i < numCol + 1; i++) {
+			colPtrs[i] = colPtrs[i - 1] + numberOfNonZerosPerColumn[i - 1];
 		}
 		return colPtrs;
 	}
@@ -348,7 +437,8 @@ public class MllibUtilities {
 		double[] colValues = row.vector().toArray();
 		int rowIndex = toIntExact(row.index());
 		for (int col = 0; col < colValues.length; col++) {
-			values.add(new Tuple3<Integer, Integer, Double>(rowIndex, col, colValues[col]));
+			values.add(new Tuple3<Integer, Integer, Double>(rowIndex, col,
+					colValues[col]));
 		}
 		return values.iterator();
 	}

@@ -2,9 +2,11 @@ package mllib.recommender.collaborativefiltering;
 
 import static java.lang.Math.toIntExact;
 
+import java.util.Arrays;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
+import mllib.utility.MllibUtilities;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
@@ -58,21 +60,27 @@ public class ItemBasedRecommender {
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	private List<Pair<Integer, Double>> getItemNeighborhoodForUser(
+	public List<Pair<Integer, Double>> getItemNeighborhoodForUser(
 			int userIndex, int itemIndex, int n) {
+		System.out.println("Neighboorhood of user " + userIndex + " for item "
+				+ itemIndex);
 		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
-		Pair<int[], int[]> rowColIndexes = generateWantedEntries(itemIndex,
-				itemIndexesSeenByUser);
-		final int[] rowIndexes = rowColIndexes.getFirst();
-		final int[] colIndexes = rowColIndexes.getSecond();
+		System.out.println("User " + userIndex + " has seen "
+				+ itemIndexesSeenByUser.length + " tv shows.");
+		System.out.println(Arrays.toString(itemIndexesSeenByUser));
+		int[] targetItemIndex = new int[itemIndexesSeenByUser.length];
+		Arrays.fill(targetItemIndex, itemIndex);
+		MllibUtilities.convertToUpperTriangularMatrixIndices(
+				itemIndexesSeenByUser, targetItemIndex);
 		List<MatrixEntry> entries = S
 				.entries()
 				.toJavaRDD()
 				.filter(entry -> {
 					int entryRow = toIntExact(entry.i());
 					int entryCol = toIntExact(entry.j());
-					return entryIsInListOfEntries(entryRow, entryCol,
-							rowIndexes, colIndexes);
+					return MllibUtilities.entryContainedInListOfEntries(
+							entryRow, entryCol, itemIndexesSeenByUser,
+							targetItemIndex);
 				}).collect();
 		int[] indices = new int[entries.size()];
 		double[] values = new double[entries.size()];
@@ -83,36 +91,7 @@ public class ItemBasedRecommender {
 					: rowIndex;
 			values[i] = entry.value();
 		}
-		return QuickSelect.selectTopN(indices, values, n);
-	}
-
-	private Pair<int[], int[]> generateWantedEntries(int itemIndex,
-			int[] itemIndexesSeenByUser) {
-		int[] rowIndexes = new int[itemIndexesSeenByUser.length];
-		int[] colIndexes = new int[itemIndexesSeenByUser.length];
-		for (int i = 0; i < itemIndexesSeenByUser.length; i++) {
-			int rowIndex = itemIndex;
-			int colIndex = itemIndexesSeenByUser[i];
-			if (colIndex < rowIndex) {
-				rowIndexes[i] = colIndex;
-				colIndexes[i] = rowIndex;
-			} else {
-				rowIndexes[i] = rowIndex;
-				colIndexes[i] = colIndex;
-			}
-		}
-		return new Pair<int[], int[]>(rowIndexes, colIndexes);
-	}
-
-	private boolean entryIsInListOfEntries(int entryRow, int entryCol,
-			int[] entriesRow, int[] entriesCol) {
-		boolean contain = false;
-		for (int i = 0; i < entriesRow.length; i++) {
-			if (entryRow == entriesRow[i] && entryCol == entriesCol[i]) {
-				contain = true;
-				break;
-			}
-		}
-		return contain;
+		return QuickSelect.selectTopN(indices, values,
+				Math.min(n, entries.size()));
 	}
 }

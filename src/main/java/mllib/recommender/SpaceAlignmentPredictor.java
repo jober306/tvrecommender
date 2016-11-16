@@ -121,8 +121,8 @@ public class SpaceAlignmentPredictor {
 		double[] itemSeenByUserSimilarities = predictAllItemSimilarities(
 				coldStartItemContent, itemIndexesSeenByUser);
 		return QuickSelect.selectTopN(itemIndexesSeenByUser,
-				itemSeenByUserSimilarities, n);
-
+				itemSeenByUserSimilarities,
+				Math.min(n, itemSeenByUserSimilarities.length));
 	}
 
 	private double[] predictAllItemSimilarities(Vector coldStartItemContent,

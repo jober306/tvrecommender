@@ -87,4 +87,22 @@ public class QuickSelectTest {
 			assertEquals(expectedValues[i], value, 0.0d);
 		}
 	}
+
+	@Test
+	public void selectTopNWithNBiggerThanNumberOfEntries() {
+		int n = 0;
+		double[] values = new double[] {};
+		int[] indiceValues = new int[] {};
+		double[] expectedValues = new double[] { 5.0d, 3.3d, 2.0d };
+		int[] expectedIndiceValues = new int[] { 20, 3, 14 };
+		List<Pair<Integer, Double>> topN = QuickSelect.selectTopN(indiceValues,
+				values, n);
+		for (int i = 0; i < n; i++) {
+			Pair<Integer, Double> positionValue = topN.get(i);
+			int pos = positionValue.getFirst();
+			double value = positionValue.getSecond();
+			assertEquals(expectedIndiceValues[i], pos);
+			assertEquals(expectedValues[i], value, 0.0d);
+		}
+	}
 }
