@@ -56,6 +56,24 @@ public class QuickSelect {
 		return topN;
 	}
 
+	public static List<Pair<Integer, Double>> selectTopN(int[] indices,
+			double[] values, int k) {
+		List<Pair<Integer, Double>> topN = new ArrayList<Pair<Integer, Double>>();
+		for (int i = 1; i <= k; i++) {
+			topN.add(QuickSelect.select(indices, values, i));
+		}
+		return topN;
+	}
+
+	public static Pair<Integer, Double> select(int indices[], double values[],
+			int k) {
+		List<Pair<Integer, Double>> Gp = new ArrayList<Pair<Integer, Double>>();
+		for (int i = 0; i < indices.length; i++) {
+			Gp.add(new Pair<Integer, Double>(indices[i], values[i]));
+		}
+		return quickselect(Gp, 0, indices.length - 1, k - 1);
+	}
+
 	private static Pair<Integer, Double> quickselect(
 			List<Pair<Integer, Double>> Gp, int first, int last, int k) {
 		if (first <= last) {
