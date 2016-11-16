@@ -17,7 +17,12 @@ import recommender.model.UserSimilaritiesMatrix;
 import recommender.similarities.CosineSimilarity;
 import recommender.similarities.Similarity;
 
-public class UserBasedRecommender implements Recommender{
+/**
+ * TODO: Not implemented correctly. Should implements the Recommender interface.
+ * @author iva
+ *
+ */
+public class UserBasedRecommender {
 
 	
 	UserItemMatrix model;
@@ -47,7 +52,6 @@ public class UserBasedRecommender implements Recommender{
 		}
 	}
 	
-	@Override
 	public List<Integer> predict(int userID, int numberOfResults) {
 		List<Integer> predictions = new ArrayList<Integer>();
 		double[] userRatings = model.getUserValues(userID).clone();

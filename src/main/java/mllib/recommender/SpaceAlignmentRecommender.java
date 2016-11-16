@@ -6,6 +6,7 @@ import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
+import recommender.prediction.Recommender;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -26,7 +27,7 @@ import algorithm.QuickSelect;
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentRecommender {
+public class SpaceAlignmentRecommender implements Recommender{
 
 	/**
 	 * The rating matrix of size m x n. Where m is number of users and n number
@@ -169,6 +170,11 @@ public class SpaceAlignmentRecommender {
 		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ,
 				hardTrhesholdedLambda).multiply(
 				MllibUtilities.toDenseLocalMatrix(QtVt));
+	}
+	
+	@Override
+	public int[] recommend(int userId, int numberOfResults) {
+		return null;
 	}
 
 	private Vector invertVector(Vector v) {

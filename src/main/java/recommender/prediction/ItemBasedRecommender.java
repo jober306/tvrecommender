@@ -9,7 +9,12 @@ import recommender.model.UserItemMatrix;
 import recommender.similarities.CosineSimilarity;
 import recommender.similarities.Similarity;
 
-public class ItemBasedRecommender implements Recommender{
+/**
+ * TODO: Not implemented correctly. Should implements the Recommender interface.
+ * @author iva
+ *
+ */
+public class ItemBasedRecommender {
 	
 	ItemSimilaritiesMatrix model;
 	Similarity similarity;
@@ -18,8 +23,7 @@ public class ItemBasedRecommender implements Recommender{
 		this.similarity = similarity;
 		model = new ItemSimilaritiesMatrix(U, this.similarity);
 	}
-	
-	@Override
+
 	public List<Integer> predict(int lastSeenItemId, int numberOfResults) {
 		return model.getTopNSimilarRowIndices(lastSeenItemId, numberOfResults);
 	}
