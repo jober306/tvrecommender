@@ -1,15 +1,21 @@
 package mllib.recommender;
 
 import static java.lang.Math.toIntExact;
+
+import java.util.List;
+
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
 
+import org.apache.commons.math3.util.Pair;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+
+import algorithm.QuickSelect;
 
 /**
  * Class that finds the optimal mapping between item content and the item
@@ -93,6 +99,40 @@ public class SpaceAlignmentPredictor {
 		return MllibUtilities.scalarProduct(MllibUtilities
 				.multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),
 				targetItem);
+	}
+
+	/**
+	 * Method that returns the neighborhood of a new item for a specific user.
+	 * It returns the top n item indices and values in decreasing order.
+	 * 
+	 * @param coldStartItemContent
+	 *            The content of the new item.
+	 * @param userIndex
+	 *            The index of the user (the neighborhood returned will only
+	 *            contains items seen by this user).
+	 * @param n
+	 *            The size of the neighborhoods set.
+	 * @return A list of pair containing respectively the item index in the user
+	 *         item matrix and the similarity value.
+	 */
+	public List<Pair<Integer, Double>> getNewItemNeighborhood(
+			Vector coldStartItemContent, int userIndex, int n) {
+		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
+		double[] itemSeenByUserSimilarities = predictAllItemSimilarities(
+				coldStartItemContent, itemIndexesSeenByUser);
+		return QuickSelect.selectTopN(itemIndexesSeenByUser,
+				itemSeenByUserSimilarities, n);
+
+	}
+
+	private double[] predictAllItemSimilarities(Vector coldStartItemContent,
+			int[] itemIndexes) {
+		double[] similarities = new double[itemIndexes.length];
+		for (int i = 0; i < itemIndexes.length; i++) {
+			similarities[i] = predictItemsSimilarity(coldStartItemContent,
+					itemIndexes[i]);
+		}
+		return similarities;
 	}
 
 	private void calculateMprime() {
