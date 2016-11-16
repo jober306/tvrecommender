@@ -115,7 +115,7 @@ public class SpaceAlignmentPredictor {
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	public List<Pair<Integer, Double>> getNewItemNeighborhood(
+	public List<Pair<Integer, Double>> predictNewItemNeighborhoodForUser(
 			Vector coldStartItemContent, int userIndex, int n) {
 		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
 		double[] itemSeenByUserSimilarities = predictAllItemSimilarities(
