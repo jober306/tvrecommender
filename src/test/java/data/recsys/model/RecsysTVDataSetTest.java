@@ -1,11 +1,13 @@
 package data.recsys.model;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import mllib.model.DistributedUserItemMatrix;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -14,14 +16,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 import spark.utilities.SparkUtilities;
 
 public class RecsysTVDataSetTest {
-	
-	final static double[][] expectedUserItemMatrixValues = {{1,0},{1,1}};
-	
+
+	final static double[][] expectedUserItemMatrixValues = { { 1, 0 }, { 1, 1 } };
+
 	final RecsysTVEvent tvEvent1 = new RecsysTVEvent((short) 1, (short) 2,
 			(byte) 3, (byte) 4, (byte) 81, 1, 202344, 50880093, 5);
 	final RecsysTVEvent tvEvent2 = new RecsysTVEvent((short) 4, (short) 7,
@@ -107,26 +108,26 @@ public class RecsysTVDataSetTest {
 		filtered_20.close();
 		filtered_30.close();
 	}
-	
+
 	@Test
-	public void filterByIntervalOfWeekTest(){
-		RecsysTVDataSet filtered = dataSet.filterByIntervalOfWeek(1, 3);
+	public void filterByIntervalOfWeekTest() {
+		RecsysTVDataSet filtered = dataSet.filterByIntervalOfWeek(1, 2);
 		assertEquals(2, filtered.count());
 		assertTrue(filtered.contains(tvEvent2));
 		assertTrue(filtered.contains(tvEvent3));
 		filtered.close();
 	}
-	
+
 	@Test
-	public void filterByIntervalOfSlotTest(){
+	public void filterByIntervalOfSlotTest() {
 		RecsysTVDataSet filtered = dataSet.filterByIntervalOfSlot(7, 7);
 		assertEquals(1, filtered.count());
 		assertTrue(filtered.contains(tvEvent2));
 		filtered.close();
 	}
-	
+
 	@Test
-	public void filterByIntervalOfDayTest(){
+	public void filterByIntervalOfDayTest() {
 		RecsysTVDataSet filtered = dataSet.filterByIntervalOfDay(2, 7);
 		assertEquals(1, filtered.count());
 		assertTrue(filtered.contains(tvEvent3));
@@ -236,12 +237,13 @@ public class RecsysTVDataSetTest {
 			}
 		}
 	}
-	
+
 	@Test
-	public void convertToDistributedMatrixTest(){
+	public void convertToDistributedMatrixTest() {
 		DistributedUserItemMatrix R = dataSet.convertToDistUserItemMatrix();
-		for(int i = 0; i < expectedUserItemMatrixValues.length; i++){
-			assertArrayEquals(expectedUserItemMatrixValues[i], R.getRow(i).vector().toArray(),0.0d);
+		for (int i = 0; i < expectedUserItemMatrixValues.length; i++) {
+			assertArrayEquals(expectedUserItemMatrixValues[i], R.getRow(i)
+					.vector().toArray(), 0.0d);
 		}
 	}
 
