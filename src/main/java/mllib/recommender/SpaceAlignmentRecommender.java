@@ -23,15 +23,15 @@ import algorithm.QuickSelect;
  * similarities matrix as proposed by the following article:
  * http://www.ijcai.org/Proceedings/15/Papers/475.pdf It can then predicts the
  * similarity between already seen items and new items by using this mapping.
+ * This recommender is used to alleviate cold start problem of tv recommendation.
  * 
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentRecommender implements Recommender{
-
+public class SpaceAlignmentRecommender {
+	
 	/**
-	 * The rating matrix of size m x n. Where m is number of users and n number
-	 * of items.
+	 * The user item matrix in mllib distributed representation.
 	 */
 	DistributedUserItemMatrix R;
 
@@ -57,7 +57,10 @@ public class SpaceAlignmentRecommender implements Recommender{
 	 * filtering sense. It is calculated once the class is created.
 	 */
 	IndexedRowMatrix Mprime;
-
+	
+	/**
+	 * The java spark context used to load the data set.
+	 */
 	JavaSparkContext sc;
 
 	/**
@@ -125,6 +128,38 @@ public class SpaceAlignmentRecommender implements Recommender{
 				itemSeenByUserSimilarities,
 				Math.min(n, itemSeenByUserSimilarities.length));
 	}
+	
+	private double calculateNeighboursScore(List<Pair<Integer, Double>> neighbours){
+		double score = 0.0d;
+		for(Pair<Integer, Double> neighbour : neighbours){
+			score += neighbour.getFirst();
+		}
+		if(neighbours.size() == 0)
+			return score;
+		return score / (double)neighbours.size();
+	}
+
+	/**
+	 * Method that returns the indexes in decreasing order of the show recommended. The indexes
+	 * correspond to the newTVShowsContent indexes.
+	 * @param userId The user id to which the recommendation will be done.
+	 * @param numberOfResults The number of results to return.
+	 * @param newTvShowsContent An array of vector containing the content of new tv shows.
+	 * @return The indexes in decreasing order from best of the best tv show.
+	 */
+	public int[] recommend(int userId, int numberOfResults, Vector[] newTvShowsContent, int n) {
+		Double[] neighboursScores = new Double[newTvShowsContent.length];
+		for(int i = 0; i < newTvShowsContent.length; i++){
+			List<Pair<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent[i], userId, n);
+			neighboursScores[i] = calculateNeighboursScore(neighbours);
+		}
+		List<Pair<Integer, Double>> sortedScore = QuickSelect.selectTopN(neighboursScores, numberOfResults);
+		int[] recommendationIndexes = new int[numberOfResults];
+		for(int i = 0; i < numberOfResults; i++){
+			recommendationIndexes[i] = sortedScore.get(i).getFirst();
+		}
+		return recommendationIndexes;
+	}
 
 	private double[] predictAllItemSimilarities(Vector coldStartItemContent,
 			int[] itemIndexes) {
@@ -170,11 +205,6 @@ public class SpaceAlignmentRecommender implements Recommender{
 		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ,
 				hardTrhesholdedLambda).multiply(
 				MllibUtilities.toDenseLocalMatrix(QtVt));
-	}
-	
-	@Override
-	public int[] recommend(int userId, int numberOfResults) {
-		return null;
 	}
 
 	private Vector invertVector(Vector v) {
