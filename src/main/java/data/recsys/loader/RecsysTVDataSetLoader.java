@@ -95,6 +95,14 @@ public class RecsysTVDataSetLoader implements Serializable {
 		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
 		return new RecsysTVDataSet(events, sc);
 	}
+	
+	/**
+	 * Method that returns the java spark context used to load the data set.
+	 * @return The java spark context used to load the data set.
+	 */
+	public JavaSparkContext getJavaSparkContext(){
+		return sc;
+	}
 
 	/**
 	 * Method that read all the lines of the data set to put it into a RDD.

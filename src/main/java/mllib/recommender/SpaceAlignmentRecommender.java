@@ -132,7 +132,7 @@ public class SpaceAlignmentRecommender {
 	private double calculateNeighboursScore(List<Pair<Integer, Double>> neighbours){
 		double score = 0.0d;
 		for(Pair<Integer, Double> neighbour : neighbours){
-			score += neighbour.getFirst();
+			score += neighbour.getSecond();
 		}
 		if(neighbours.size() == 0)
 			return score;

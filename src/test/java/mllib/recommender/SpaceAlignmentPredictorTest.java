@@ -3,12 +3,12 @@ package mllib.recommender;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
 
 import org.apache.commons.math3.util.Pair;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
@@ -16,7 +16,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import spark.utilities.SparkUtilities;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 
@@ -26,18 +25,16 @@ public class SpaceAlignmentPredictorTest {
 	final static int r = 2;
 	static DistributedUserItemMatrix R;
 	static IndexedRowMatrix C;
-	static JavaSparkContext sc;
 	static RecsysTVDataSet dataSet;
 	static SpaceAlignmentRecommender predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {
-		sc = SparkUtilities.getADefaultSparkContext();
-		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
 		R = dataSet.convertToDistUserItemMatrix();
 		C = dataSet.getContentMatrix();
-		predictor = new SpaceAlignmentRecommender(R, r, C, sc);
+		predictor = new SpaceAlignmentRecommender(R, r, C, loader.getJavaSparkContext());
 	}
 
 	@Test
@@ -67,6 +64,19 @@ public class SpaceAlignmentPredictorTest {
 			assertTrue(value >= 0);
 			assertTrue(value <= 1);
 		}
+	}
+	
+	@Test
+	public void recommendTest(){
+		int userId = 2;
+		int numberOfResults =2;
+		int n = 2;
+		Vector[] newItems = new Vector[]{Vectors.dense(new double[] { 46, 19, 5, 81 }),
+		Vectors.dense(new double[] { 30000, 100000, 488888, 29199}),
+		Vectors.dense(new double[] { 54, 18, 10, 78 }),
+		Vectors.dense(new double[] { 200, 29, 25, 11 })};
+		int[] prediction = predictor.recommend(userId, numberOfResults, newItems, n);
+		assertEquals(numberOfResults, prediction.length);
 	}
 
 	private boolean arrayContains(int[] array, int value) {
