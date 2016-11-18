@@ -2,12 +2,14 @@ package data.recsys.model;
 
 import java.io.Serializable;
 
+import data.model.TVEvent;
+
 /**
  * Class modeling a tv event of the recsys dataset.
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVEvent implements TVEvent, Serializable{
+public class RecsysTVEvent extends TVEvent implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

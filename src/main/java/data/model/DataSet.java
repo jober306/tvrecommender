@@ -9,20 +9,21 @@ import org.apache.spark.mllib.recommendation.Rating;
 import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
-public interface DataSet {
+public abstract class DataSet<T extends TVEvent>{
 	
 	//------Recommender model convertion method----------
-	public UserItemMatrix convertToUserItemMatrix();
+	abstract public UserItemMatrix convertToUserItemMatrix();
 	
 	//----------ML lib convertion methods----------------
-	public JavaRDD<Rating> convertToMLlibRatings();
-	public DistributedUserItemMatrix convertToDistUserItemMatrix();
-	public IndexedRowMatrix getContentMatrix();
+	abstract public JavaRDD<Rating> convertToMLlibRatings();
+	abstract public DistributedUserItemMatrix convertToDistUserItemMatrix();
+	abstract public IndexedRowMatrix getContentMatrix();
 	
 	//--------General Utilities methods--------------------
-	public int getNumberOfUsers();
-	public int getNumberOfItems();
-	public List<Integer> getAllUserIds();
-	public List<Integer> getAllProgramIds();
-	public boolean isEmpty();
+	abstract public JavaRDD<T> getEventsData();
+	abstract public int getNumberOfUsers();
+	abstract public int getNumberOfItems();
+	abstract public List<Integer> getAllUserIds();
+	abstract public List<Integer> getAllProgramIds();
+	abstract public boolean isEmpty();
 }

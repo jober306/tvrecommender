@@ -29,7 +29,7 @@ import mllib.model.DistributedUserItemMatrix;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet implements DataSet, Serializable{
+public class RecsysTVDataSet extends  DataSet implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
