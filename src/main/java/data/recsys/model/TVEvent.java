@@ -1,5 +1,11 @@
 package data.recsys.model;
 
+/**
+ * TVEvent interface force the class implementing it to implement a minimum of getter methods essential to tv
+ * recommendation.
+ * @author Jonathan Bergeron
+ *
+ */
 public interface TVEvent {
 	
 	public short getChannelID();
