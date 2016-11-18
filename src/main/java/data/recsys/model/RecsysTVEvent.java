@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVEvent implements Serializable{
+public class RecsysTVEvent implements TVEvent, Serializable{
 
 	private static final long serialVersionUID = 1L;
 
