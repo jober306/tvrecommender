@@ -94,47 +94,6 @@ public class RecsysTVDataSetTest {
 	}
 
 	@Test
-	public void filterByMinTimeViewTest() {
-		RecsysTVDataSet filtered_0 = dataSet.filterByMinTimeView(0);
-		assertTrue(filtered_0.count() == 3);
-		RecsysTVDataSet filtered_10 = dataSet.filterByMinTimeView(10);
-		assertTrue(filtered_10.count() == 2);
-		RecsysTVDataSet filtered_20 = dataSet.filterByMinTimeView(20);
-		assertTrue(filtered_20.count() == 1);
-		RecsysTVDataSet filtered_30 = dataSet.filterByMinTimeView(30);
-		assertTrue(filtered_30.count() == 0);
-		filtered_0.close();
-		filtered_10.close();
-		filtered_20.close();
-		filtered_30.close();
-	}
-
-	@Test
-	public void filterByIntervalOfWeekTest() {
-		RecsysTVDataSet filtered = dataSet.filterByIntervalOfWeek(1, 2);
-		assertEquals(2, filtered.count());
-		assertTrue(filtered.contains(tvEvent2));
-		assertTrue(filtered.contains(tvEvent3));
-		filtered.close();
-	}
-
-	@Test
-	public void filterByIntervalOfSlotTest() {
-		RecsysTVDataSet filtered = dataSet.filterByIntervalOfSlot(7, 7);
-		assertEquals(1, filtered.count());
-		assertTrue(filtered.contains(tvEvent2));
-		filtered.close();
-	}
-
-	@Test
-	public void filterByIntervalOfDayTest() {
-		RecsysTVDataSet filtered = dataSet.filterByIntervalOfDay(2, 7);
-		assertEquals(1, filtered.count());
-		assertTrue(filtered.contains(tvEvent3));
-		filtered.close();
-	}
-
-	@Test
 	public void getNumberOfEntitiesTest() {
 		int numberOfUsers = dataSet.getNumberOfUsers();
 		int numberOfPrograms = dataSet.getNumberOfItems();
