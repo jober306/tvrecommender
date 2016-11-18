@@ -3,15 +3,16 @@ package mlllib.evaluator;
 import java.util.Map;
 
 import data.model.TVDataSet;
+import data.recsys.model.RecsysTVEvent;
 
 public class SpaceAlignmentEvaluator {
 	
-	TVDataSet dataSet;
+	TVDataSet<RecsysTVEvent> dataSet;
 	EvaluationMeasure[] measures;
 	
 	Map<EvaluationMeasure, Double> evaluationResults;
 	
-	public SpaceAlignmentEvaluator(TVDataSet dataSet, EvaluationMeasure[] measures){
+	public SpaceAlignmentEvaluator(TVDataSet<RecsysTVEvent> dataSet, EvaluationMeasure[] measures){
 		this.dataSet = dataSet;
 		this.measures = measures;
 	}

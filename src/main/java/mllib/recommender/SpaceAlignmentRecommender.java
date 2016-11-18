@@ -8,7 +8,6 @@ import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
 
 import org.apache.commons.math3.util.Pair;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;
@@ -16,6 +15,8 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import algorithm.QuickSelect;
+import data.model.TVDataSet;
+import data.model.TVEvent;
 
 /**
  * Class that finds the optimal mapping between item content and the item
@@ -27,10 +28,15 @@ import algorithm.QuickSelect;
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentRecommender {
+public class SpaceAlignmentRecommender <T extends TVEvent>{
 	
 	/**
-	 * The user item matrix in mllib distributed representation.
+	 * The tv data set on which the matrix M prime will be build.
+	 */
+	TVDataSet<T> tvDataset;
+	
+	/**
+	 * The user item (or rating) matrix that represents the tv data set.
 	 */
 	DistributedUserItemMatrix R;
 
@@ -56,11 +62,6 @@ public class SpaceAlignmentRecommender {
 	 * filtering sense. It is calculated once the class is created.
 	 */
 	IndexedRowMatrix Mprime;
-	
-	/**
-	 * The java spark context used to load the data set.
-	 */
-	JavaSparkContext sc;
 
 	/**
 	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates
@@ -74,12 +75,11 @@ public class SpaceAlignmentRecommender {
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentRecommender(DistributedUserItemMatrix R, int r,
-			IndexedRowMatrix C, JavaSparkContext sc) {
-		this.R = R;
+	public SpaceAlignmentRecommender(TVDataSet<T> tvDataSet, int r) {
+		this.tvDataset = tvDataSet;
 		this.r = r;
-		this.C = C;
-		this.sc = sc;
+		this.R = tvDataSet.convertToDistUserItemMatrix();
+		this.C = tvDataSet.getContentMatrix();
 		calculateMprime();
 	}
 
@@ -178,7 +178,7 @@ public class SpaceAlignmentRecommender {
 		Matrix Vt = V.transpose();
 		IndexedRowMatrix S = MllibUtilities
 				.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(
-						R.getItemSimilarities(), sc);
+						R.getItemSimilarities(), tvDataset.getJavaSparkContext());
 		Vector sigma = Csvd.s();
 		Vector invertedSigma = invertVector(sigma);
 		IndexedRowMatrix Ut = MllibUtilities.transpose(U);

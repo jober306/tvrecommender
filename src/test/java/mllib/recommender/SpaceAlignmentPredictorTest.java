@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
+import data.recsys.model.RecsysTVEvent;
 
 public class SpaceAlignmentPredictorTest {
 
@@ -25,15 +26,13 @@ public class SpaceAlignmentPredictorTest {
 	static DistributedUserItemMatrix R;
 	static IndexedRowMatrix C;
 	static RecsysTVDataSet dataSet;
-	static SpaceAlignmentRecommender predictor;
+	static SpaceAlignmentRecommender<RecsysTVEvent> predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
-		R = dataSet.convertToDistUserItemMatrix();
-		C = dataSet.getContentMatrix();
-		predictor = new SpaceAlignmentRecommender(R, r, C, loader.getJavaSparkContext());
+		predictor = new SpaceAlignmentRecommender<RecsysTVEvent>(dataSet, r);
 	}
 
 	@Test
