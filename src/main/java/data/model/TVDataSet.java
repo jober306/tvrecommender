@@ -9,7 +9,7 @@ import org.apache.spark.mllib.recommendation.Rating;
 import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
-public abstract class DataSet<T extends TVEvent>{
+public abstract class TVDataSet<T extends TVEvent>{
 	
 	//------Recommender model convertion method----------
 	abstract public UserItemMatrix convertToUserItemMatrix();

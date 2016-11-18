@@ -2,16 +2,16 @@ package mlllib.evaluator;
 
 import java.util.Map;
 
-import data.model.DataSet;
+import data.model.TVDataSet;
 
 public class SpaceAlignmentEvaluator {
 	
-	DataSet dataSet;
+	TVDataSet dataSet;
 	EvaluationMeasure[] measures;
 	
 	Map<EvaluationMeasure, Double> evaluationResults;
 	
-	public SpaceAlignmentEvaluator(DataSet dataSet, EvaluationMeasure[] measures){
+	public SpaceAlignmentEvaluator(TVDataSet dataSet, EvaluationMeasure[] measures){
 		this.dataSet = dataSet;
 		this.measures = measures;
 	}
