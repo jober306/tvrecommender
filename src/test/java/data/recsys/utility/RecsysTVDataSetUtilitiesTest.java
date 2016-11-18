@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class RecsysTVDataSetUtilitiesTest {
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
 				.<RecsysTVEvent> elementsToJavaRDD(events,
 						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
+		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext, true);
 	}
 	
 	@Test
@@ -89,5 +90,10 @@ public class RecsysTVDataSetUtilitiesTest {
 	public void filterByIntervalOfDayTest() {
 		JavaRDD<RecsysTVEvent> filtered = RecsysTVDataSetUtilities.filterByIntervalOfDay(dataSet,2, 7);
 		assertEquals(1, filtered.count());
+	}
+	
+	@After
+	public void tearDown(){
+		dataSet.close();
 	}
 }

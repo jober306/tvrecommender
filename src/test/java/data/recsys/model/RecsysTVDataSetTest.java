@@ -43,7 +43,7 @@ public class RecsysTVDataSetTest {
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
 				.<RecsysTVEvent> elementsToJavaRDD(events,
 						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
+		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext, true);
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class RecsysTVDataSetTest {
 				.<RecsysTVEvent> elementsToJavaRDD(
 						new ArrayList<RecsysTVEvent>(), defaultJavaSparkContext);
 		RecsysTVDataSet emptyDataSet = new RecsysTVDataSet(emptyRDD,
-				defaultJavaSparkContext);
+				defaultJavaSparkContext, true);
 		assertTrue(emptyDataSet.isEmpty());
 		emptyDataSet.close();
 	}
@@ -156,7 +156,7 @@ public class RecsysTVDataSetTest {
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
 				.<RecsysTVEvent> elementsToJavaRDD(events,
 						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
+		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext, true);
 	}
 
 	@Test

@@ -69,12 +69,16 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 *            The java spark context in which the data has been loaded.
 	 */
 	public RecsysTVDataSet(JavaRDD<RecsysTVEvent> eventsData,
-			JavaSparkContext sc) {
+			JavaSparkContext sc, boolean createMap) {
 		this.eventsData = eventsData;
 		this.sc = sc;
-		initializeMapReader();
-		broadcastedIdMap = sc.broadcast(idMap);
-		mapClosed = false;
+		if(createMap){
+			initializeMapReader();
+			broadcastedIdMap = sc.broadcast(idMap);
+			mapClosed = false;
+		}else{
+			mapClosed = true;
+		}
 	}
 
 	/**
@@ -226,7 +230,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 							.get(tvEvent.getEventID())
 							&& broadcastedIdMap.getValue().getEventIDtoIDMap().get(
 									tvEvent.getEventID()) < upperLimit);
-			splittedData[i - 1] = new RecsysTVDataSet(splitData, sc);
+			splittedData[i - 1] = new RecsysTVDataSet(splitData, sc, true);
 		}
 		return splittedData;
 	}

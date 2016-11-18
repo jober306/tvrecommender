@@ -92,7 +92,7 @@ public class RecsysTVDataSetLoader implements Serializable {
 	 */
 	public RecsysTVDataSet loadDataSet() {
 		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
-		return new RecsysTVDataSet(events, sc);
+		return new RecsysTVDataSet(events, sc, true);
 	}
 	
 	/**
