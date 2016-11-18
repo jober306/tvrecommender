@@ -159,16 +159,9 @@ public class RecsysTVDataSetTest {
 	public void splitDataRandomlyTest() {
 		createBiggerDataSet(42);
 		double[] ratios = { 0.17, 0.43, 0.40 };
-		RecsysTVDataSet[] splittedDataSet = dataSet.splitDataRandomly(ratios);
-		assertTrue(splittedDataSet[0].getEventsData()
-				.intersection(splittedDataSet[1].getEventsData())
-				.intersection(splittedDataSet[2].getEventsData()).isEmpty());
-		assertTrue(splittedDataSet[0].getEventsData()
-				.union(splittedDataSet[1].getEventsData())
-				.union(splittedDataSet[2].getEventsData()).count() == 42);
-		for (RecsysTVDataSet dataSet : splittedDataSet) {
-			dataSet.close();
-		}
+		JavaRDD<RecsysTVEvent>[] splittedDataSet = dataSet.splitTVEventsRandomly(ratios);
+		assertTrue(splittedDataSet[0].intersection(splittedDataSet[1]).intersection(splittedDataSet[2]).isEmpty());
+		assertTrue(splittedDataSet[0].union(splittedDataSet[1]).union(splittedDataSet[2]).count() == 42);
 	}
 
 	@Test

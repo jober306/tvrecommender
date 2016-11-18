@@ -195,13 +195,8 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 *            The ratio of Tv events there should be in each folder.
 	 * @return An array of RecsysTVDataSet.
 	 */
-	public RecsysTVDataSet[] splitDataRandomly(double[] ratios) {
-		JavaRDD<RecsysTVEvent>[] split = eventsData.randomSplit(ratios);
-		RecsysTVDataSet[] splittedDataSet = new RecsysTVDataSet[split.length];
-		for(int i = 0; i < split.length; i++){
-			splittedDataSet[i] = new RecsysTVDataSet(split[i], sc);
-		}
-		return splittedDataSet;
+	public JavaRDD<RecsysTVEvent>[] splitTVEventsRandomly(double[] ratios) {
+		return eventsData.randomSplit(ratios);
 	}
 
 	/**

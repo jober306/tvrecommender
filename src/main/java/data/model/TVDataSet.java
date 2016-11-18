@@ -2,10 +2,12 @@ package data.model;
 
 import java.util.List;
 
+import org.apache.commons.math.random.AbstractRandomGenerator;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
+import data.recsys.model.RecsysTVEvent;
 import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
@@ -21,9 +23,13 @@ public abstract class TVDataSet<T extends TVEvent>{
 	
 	//--------General Utilities methods--------------------
 	abstract public JavaRDD<T> getEventsData();
-	abstract public int getNumberOfUsers();
-	abstract public int getNumberOfItems();
+	abstract public boolean isEmpty();
+	abstract public boolean contains(T event);
 	abstract public List<Integer> getAllUserIds();
 	abstract public List<Integer> getAllProgramIds();
-	abstract public boolean isEmpty();
+	abstract public List<Integer> getAllEventIds();
+	abstract public int getNumberOfUsers();
+	abstract public int getNumberOfItems();
+	abstract public int count();
+	abstract public JavaRDD<T>[] splitTVEventsRandomly(double[] ratios);
 }
