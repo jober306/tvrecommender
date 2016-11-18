@@ -8,13 +8,9 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
 
 import algorithm.QuickSelect;
-import data.recsys.loader.RecsysTVDataSetLoader;
-import data.recsys.model.RecsysTVDataSet;
 import recommender.aggregation.AggregationFunction;
-import recommender.aggregation.MeanFunction;
 import recommender.model.UserItemMatrix;
 import recommender.model.UserSimilaritiesMatrix;
-import recommender.similarities.CosineSimilarity;
 import recommender.similarities.Similarity;
 
 /**
@@ -63,12 +59,5 @@ public class UserBasedRecommender {
 			predictions.add(topN.get(i).getFirst());
 		}
 		return predictions;
-	}
-	
-	public static void main(String[] args){
-		RecsysTVDataSetLoader dataSetLoader = new RecsysTVDataSetLoader();
-		RecsysTVDataSet dataSet = dataSetLoader.loadDataSet();
-		UserBasedRecommender predictor = new UserBasedRecommender(dataSet.convertToUserItemMatrix(), CosineSimilarity.getInstance(), new MeanFunction(), 50);
-		List<Integer> predictedItems = predictor.predict(3, 10);
 	}
 }

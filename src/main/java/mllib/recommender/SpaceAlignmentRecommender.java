@@ -6,7 +6,6 @@ import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
-import recommender.prediction.Recommender;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.spark.api.java.JavaSparkContext;

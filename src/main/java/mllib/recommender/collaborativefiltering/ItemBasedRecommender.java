@@ -13,7 +13,6 @@ import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import algorithm.QuickSelect;
-import ch.epfl.lamp.fjbg.JConstantPool.Entry;
 
 /**
  * Class that recommends items for a specific user using collaborative filtering
