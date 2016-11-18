@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
 
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
