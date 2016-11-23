@@ -1,5 +1,7 @@
 package data.model;
 
+import org.apache.spark.mllib.linalg.Vector;
+
 /**
  * TVEvent interface force the class implementing it to implement a minimum of getter methods essential to tv
  * recommendation.
@@ -16,6 +18,7 @@ public abstract class TVEvent {
 	abstract public int getProgramID();
 	abstract public int getEventID();
 	abstract public int getDuration();
+	abstract public Vector getProgramFeatureVector();
 	@Override
 	abstract public boolean equals(Object other);
 	@Override

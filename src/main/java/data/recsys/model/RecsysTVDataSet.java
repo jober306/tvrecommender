@@ -274,18 +274,9 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		.reduceByKey((tvEvent1,tvEvent2) -> tvEvent1).map( pair -> {		
 			RecsysTVEvent event =  pair._2();
 			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramID());
-			return new IndexedRow(programIndex, Vectors.dense(extractFeaturesFromShow(event)));
+			return new IndexedRow(programIndex, event.getProgramFeatureVector());
 		});
 		return new IndexedRowMatrix(contentMatrix.rdd());
-	}
-	
-	private double[] extractFeaturesFromShow(RecsysTVEvent event){
-		double[] features = new double[4];
-		features[0] = event.getChannelID();
-		features[1] = event.getSlot();
-		features[2] = event.getGenreID();
-		features[3] = event.getSubgenreID();
-		return features;
 	}
 
 	public UserItemMatrix convertToUserItemMatrix() {

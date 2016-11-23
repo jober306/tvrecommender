@@ -2,6 +2,9 @@ package data.recsys.model;
 
 import java.io.Serializable;
 
+import org.apache.spark.mllib.linalg.Vector;
+import org.apache.spark.mllib.linalg.Vectors;
+
 import data.model.TVEvent;
 
 /**
@@ -144,6 +147,15 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 */
 	public int getDuration() {
 		return duration;
+	}
+	
+	public Vector getProgramFeatureVector(){
+		double[] features = new double[4];
+		features[0] = channelID;
+		features[1] = slot;
+		features[2] = genreID;
+		features[3] = subgenreID;
+		return Vectors.dense(features);
 	}
 	
 	/**
