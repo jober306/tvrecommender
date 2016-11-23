@@ -70,8 +70,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 */
 	public RecsysTVDataSet(JavaRDD<RecsysTVEvent> eventsData,
 			JavaSparkContext sc, boolean createMap) {
-		this.eventsData = eventsData;
-		this.sc = sc;
+		super(eventsData, sc);
 		if(createMap){
 			initializeMapReader();
 			broadcastedIdMap = sc.broadcast(idMap);
@@ -90,23 +89,6 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		mapCreator.createProgramIDToIDMap(getAllProgramIds());
 		mapCreator.createEventIDToIDMap(getAllEventIds());
 		idMap = new RecSysMapReader(mapCreator.getFileNames());
-	}
-
-	/**
-	 * Getter method that return the data attached to this data set.
-	 * 
-	 * @return The java RDD containing all the recsys tv event.
-	 */
-	public JavaRDD<RecsysTVEvent> getEventsData() {
-		return eventsData;
-	}
-	
-	/**
-	 * Method that returns the java spark context used to load this data set.
-	 * @return The java spark context used to load this data set.
-	 */
-	public JavaSparkContext getJavaSparkContext(){
-		return sc;
 	}
 
 	/**

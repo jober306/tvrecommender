@@ -12,6 +12,15 @@ import recommender.model.UserItemMatrix;
 
 public abstract class TVDataSet<T extends TVEvent>{
 	
+	protected JavaRDD<T> eventsData;
+	protected JavaSparkContext sc;
+	
+	//------Data set constructor------------------------
+	public TVDataSet(JavaRDD<T> eventsData, JavaSparkContext sc){
+		this.eventsData = eventsData;
+		this.sc = sc;
+	}
+	
 	//------Recommender model convertion method----------
 	abstract public UserItemMatrix convertToUserItemMatrix();
 	
@@ -21,8 +30,22 @@ public abstract class TVDataSet<T extends TVEvent>{
 	abstract public IndexedRowMatrix getContentMatrix();
 	
 	//--------General Utilities methods--------------------
-	abstract public JavaRDD<T> getEventsData();
-	abstract public JavaSparkContext getJavaSparkContext();
+	/**
+	 * Getter method that return the data attached to this data set.
+	 * 
+	 * @return The java RDD containing all the recsys tv event.
+	 */
+	public JavaRDD<T> getEventsData(){
+		return eventsData;
+	}
+	
+	/**
+	 * Method that returns the java spark context used to load this data set.
+	 * @return The java spark context used to load this data set.
+	 */
+	public JavaSparkContext getJavaSparkContext(){
+		return sc;
+	}
 	abstract public boolean isEmpty();
 	abstract public boolean contains(T event);
 	abstract public List<Integer> getAllUserIds();
