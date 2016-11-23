@@ -59,7 +59,9 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	}
 	
 	private void evaluateNeighbourhoodCoverage(){
-		
+		for(int n = 2; n < 50; n++){
+			
+		}
 	}
 	
 	private void evaluateMeanAveragePrecision(){

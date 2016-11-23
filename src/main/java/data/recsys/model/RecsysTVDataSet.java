@@ -17,6 +17,7 @@ import recommender.model.UserItemMatrix;
 import scala.Tuple2;
 import spark.utilities.SparkUtilities;
 import data.model.TVDataSet;
+import data.recsys.mapper.MappedIds;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
 import mllib.model.DistributedUserItemMatrix;
@@ -29,7 +30,7 @@ import mllib.model.DistributedUserItemMatrix;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serializable{
+public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serializable, MappedIds{
 	
 	private static final long serialVersionUID = 1L;
 
