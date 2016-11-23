@@ -13,6 +13,8 @@ import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import algorithm.QuickSelect;
+import data.model.TVDataSet;
+import data.model.TVEvent;
 
 /**
  * Class that recommends items for a specific user using collaborative filtering
@@ -21,8 +23,13 @@ import algorithm.QuickSelect;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender {
-
+public class ItemBasedRecommender<T extends TVEvent> {
+	
+	/**
+	 * The tv data set on which the matrix M prime will be build.
+	 */
+	TVDataSet<T> tvDataset;
+	
 	/**
 	 * The user item matrix.
 	 */
@@ -41,8 +48,8 @@ public class ItemBasedRecommender {
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(DistributedUserItemMatrix R) {
-		this.R = R;
+	public ItemBasedRecommender(TVDataSet<T> dataSet) {
+		R = dataSet.convertToDistUserItemMatrix();
 		S = R.getItemSimilarities();
 	}
 

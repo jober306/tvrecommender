@@ -61,39 +61,4 @@ public class RecsysTVDataSetUtilitiesTest {
 		assertTrue(RecsysTVDataSetUtilities.getSubgenreName((byte) 2, (byte) 14).equals("skiing"));
 		assertTrue(RecsysTVDataSetUtilities.getSubgenreName((byte) 6, (byte) 90).equals("economics"));
 	}
-	
-	@Test
-	public void filterByMinTimeViewTest() {
-		JavaRDD<RecsysTVEvent> filtered_0 = RecsysTVDataSetUtilities.filterByMinTimeView(dataSet,0);
-		assertTrue(filtered_0.count() == 3);
-		JavaRDD<RecsysTVEvent> filtered_10 = RecsysTVDataSetUtilities.filterByMinTimeView(dataSet,10);
-		assertTrue(filtered_10.count() == 2);
-		JavaRDD<RecsysTVEvent> filtered_20 = RecsysTVDataSetUtilities.filterByMinTimeView(dataSet,20);
-		assertTrue(filtered_20.count() == 1);
-		JavaRDD<RecsysTVEvent> filtered_30 = RecsysTVDataSetUtilities.filterByMinTimeView(dataSet,30);
-		assertTrue(filtered_30.count() == 0);
-	}
-
-	@Test
-	public void filterByIntervalOfWeekTest() {
-		JavaRDD<RecsysTVEvent> filtered = RecsysTVDataSetUtilities.filterByIntervalOfWeek(dataSet,1, 2);
-		assertEquals(2, filtered.count());
-	}
-
-	@Test
-	public void filterByIntervalOfSlotTest() {
-		JavaRDD<RecsysTVEvent> filtered = RecsysTVDataSetUtilities.filterByIntervalOfSlot(dataSet,7, 7);
-		assertEquals(1, filtered.count());
-	}
-
-	@Test
-	public void filterByIntervalOfDayTest() {
-		JavaRDD<RecsysTVEvent> filtered = RecsysTVDataSetUtilities.filterByIntervalOfDay(dataSet,2, 7);
-		assertEquals(1, filtered.count());
-	}
-	
-	@After
-	public void tearDown(){
-		dataSet.close();
-	}
 }

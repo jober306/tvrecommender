@@ -13,20 +13,20 @@ import org.junit.Test;
 
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
+import data.recsys.model.RecsysTVEvent;
 
 public class ItemBasedRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static DistributedUserItemMatrix R;
-	static ItemBasedRecommender recommender;
+	static ItemBasedRecommender<RecsysTVEvent> recommender;
 	static RecsysTVDataSet dataSet;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
-		R = dataSet.convertToDistUserItemMatrix();
-		recommender = new ItemBasedRecommender(R);
+		recommender = new ItemBasedRecommender<RecsysTVEvent>(dataSet);
 	}
 
 	@Test

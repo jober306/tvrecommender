@@ -21,6 +21,8 @@ public abstract class TVDataSet<T extends TVEvent>{
 		this.sc = sc;
 	}
 	
+	abstract public  TVDataSet<T> buildDataSetFromRawData(JavaRDD<T> eventsData, JavaSparkContext sc);
+	
 	//------Recommender model convertion method----------
 	abstract public UserItemMatrix convertToUserItemMatrix();
 	

@@ -79,6 +79,10 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 			mapClosed = true;
 		}
 	}
+	
+	public  TVDataSet<RecsysTVEvent> buildDataSetFromRawData(JavaRDD<RecsysTVEvent> eventsData, JavaSparkContext sc){
+		return new RecsysTVDataSet(eventsData, sc, true);
+	}
 
 	/**
 	 * Method that initializes the map reader.
