@@ -4,8 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import mllib.model.DistributedUserItemMatrix;
-
 import org.apache.commons.math3.util.Pair;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -14,11 +12,11 @@ import org.junit.Test;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import scala.Tuple2;
 
 public class ItemBasedRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
-	static DistributedUserItemMatrix R;
 	static ItemBasedRecommender<RecsysTVEvent> recommender;
 	static RecsysTVDataSet dataSet;
 
@@ -34,13 +32,13 @@ public class ItemBasedRecommenderTest {
 		int userIndex = 2;
 		int itemIndex = 4;
 		int n = 16;
-		List<Pair<Integer, Double>> neighborhood = recommender
-				.getItemNeighborhoodForUser(userIndex, itemIndex, n);
-		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
+		List<Tuple2<Integer, Double>> neighborhood = recommender
+				.predictItemNeighbourhoodForUser(userIndex, itemIndex, n);
+		int[] itemIndexesSeenByUser = recommender.R.getItemIndexesSeenByUser(userIndex);
 		for (int i = 0; i < neighborhood.size(); i++) {
-			Pair<Integer, Double> posValue = neighborhood.get(i);
-			int pos = posValue.getFirst();
-			double value = posValue.getSecond();
+			Tuple2<Integer, Double> posValue = neighborhood.get(i);
+			int pos = posValue._1();
+			double value = posValue._2();
 			assertTrue(arrayContains(itemIndexesSeenByUser, pos));
 			assertTrue(value >= 0);
 			assertTrue(value <= 1);

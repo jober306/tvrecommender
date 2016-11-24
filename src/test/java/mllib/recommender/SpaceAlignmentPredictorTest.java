@@ -5,12 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import mllib.model.DistributedUserItemMatrix;
-
 import org.apache.commons.math3.util.Pair;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
-import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,13 +15,12 @@ import org.junit.Test;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import scala.Tuple2;
 
 public class SpaceAlignmentPredictorTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	final static int r = 2;
-	static DistributedUserItemMatrix R;
-	static IndexedRowMatrix C;
 	static RecsysTVDataSet dataSet;
 	static SpaceAlignmentRecommender<RecsysTVEvent> predictor;
 
@@ -50,18 +46,24 @@ public class SpaceAlignmentPredictorTest {
 		Vector newItem = Vectors.dense(new double[] { 46, 19, 5, 81 });
 		int userIndex = 2;
 		int n = 1;
-		List<Pair<Integer, Double>> neighborhood = predictor
+		List<Tuple2<Integer, Double>> neighborhood = predictor
 				.predictNewItemNeighborhoodForUser(newItem, userIndex, n);
 		assertEquals(n, neighborhood.size());
-		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
+		int[] itemIndexesSeenByUser = predictor.R.getItemIndexesSeenByUser(userIndex);
 		for (int i = 0; i < n; i++) {
-			Pair<Integer, Double> posValue = neighborhood.get(i);
-			int pos = posValue.getFirst();
-			double value = posValue.getSecond();
+			Tuple2<Integer, Double> posValue = neighborhood.get(i);
+			int pos = posValue._1();
 			assertTrue(arrayContains(itemIndexesSeenByUser, pos));
-			assertTrue(value >= 0);
-			assertTrue(value <= 1);
 		}
+	}
+	
+	@Test
+	public void predictNewItemNeighbourhoodTest(){
+		Vector newItem = Vectors.dense(new double[] { 46, 19, 5, 81 });
+		int n = 6;
+		List<Tuple2<Integer, Double>> neighborhood = predictor
+				.predictNewItemNeighbourhood(newItem, n);
+		assertEquals(n, neighborhood.size());
 	}
 	
 	@Test

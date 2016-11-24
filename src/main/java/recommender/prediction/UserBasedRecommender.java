@@ -12,6 +12,7 @@ import recommender.aggregation.AggregationFunction;
 import recommender.model.UserItemMatrix;
 import recommender.model.UserSimilaritiesMatrix;
 import recommender.similarities.Similarity;
+import scala.Tuple2;
 
 /**
  * TODO: Not implemented correctly. Should implements the Recommender interface.
@@ -54,9 +55,9 @@ public class UserBasedRecommender {
 		for(int index : alreadyRatedIndexesPerUser.get(userID)){
 			userRatings[index] = Double.MIN_VALUE;
 		}
-		List<Pair<Integer,Double>> topN = QuickSelect.selectTopN(ArrayUtils.toObject(userRatings), numberOfResults);
+		List<Tuple2<Integer,Double>> topN = QuickSelect.selectTopN(ArrayUtils.toObject(userRatings), numberOfResults);
 		for(int i = 0; i < numberOfResults; i++){
-			predictions.add(topN.get(i).getFirst());
+			predictions.add(topN.get(i)._1());
 		}
 		return predictions;
 	}

@@ -7,6 +7,8 @@ import java.util.Random;
 
 import org.apache.commons.math3.util.Pair;
 
+import scala.Tuple2;
+
 public class QuickSelect {
 
 	/***********************************************************************
@@ -40,42 +42,42 @@ public class QuickSelect {
 	 * smallest.
 	 * 
 	 **********************************************************************/
-	public static Pair<Integer, Double> select(Double[] G, int k) {
-		List<Pair<Integer, Double>> Gp = new ArrayList<Pair<Integer, Double>>();
+	public static Tuple2<Integer, Double> select(Double[] G, int k) {
+		List<Tuple2<Integer, Double>> Gp = new ArrayList<Tuple2<Integer, Double>>();
 		for (int i = 0; i < G.length; i++) {
-			Gp.add(new Pair<Integer, Double>(i, G[i]));
+			Gp.add(new Tuple2<Integer, Double>(i, G[i]));
 		}
 		return quickselect(Gp, 0, G.length - 1, k - 1);
 	}
 
-	public static List<Pair<Integer, Double>> selectTopN(Double[] G, int k) {
-		List<Pair<Integer, Double>> topN = new ArrayList<Pair<Integer, Double>>();
+	public static List<Tuple2<Integer, Double>> selectTopN(Double[] G, int k) {
+		List<Tuple2<Integer, Double>> topN = new ArrayList<Tuple2<Integer, Double>>();
 		for (int i = 1; i <= k; i++) {
 			topN.add(QuickSelect.select(G, i));
 		}
 		return topN;
 	}
 
-	public static List<Pair<Integer, Double>> selectTopN(int[] indices,
+	public static List<Tuple2<Integer, Double>> selectTopN(int[] indices,
 			double[] values, int k) {
-		List<Pair<Integer, Double>> topN = new ArrayList<Pair<Integer, Double>>();
+		List<Tuple2<Integer, Double>> topN = new ArrayList<Tuple2<Integer, Double>>();
 		for (int i = 1; i <= k; i++) {
 			topN.add(QuickSelect.select(indices, values, i));
 		}
 		return topN;
 	}
 
-	public static Pair<Integer, Double> select(int indices[], double values[],
+	public static Tuple2<Integer, Double> select(int indices[], double values[],
 			int k) {
-		List<Pair<Integer, Double>> Gp = new ArrayList<Pair<Integer, Double>>();
+		List<Tuple2<Integer, Double>> Gp = new ArrayList<Tuple2<Integer, Double>>();
 		for (int i = 0; i < indices.length; i++) {
-			Gp.add(new Pair<Integer, Double>(indices[i], values[i]));
+			Gp.add(new Tuple2<Integer, Double>(indices[i], values[i]));
 		}
 		return quickselect(Gp, 0, indices.length - 1, k - 1);
 	}
 
-	private static Pair<Integer, Double> quickselect(
-			List<Pair<Integer, Double>> Gp, int first, int last, int k) {
+	private static Tuple2<Integer, Double> quickselect(
+			List<Tuple2<Integer, Double>> Gp, int first, int last, int k) {
 		if (first <= last) {
 			int pivot = partition(Gp, first, last);
 			if (pivot == k) {
@@ -86,15 +88,15 @@ public class QuickSelect {
 			}
 			return quickselect(Gp, pivot + 1, last, k);
 		}
-		return new Pair<Integer, Double>(-1, 0.0d);
+		return new Tuple2<Integer, Double>(-1, 0.0d);
 	}
 
-	private static int partition(List<Pair<Integer, Double>> Gp, int first,
+	private static int partition(List<Tuple2<Integer, Double>> Gp, int first,
 			int last) {
 		int pivot = first + new Random().nextInt(last - first + 1);
 		swap(Gp, last, pivot);
 		for (int i = first; i < last; i++) {
-			if (Gp.get(i).getValue() > Gp.get(last).getValue()) {
+			if (Gp.get(i)._2() > Gp.get(last)._2()) {
 				swap(Gp, i, first);
 				first++;
 			}
@@ -103,7 +105,7 @@ public class QuickSelect {
 		return first;
 	}
 
-	private static void swap(List<Pair<Integer, Double>> Gp, int x, int y) {
+	private static void swap(List<Tuple2<Integer, Double>> Gp, int x, int y) {
 		Collections.swap(Gp, x, y);
 	}
 }

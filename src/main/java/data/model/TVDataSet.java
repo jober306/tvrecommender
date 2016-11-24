@@ -1,5 +1,6 @@
 package data.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -10,10 +11,11 @@ import org.apache.spark.mllib.recommendation.Rating;
 import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
-public abstract class TVDataSet<T extends TVEvent>{
+public abstract class TVDataSet<T extends TVEvent> implements Serializable{
 	
-	protected JavaRDD<T> eventsData;
-	protected JavaSparkContext sc;
+	private static final long serialVersionUID = 1L;
+	transient protected JavaRDD<T> eventsData;
+	transient protected JavaSparkContext sc;
 	
 	//------Data set constructor------------------------
 	public TVDataSet(JavaRDD<T> eventsData, JavaSparkContext sc){

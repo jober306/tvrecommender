@@ -3,16 +3,22 @@ package mllib.recommender.collaborativefiltering;
 import static java.lang.Math.toIntExact;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
+import scala.Tuple2;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
+import org.netlib.util.intW;
 
 import algorithm.QuickSelect;
+import breeze.util.quickSelect;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 
@@ -33,7 +39,7 @@ public class ItemBasedRecommender<T extends TVEvent> {
 	/**
 	 * The user item matrix.
 	 */
-	DistributedUserItemMatrix R;
+	public DistributedUserItemMatrix R;
 
 	/**
 	 * The item similarities matrix. It is a symetric matrix represented only by
@@ -54,12 +60,9 @@ public class ItemBasedRecommender<T extends TVEvent> {
 	}
 
 	/**
-	 * Method that returns the neighborhood of an item for a specific user. It
+	 * Method that returns the neighborhood of an item. It
 	 * returns the top n item indices and values in decreasing order.
 	 * 
-	 * @param userIndex
-	 *            The index of the user (the neighborhood returned will only
-	 *            contains items seen by this user).
 	 * @param itemIndex
 	 *            The item index from which we calculate its neighborhood.
 	 * @param n
@@ -67,33 +70,40 @@ public class ItemBasedRecommender<T extends TVEvent> {
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	public List<Pair<Integer, Double>> getItemNeighborhoodForUser(
-			int userIndex, int itemIndex, int n) {
-		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
-		int[] targetItemIndex = new int[itemIndexesSeenByUser.length];
-		Arrays.fill(targetItemIndex, itemIndex);
-		MllibUtilities.convertToUpperTriangularMatrixIndices(
-				itemIndexesSeenByUser, targetItemIndex);
-		List<MatrixEntry> entries = S
-				.entries()
-				.toJavaRDD()
-				.filter(entry -> {
-					int entryRow = toIntExact(entry.i());
-					int entryCol = toIntExact(entry.j());
-					return MllibUtilities.entryContainedInListOfEntries(
-							entryRow, entryCol, itemIndexesSeenByUser,
-							targetItemIndex);
-				}).collect();
-		int[] indices = new int[entries.size()];
-		double[] values = new double[entries.size()];
-		for (int i = 0; i < entries.size(); i++) {
-			MatrixEntry entry = entries.get(i);
-			int rowIndex = toIntExact(entry.i());
-			indices[i] = rowIndex == itemIndex ? toIntExact(entry.j())
-					: rowIndex;
-			values[i] = entry.value();
-		}
-		return QuickSelect.selectTopN(indices, values,
-				Math.min(n, entries.size()));
+	public List<Tuple2<Integer, Double>> predictItemNeighbourhood(int itemIndex, int n) {
+		List<Double> similarities = S.entries().toJavaRDD().filter(matrixEntry -> {
+			long rowIndex = matrixEntry.i();
+			long colIndex = matrixEntry.j();
+			if(rowIndex < colIndex){
+				return colIndex == itemIndex;
+			}else if(rowIndex == colIndex){
+				return false;
+			}
+			else{
+				return rowIndex == itemIndex;
+			}
+		}).map(matrixEntry -> matrixEntry.value()).collect();
+		return QuickSelect.selectTopN(similarities.toArray(new Double[similarities.size()]), n);
+	}
+	
+	/**
+	 * Method that returns the neighborhood of a new item for a specific user.
+	 * It returns the top n item indices and values in decreasing order.
+	 * 
+	 * @param coldStartItemContent
+	 *            The content of the new item.
+	 * @param userIndex
+	 *            The index of the user (the neighborhood returned will only
+	 *            contains items seen by this user).
+	 * @param n
+	 *            The size of the neighborhoods set.
+	 * @return A list of pair containing respectively the item index in the user
+	 *         item matrix and the similarity value.
+	 */
+	public List<Tuple2<Integer, Double>> predictItemNeighbourhoodForUser(int userIndex,int itemIndex, int n) {
+		List<Integer> itemsSeenByUser = Arrays.asList(ArrayUtils.toObject(R.getItemIndexesSeenByUser(userIndex)));
+		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(itemIndex, n);
+		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood.stream().filter(pair -> itemsSeenByUser.contains(pair._1())).collect(Collectors.toList());
+		return itemsNeighbourhood.subList(0, Math.min(itemsNeighbourhoodForUser.size(), n));
 	}
 }

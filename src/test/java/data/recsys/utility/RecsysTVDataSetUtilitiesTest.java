@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,5 +60,10 @@ public class RecsysTVDataSetUtilitiesTest {
 		assertTrue(RecsysTVDataSetUtilities.getGenreName((byte)4).equals("society"));
 		assertTrue(RecsysTVDataSetUtilities.getSubgenreName((byte) 2, (byte) 14).equals("skiing"));
 		assertTrue(RecsysTVDataSetUtilities.getSubgenreName((byte) 6, (byte) 90).equals("economics"));
+	}
+	
+	@After
+	public void tearDown(){
+		dataSet.close();
 	}
 }

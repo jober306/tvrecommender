@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.hadoop.net.AbstractDNSToSwitchMapping;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
@@ -33,16 +34,6 @@ import mllib.model.DistributedUserItemMatrix;
 public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serializable, MappedIds{
 	
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * The data set in JavaRDD format.
-	 */
-	transient JavaRDD<RecsysTVEvent> eventsData;
-
-	/**
-	 * The spark context in which the data was loaded.
-	 */
-	transient JavaSparkContext sc;
 
 	/**
 	 * The map reader that maps userID of the recsysTVDataset to an unique id
@@ -311,6 +302,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	}
 
 	public int getMappedProgramID(int programID) {
+		System.out.println(idMap.getProgramIDtoIDMap().containsKey(programID));
 		return idMap.getProgramIDtoIDMap().get(programID);
 	}
 

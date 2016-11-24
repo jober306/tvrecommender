@@ -3,16 +3,21 @@ package mlllib.evaluator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.Pair;
-import org.apache.hadoop.hdfs.server.namenode.HostFileManager.EntrySet;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
 
+import com.google.inject.spi.Element;
+
 import data.model.TVDataSet;
 import data.model.TVEvent;
+import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.mapper.MappedIds;
+import data.recsys.model.RecsysTVDataSet;
+import data.recsys.model.RecsysTVEvent;
 import data.utility.TVDataSetUtilities;
 import mllib.recommender.SpaceAlignmentRecommender;
 import mllib.recommender.collaborativefiltering.ItemBasedRecommender;
@@ -25,14 +30,16 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	SpaceAlignmentRecommender<T> actualRecommender;
 	ItemBasedRecommender<T> expectedRecommender;
 	
-	Map<Integer, Vector> originalsNewItemsIds;
+	List<Tuple2<Integer, Vector>> originalsNewItemsIds;
+	boolean trainingSetIdsMapped;
+	boolean testSetIdsMapped;
 	MappedIds trainingSetMap;
 	MappedIds testSetMap;
 	
 	EvaluationMeasure[] measures;
 	Map<EvaluationMeasure, Double> evaluationResults;
 	
-	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures) throws NoSuchMethodException, SecurityException{
+	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures){
 		JavaSparkContext sc = tvDataSet.getJavaSparkContext();
 		TVDataSetUtilities<T> dataSetUtilities = new TVDataSetUtilities<T>();
 		int week = 3;
@@ -44,20 +51,16 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		testSet = tvDataSet.buildDataSetFromRawData(week3.union(weekFourDayOne), sc);
 		actualRecommender = new SpaceAlignmentRecommender<T>(trainingSet, r);
 		expectedRecommender = new ItemBasedRecommender<T>(testSet);
-		originalsNewItemsIds = weekFourDayOne.mapToPair(tvEvent -> new Tuple2<Integer, Vector>(tvEvent.getProgramID(), tvEvent.getProgramFeatureVector())).reduceByKey((arg1, arg2) -> arg1).collectAsMap();
+		originalsNewItemsIds = weekFourDayOne.mapToPair(tvEvent -> new Tuple2<Integer, Vector>(tvEvent.getProgramID(), tvEvent.getProgramFeatureVector())).reduceByKey((arg1, arg2) -> arg1).collect();
 		initializeMap();
 		this.measures = measures;
 	}
 	
 	private void initializeMap(){
-		trainingSetMap = null;
-		if(trainingSet instanceof MappedIds){
-			trainingSetMap = (MappedIds) trainingSet;
-		}
-		testSetMap = null;
-		if(testSetMap instanceof MappedIds){
-			testSetMap = (MappedIds) testSet;
-		}
+		trainingSetIdsMapped = trainingSet instanceof MappedIds;
+		testSetIdsMapped = testSet instanceof MappedIds;
+		trainingSetMap = trainingSetIdsMapped ? (MappedIds) trainingSet : null;
+		testSetMap = testSetIdsMapped ? (MappedIds) testSet : null;
 	}
 	
 	public void evaluate(){
@@ -83,18 +86,40 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	}
 	
 	private void evaluateNeighbourhoodCoverage(){
-		int numberOfUsers = trainingSet.getNumberOfUsers();
-		for(Entry<Integer,Vector> originalItemIdsContent : originalsNewItemsIds.entrySet()){
-			int originalNewItemId = originalItemIdsContent.getKey();
-			Vector newItemContent  = originalItemIdsContent.getValue();
-			Tuple2<Integer, Integer> mappedItemIds = getMappedItemIds(originalNewItemId);
-			for(int i = 0; i < numberOfUsers; i++){
-				int originalUserId = trainingSetMap == null ? i : trainingSetMap.getOriginalUserID(i);
-				Tuple2<Integer, Integer> mappedUserIds = getMappedUserIds(originalUserId);
-				List<Pair<Integer, Double>> actualNeighbours = actualRecommender.predictNewItemNeighborhoodForUser(newItemContent, mappedUserIds._1(), 50);
-				List<Pair<Integer, Double>> expectedNeighbours = expectedRecommender.getItemNeighborhoodForUser(mappedUserIds._2(), mappedItemIds._2(), 50);
-			}
+		int n = 10;
+		double totalCoverage = 0.0d;
+		for(Tuple2<Integer,Vector> originalItemIdsContent : originalsNewItemsIds){
+			int originalNewItemId = originalItemIdsContent._1();
+			Vector newItemContent  = originalItemIdsContent._2();
+			int mappedExpectedItemId = testSetMap == null ? originalNewItemId : testSetMap.getMappedProgramID(originalNewItemId);
+			List<Integer> actualNeighboursMappedID = getFirstArgument(actualRecommender.predictNewItemNeighbourhood(newItemContent, n));
+			List<Integer> expectedNeighboursMappedID = getFirstArgument(expectedRecommender.predictItemNeighbourhood(mappedExpectedItemId, n));
+			expectedNeighboursMappedID = substract(expectedNeighboursMappedID, getFirstArgument(originalsNewItemsIds));
+			List<Integer> actualNeighboursOriginalID = trainingSetIdsMapped ? getOriginalItemIds(trainingSetMap, actualNeighboursMappedID) : actualNeighboursMappedID;
+			List<Integer> expectedNeighboursOriginalID = testSetIdsMapped ? getOriginalItemIds(testSetMap, expectedNeighboursMappedID) : expectedNeighboursMappedID;
+			totalCoverage += (double)intersection(actualNeighboursOriginalID, expectedNeighboursOriginalID).size() / (double)expectedNeighboursOriginalID.size();
 		}
+		evaluationResults.put(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE, totalCoverage / (double) originalsNewItemsIds.size());
+	}
+	
+	private <E,U> List<E> getFirstArgument(List<Tuple2<E, U>> neighbourIndexesAndValues){
+		return neighbourIndexesAndValues.stream().map(Tuple2::_1).collect(Collectors.toList());
+	} 
+	
+	private <E,U> List<U> getSecondArgument(List<Tuple2<E, U>> neighbourIndexesAndValues){
+		return neighbourIndexesAndValues.stream().map(Tuple2::_2).collect(Collectors.toList());
+	}
+	
+	private <U> List<U> intersection(List<U> l1, List<U> l2){
+		return l1.stream().filter(l2::contains).collect(Collectors.toList());
+	}
+	
+	private <U> List<U> substract(List<U> original, List<U> listToSubstract){
+		return original.stream().filter(element -> !listToSubstract.contains(element)).collect(Collectors.toList());
+	}
+	
+	private List<Integer> getOriginalItemIds(MappedIds map, List<Integer> l){
+		return l.stream().map(id -> map.getOriginalProgramID(id)).collect(Collectors.toList());
 	}
 	
 	private void evaluateMeanAveragePrecision(){
@@ -105,15 +130,12 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		
 	}
 	
-	private Tuple2<Integer, Integer> getMappedItemIds(int originalItemId){
-		int trainingSetId = trainingSetMap == null ? originalItemId : trainingSetMap.getMappedProgramID(originalItemId);
-		int testSetId = testSetMap == null ? originalItemId : testSetMap.getMappedProgramID(originalItemId);
-		return new Tuple2<Integer, Integer>(trainingSetId, testSetId);
-	}
-	
-	private Tuple2<Integer, Integer> getMappedUserIds(int originalUserId){
-		int trainingSetId = trainingSetMap == null ? originalUserId : trainingSetMap.getMappedUserID(originalUserId);
-		int testSetId = testSetMap == null ? originalUserId : testSetMap.getMappedUserID(originalUserId);
-		return new Tuple2<Integer, Integer>(trainingSetId, testSetId);
+	public static void main(String[] args){
+		EvaluationMeasure[] measures = new EvaluationMeasure[]{EvaluationMeasure.NEIGHBOURHOOD_COVERAGE};
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
+		RecsysTVDataSet dataSet = loader.loadDataSet();
+		SpaceAlignmentEvaluator<RecsysTVEvent> evaluator = new SpaceAlignmentEvaluator<RecsysTVEvent>(dataSet, measures);
+		evaluator.evaluate();
+		System.out.println("RESULT: " + evaluator.getResults().get(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE));
 	}
 }

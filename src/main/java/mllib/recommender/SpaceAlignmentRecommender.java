@@ -2,10 +2,12 @@ package mllib.recommender;
 
 import static java.lang.Math.toIntExact;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
+import scala.Tuple2;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.spark.mllib.linalg.Matrix;
@@ -38,7 +40,7 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	/**
 	 * The user item (or rating) matrix that represents the tv data set.
 	 */
-	DistributedUserItemMatrix R;
+	public DistributedUserItemMatrix R;
 
 	/**
 	 * The already seen item contents matrix. Suppose each item is represented
@@ -118,7 +120,7 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	public List<Pair<Integer, Double>> predictNewItemNeighborhoodForUser(
+	public List<Tuple2<Integer, Double>> predictNewItemNeighborhoodForUser(
 			Vector coldStartItemContent, int userIndex, int n) {
 		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
 		double[] itemSeenByUserSimilarities = predictAllItemSimilarities(
@@ -128,10 +130,25 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 				Math.min(n, itemSeenByUserSimilarities.length));
 	}
 	
-	private double calculateNeighboursScore(List<Pair<Integer, Double>> neighbours){
+	/**
+	 * Method that returns the neighborhood of a new item.
+	 * It returns the top n item indices and values in decreasing order.
+	 * 
+	 * @param coldStartItemContent
+	 *            The content of the new item.
+	 * @param n
+	 *            The size of the neighborhoods set.
+	 * @return A list of pair containing respectively the item index and the item similarity value.
+	 */
+	public List<Tuple2<Integer, Double>> predictNewItemNeighbourhood(Vector coldStartItemContent, int n){
+		Double[] similarities = predictAllItemSimilarities(coldStartItemContent);
+		return QuickSelect.selectTopN(similarities, n);
+	}
+	
+	private double calculateNeighboursScore(List<Tuple2<Integer, Double>> neighbours){
 		double score = 0.0d;
-		for(Pair<Integer, Double> neighbour : neighbours){
-			score += neighbour.getSecond();
+		for(Tuple2<Integer, Double> neighbour : neighbours){
+			score += neighbour._2();
 		}
 		if(neighbours.size() == 0)
 			return score;
@@ -149,13 +166,13 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	public int[] recommend(int userId, int numberOfResults, Vector[] newTvShowsContent, int n) {
 		Double[] neighboursScores = new Double[newTvShowsContent.length];
 		for(int i = 0; i < newTvShowsContent.length; i++){
-			List<Pair<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent[i], userId, n);
+			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent[i], userId, n);
 			neighboursScores[i] = calculateNeighboursScore(neighbours);
 		}
-		List<Pair<Integer, Double>> sortedScore = QuickSelect.selectTopN(neighboursScores, numberOfResults);
+		List<Tuple2<Integer, Double>> sortedScore = QuickSelect.selectTopN(neighboursScores, numberOfResults);
 		int[] recommendationIndexes = new int[numberOfResults];
 		for(int i = 0; i < numberOfResults; i++){
-			recommendationIndexes[i] = sortedScore.get(i).getFirst();
+			recommendationIndexes[i] = sortedScore.get(i)._1();
 		}
 		return recommendationIndexes;
 	}
@@ -166,6 +183,15 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 		for (int i = 0; i < itemIndexes.length; i++) {
 			similarities[i] = predictItemsSimilarity(coldStartItemContent,
 					itemIndexes[i]);
+		}
+		return similarities;
+	}
+	
+	private Double[] predictAllItemSimilarities(Vector coldStartItemContent) {
+		int numberOfItems = tvDataset.getNumberOfItems();
+		Double[] similarities = new Double[numberOfItems];
+		for (int i = 0; i < numberOfItems; i++) {
+			similarities[i] = predictItemsSimilarity(coldStartItemContent,i);
 		}
 		return similarities;
 	}

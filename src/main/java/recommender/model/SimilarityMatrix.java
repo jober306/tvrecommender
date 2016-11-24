@@ -7,6 +7,7 @@ import org.apache.commons.lang.ArrayUtils;
 
 import recommender.model.linalg.SparseVector;
 import recommender.similarities.Similarity;
+import scala.Tuple2;
 import algorithm.QuickSelect;
 
 /**
@@ -114,7 +115,7 @@ public abstract class SimilarityMatrix {
 		Double[] columnData = ArrayUtils.toObject(getColumn(columnIndex));
 		columnData[columnIndex] = Double.MIN_VALUE;
 		return QuickSelect.selectTopN(columnData, n).stream()
-				.map(pair -> pair.getFirst()).collect(Collectors.toList());
+				.map(Tuple2::_1).collect(Collectors.toList());
 	}
 
 	/**
@@ -133,6 +134,6 @@ public abstract class SimilarityMatrix {
 		Double[] columnData = ArrayUtils.toObject(getRow(rowIndex));
 		columnData[rowIndex] = Double.MIN_VALUE;
 		return QuickSelect.selectTopN(columnData, n).stream()
-				.map(pair -> pair.getFirst()).collect(Collectors.toList());
+				.map(Tuple2::_1).collect(Collectors.toList());
 	}
 }
