@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.collections.MapUtils;
-import org.apache.hadoop.net.AbstractDNSToSwitchMapping;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;

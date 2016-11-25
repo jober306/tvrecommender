@@ -1,24 +1,16 @@
 package mllib.recommender.collaborativefiltering;
 
-import static java.lang.Math.toIntExact;
-
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import mllib.model.DistributedUserItemMatrix;
-import mllib.utility.MllibUtilities;
 import scala.Tuple2;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.math3.util.Pair;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
-import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
-import org.netlib.util.intW;
 
 import algorithm.QuickSelect;
-import breeze.util.quickSelect;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 

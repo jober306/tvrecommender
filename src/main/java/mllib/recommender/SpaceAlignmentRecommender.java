@@ -2,14 +2,12 @@ package mllib.recommender;
 
 import static java.lang.Math.toIntExact;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
 import mllib.utility.MllibUtilities;
 import scala.Tuple2;
 
-import org.apache.commons.math3.util.Pair;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;

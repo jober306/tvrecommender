@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.math3.util.Pair;
-
 import scala.Tuple2;
 
 public class QuickSelect {

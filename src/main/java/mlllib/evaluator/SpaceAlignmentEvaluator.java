@@ -1,16 +1,15 @@
 package mlllib.evaluator;
 
+import static list.utilities.ListUtils.*;
+import static data.utility.TVDataSetUtilities.*;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.util.Pair;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
-
-import com.google.inject.spi.Element;
 
 import data.model.TVDataSet;
 import data.model.TVEvent;
@@ -18,7 +17,6 @@ import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.mapper.MappedIds;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
-import data.utility.TVDataSetUtilities;
 import mllib.recommender.SpaceAlignmentRecommender;
 import mllib.recommender.collaborativefiltering.ItemBasedRecommender;
 import scala.Tuple2;
@@ -41,12 +39,11 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	
 	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures){
 		JavaSparkContext sc = tvDataSet.getJavaSparkContext();
-		TVDataSetUtilities<T> dataSetUtilities = new TVDataSetUtilities<T>();
 		int week = 3;
 		int r = 4;
-		JavaRDD<T> fullDataSet = tvDataSet.getEventsData();
-		JavaRDD<T> week3 = dataSetUtilities.filterByIntervalOfWeek(fullDataSet, week, week);
-		JavaRDD<T> weekFourDayOne = dataSetUtilities.filterByIntervalOfDay(dataSetUtilities.filterByIntervalOfWeek(fullDataSet, week+1, week+1),1,1);
+		JavaRDD<T> fullDataSet = filterByMinTimeView(tvDataSet.getEventsData(), 7);
+		JavaRDD<T> week3 = filterByIntervalOfWeek(fullDataSet, week, week);
+		JavaRDD<T> weekFourDayOne = filterByIntervalOfDay(filterByIntervalOfWeek(fullDataSet, week+1, week+1),1,1);
 		trainingSet = tvDataSet.buildDataSetFromRawData(week3, sc);
 		testSet = tvDataSet.buildDataSetFromRawData(week3.union(weekFourDayOne), sc);
 		actualRecommender = new SpaceAlignmentRecommender<T>(trainingSet, r);
@@ -100,22 +97,6 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 			totalCoverage += (double)intersection(actualNeighboursOriginalID, expectedNeighboursOriginalID).size() / (double)expectedNeighboursOriginalID.size();
 		}
 		evaluationResults.put(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE, totalCoverage / (double) originalsNewItemsIds.size());
-	}
-	
-	private <E,U> List<E> getFirstArgument(List<Tuple2<E, U>> neighbourIndexesAndValues){
-		return neighbourIndexesAndValues.stream().map(Tuple2::_1).collect(Collectors.toList());
-	} 
-	
-	private <E,U> List<U> getSecondArgument(List<Tuple2<E, U>> neighbourIndexesAndValues){
-		return neighbourIndexesAndValues.stream().map(Tuple2::_2).collect(Collectors.toList());
-	}
-	
-	private <U> List<U> intersection(List<U> l1, List<U> l2){
-		return l1.stream().filter(l2::contains).collect(Collectors.toList());
-	}
-	
-	private <U> List<U> substract(List<U> original, List<U> listToSubstract){
-		return original.stream().filter(element -> !listToSubstract.contains(element)).collect(Collectors.toList());
 	}
 	
 	private List<Integer> getOriginalItemIds(MappedIds map, List<Integer> l){

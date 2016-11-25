@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.math3.util.Pair;
 
 import algorithm.QuickSelect;
 import recommender.aggregation.AggregationFunction;

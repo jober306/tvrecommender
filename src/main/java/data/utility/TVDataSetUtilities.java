@@ -2,10 +2,9 @@ package data.utility;
 
 import org.apache.spark.api.java.JavaRDD;
 
-import data.model.TVDataSet;
 import data.model.TVEvent;
 
-public class TVDataSetUtilities <T extends TVEvent>{
+public class TVDataSetUtilities {
 	
 	/**
 	 * Method that returns tv events that have at least been viewed minTimeView
@@ -16,7 +15,7 @@ public class TVDataSetUtilities <T extends TVEvent>{
 	 * @return A JavaRDD of recsys tv events that have been viewed at least
 	 *         minTimeView time.
 	 */
-	public JavaRDD<T> filterByMinTimeView(JavaRDD<T> events, int minTimeView) {
+	public static <T extends TVEvent> JavaRDD<T> filterByMinTimeView(JavaRDD<T> events, int minTimeView) {
 		return events.filter(tvEvent -> tvEvent.getDuration() >= minTimeView);
 	}
 	
@@ -26,7 +25,7 @@ public class TVDataSetUtilities <T extends TVEvent>{
 	 * @param maxWeek The maximum week number.
 	 * @return The filtered tv events.
 	 */
-	public JavaRDD<T> filterByIntervalOfWeek(JavaRDD<T> events, int minWeek, int maxWeek){
+	public static <T extends TVEvent> JavaRDD<T> filterByIntervalOfWeek(JavaRDD<T> events, int minWeek, int maxWeek){
 		return events.filter(tvEvent -> tvEvent.getWeek() >= minWeek && tvEvent.getWeek() <= maxWeek);
 	}
 	
@@ -36,7 +35,7 @@ public class TVDataSetUtilities <T extends TVEvent>{
 	 * @param maxSlot The maximum week number.
 	 * @return The filtered tv events.
 	 */
-	public JavaRDD<T> filterByIntervalOfSlot(JavaRDD<T> events, int minSlot, int maxSlot){
+	public static <T extends TVEvent> JavaRDD<T> filterByIntervalOfSlot(JavaRDD<T> events, int minSlot, int maxSlot){
 		return events.filter(tvEvent -> tvEvent.getSlot() >= minSlot && tvEvent.getSlot() <= maxSlot);
 	}
 	
@@ -48,7 +47,7 @@ public class TVDataSetUtilities <T extends TVEvent>{
 	 * @param maxDay The maximum day number.
 	 * @return The filtered tv events.
 	 */
-	public JavaRDD<T> filterByIntervalOfDay(JavaRDD<T> events, int minDay, int maxDay){
+	public static <T extends TVEvent> JavaRDD<T> filterByIntervalOfDay(JavaRDD<T> events, int minDay, int maxDay){
 		return filterByIntervalOfSlot(events, (minDay-1)*24 + 1, (maxDay)*24);
 	}
 
