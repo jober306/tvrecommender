@@ -1,7 +1,7 @@
 package mlllib.evaluator;
 
-import static list.utilities.ListUtils.*;
 import static data.utility.TVDataSetUtilities.*;
+import static list.utility.ListUtilities.*;
 
 import java.util.List;
 import java.util.Map;

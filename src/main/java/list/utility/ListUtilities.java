@@ -1,4 +1,4 @@
-package list.utilities;
+package list.utility;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -6,11 +6,11 @@ import java.util.stream.Collectors;
 import scala.Tuple2;
 
 /**
- * Class that encapsulates utility methods on lists using the java 8 lambda expressions.
+ * Class that encapsulates utility methods on collections using the java 8 lambda expressions.
  * @author Jonathan Bergeron
  *
  */
-public class ListUtils {
+public class ListUtilities {
 	
 	/**
 	 * Method that return a list with only the first argument of a list of tuples.
@@ -49,5 +49,16 @@ public class ListUtils {
 	 */
 	public static <U> List<U> substract(List<U> original, List<U> listToSubstract){
 		return original.stream().filter(element -> !listToSubstract.contains(element)).collect(Collectors.toList());
+	}
+	
+	/**
+	 * Method that adds all the elements of l2 to l1.
+	 * @param l1 The first collection.
+	 * @param l2 The second collection.
+	 * @return The first collection with elements of l2 added.
+	 */
+	public static <U> List<U> union(List<U> l1, List<U> l2){
+		l1.addAll(l2);
+		return l1;
 	}
 }
