@@ -11,6 +11,7 @@ import mllib.model.DistributedUserItemMatrix;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 import org.junit.After;
 import org.junit.Before;
@@ -197,6 +198,14 @@ public class RecsysTVDataSetTest {
 			assertArrayEquals(expectedUserItemMatrixValues[i], R.getRow(i)
 					.vector().toArray(), 0.0d);
 		}
+	}
+	
+	@Test
+	public void getContentMatrixTest(){
+		IndexedRowMatrix C = dataSet.getContentMatrix();
+		assertEquals(2, C.rows().count());
+		assertEquals(2, C.numRows());
+		assertEquals(4, C.numCols());
 	}
 
 	@After
