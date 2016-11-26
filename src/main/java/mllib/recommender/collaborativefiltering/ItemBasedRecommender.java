@@ -13,6 +13,7 @@ import scala.Tuple2;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
+import org.netlib.util.booleanW;
 
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
@@ -20,6 +21,7 @@ import com.google.common.primitives.Ints;
 import algorithm.QuickSelect;
 import data.model.TVDataSet;
 import data.model.TVEvent;
+import data.recsys.mapper.MappedIds;
 
 /**
  * Class that recommends items for a specific user using collaborative filtering
@@ -28,7 +30,7 @@ import data.model.TVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender<T extends TVEvent> {
+public class ItemBasedRecommender<T extends TVEvent> implements MappedIds{
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
@@ -105,5 +107,41 @@ public class ItemBasedRecommender<T extends TVEvent> {
 		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(itemIndex, n);
 		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood.stream().filter(pair -> itemsSeenByUser.contains(pair._1())).collect(Collectors.toList());
 		return itemsNeighbourhood.subList(0, Math.min(itemsNeighbourhoodForUser.size(), n));
+	}
+
+	@Override
+	public int getOriginalUserID(int mappedID) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getOriginalProgramID(int mappedID) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getOriginalEventID(int mappedID) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getMappedUserID(int userID) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getMappedProgramID(int programID) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getMappedEventID(int eventID) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
