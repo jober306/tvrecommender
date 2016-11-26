@@ -2,10 +2,11 @@ package mllib.recommender;
 
 import static java.lang.Math.toIntExact;
 
+import static mllib.utility.MllibUtilities.*;
+
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
-import mllib.utility.MllibUtilities;
 import scala.Tuple2;
 
 import org.apache.spark.mllib.linalg.Matrix;
@@ -96,12 +97,8 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 */
 	public double predictItemsSimilarity(Vector coldStartItemContent,
 			int oldItemIndex) {
-		Vector targetItem = MllibUtilities.indexedRowToDenseVector(C.rows()
-				.toJavaRDD().filter(row -> row.index() == oldItemIndex)
-				.collect().get(0));
-		return MllibUtilities.scalarProduct(MllibUtilities
-				.multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),
-				targetItem);
+		Vector targetItem = indexedRowToDenseVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
+		return scalarProduct(multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),targetItem);
 	}
 
 	/**
@@ -200,20 +197,15 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 		IndexedRowMatrix U = Csvd.U();
 		Matrix V = Csvd.V();
 		Matrix Vt = V.transpose();
-		IndexedRowMatrix S = MllibUtilities
-				.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(
-						R.getItemSimilarities(), tvDataset.getJavaSparkContext());
+		IndexedRowMatrix S = getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(R.getItemSimilarities(), tvDataset.getJavaSparkContext());
 		Vector sigma = Csvd.s();
 		Vector invertedSigma = invertVector(sigma);
-		IndexedRowMatrix Ut = MllibUtilities.transpose(U);
-		// *********************************Intermediate
-		// operations*********************************************
-		IndexedRowMatrix leftMat = MllibUtilities
-				.multiplicateByLeftDiagonalMatrix(invertedSigma, Ut);
-		IndexedRowMatrix rightMat = MllibUtilities
-				.multiplicateByRightDiagonalMatrix(U, Csvd.s());
-		Matrix localS = MllibUtilities.toDenseLocalMatrix(S);
-		Matrix localRightMat = MllibUtilities.toDenseLocalMatrix(rightMat);
+		IndexedRowMatrix Ut = transpose(U);
+		// *********************************Intermediate// operations*********************************************
+		IndexedRowMatrix leftMat = multiplicateByLeftDiagonalMatrix(invertedSigma, Ut);
+		IndexedRowMatrix rightMat = multiplicateByRightDiagonalMatrix(U, Csvd.s());
+		Matrix localS = toDenseLocalMatrix(S);
+		Matrix localRightMat = toDenseLocalMatrix(rightMat);
 		IndexedRowMatrix intermediateMat = leftMat.multiply(localS).multiply(
 				localRightMat);
 		// ***************************************************************************************************
@@ -221,13 +213,11 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 				.computeSVD(toIntExact(intermediateMat.numRows()), true,
 						1.0E-9d);
 		IndexedRowMatrix Q = intMatsvd.U();
-		Vector hardTrhesholdedLambda = MllibUtilities.hardThreshold(
+		Vector hardTrhesholdedLambda = hardThreshold(
 				intMatsvd.s(), r);
-		IndexedRowMatrix QtVt = MllibUtilities.transpose(Q).multiply(Vt);
-		IndexedRowMatrix VQ = MllibUtilities.transpose(QtVt);
-		Mprime = MllibUtilities.multiplicateByRightDiagonalMatrix(VQ,
-				hardTrhesholdedLambda).multiply(
-				MllibUtilities.toDenseLocalMatrix(QtVt));
+		IndexedRowMatrix QtVt = transpose(Q).multiply(Vt);
+		IndexedRowMatrix VQ = transpose(QtVt);
+		Mprime = multiplicateByRightDiagonalMatrix(VQ,hardTrhesholdedLambda).multiply(toDenseLocalMatrix(QtVt));
 	}
 
 	private Vector invertVector(Vector v) {
