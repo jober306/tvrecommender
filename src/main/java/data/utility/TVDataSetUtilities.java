@@ -4,6 +4,11 @@ import org.apache.spark.api.java.JavaRDD;
 
 import data.model.TVEvent;
 
+/**
+ * Class that offers some general utilities on tv data set objects.
+ * @author Jonathan Bergeron
+ *
+ */
 public class TVDataSetUtilities {
 	
 	/**

@@ -3,7 +3,7 @@ package data.model;
 import org.apache.spark.mllib.linalg.Vector;
 
 /**
- * TVEvent interface force the class implementing it to implement a minimum of getter methods essential to tv
+ * Abstract class that force the class extending it to implement a minimum of getter methods essential to tv
  * recommendation.
  * @author Jonathan Bergeron
  *

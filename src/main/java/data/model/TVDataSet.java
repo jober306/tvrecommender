@@ -11,6 +11,13 @@ import org.apache.spark.mllib.recommendation.Rating;
 import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
+/**
+ * Abstract class that represents a tv data set. It is  a RDD of TVEvent with a spark context and
+ * some utilities method on the RDD.
+ * @author Jonathan Bergeron
+ *
+ * @param <T> A child class of the abstract class TVEvent. The RDD will be of this class.
+ */
 public abstract class TVDataSet<T extends TVEvent> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;

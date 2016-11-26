@@ -1,5 +1,9 @@
 package mllib.recommender.collaborativefiltering;
 
+import static java.lang.Math.toIntExact;
+
+import static list.utility.ListUtilities.*;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,6 +13,9 @@ import scala.Tuple2;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
+
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Ints;
 
 import algorithm.QuickSelect;
 import data.model.TVDataSet;
@@ -49,6 +56,8 @@ public class ItemBasedRecommender<T extends TVEvent> {
 	public ItemBasedRecommender(TVDataSet<T> dataSet) {
 		R = dataSet.convertToDistUserItemMatrix();
 		S = R.getItemSimilarities();
+		System.out.println("S size: " + (S.numCols() * S.numRows()) + " S entries: " + S.entries().count());
+		S.entries().toJavaRDD().foreach(entry -> System.out.println("coord: (" + entry.i() + ", " + entry.j() + ")" + " : " + entry.value()));
 	}
 
 	/**
@@ -63,19 +72,18 @@ public class ItemBasedRecommender<T extends TVEvent> {
 	 *         item matrix and the similarity value.
 	 */
 	public List<Tuple2<Integer, Double>> predictItemNeighbourhood(int itemIndex, int n) {
-		List<Double> similarities = S.entries().toJavaRDD().filter(matrixEntry -> {
+		List<Tuple2<Integer, Double>> indicesAndSimilarities = S.entries().toJavaRDD().filter(matrixEntry -> {
 			long rowIndex = matrixEntry.i();
 			long colIndex = matrixEntry.j();
-			if(rowIndex < colIndex){
-				return colIndex == itemIndex;
-			}else if(rowIndex == colIndex){
+			if(rowIndex != colIndex && rowIndex == itemIndex){
+				return true;
+			}else{
 				return false;
 			}
-			else{
-				return rowIndex == itemIndex;
-			}
-		}).map(matrixEntry -> matrixEntry.value()).collect();
-		return QuickSelect.selectTopN(similarities.toArray(new Double[similarities.size()]), n);
+		}).map(matrixEntry -> new Tuple2<Integer,Double>(toIntExact(matrixEntry.j()), matrixEntry.value())).collect();
+		int[] indices = Ints.toArray(getFirstArgument(indicesAndSimilarities));
+		double[] values = Doubles.toArray(getSecondArgument(indicesAndSimilarities));
+		return QuickSelect.selectTopN(indices, values, n);
 	}
 	
 	/**
