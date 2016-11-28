@@ -198,12 +198,25 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		int numberOfUsers = trainingSet.getNumberOfUsers();
 		int numberOfResults = 50;
 		int numberOfNeighbour = 20;
+		double meanAveragePrecision = 0.0d;
 		for(int userIndex = 0; userIndex < numberOfUsers; userIndex++){
 			int originalUserIndex = trainingSetIdsMapped ? trainingSetMap.getOriginalUserID(userIndex) : userIndex;
 			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, numberOfResults, getSecondArgument(originalsNewItemsIds), numberOfNeighbour);
 			List<Integer> originalIdsOfRecommendedItemIndexes = recommendedItemIndexes.stream().map(index -> originalsNewItemsIds.get(index)._1()).collect(Collectors.toList());
 			List<Integer> originalIdsOfItemsSeenByUser = lastDaySet.getProgramIndexesSeenByUser(originalUserIndex);
+			double averagePrecision = 0.0d;
+			double recommendedItemSize = (double) originalIdsOfRecommendedItemIndexes.size();
+			for(int n = 1; n < 10; n++){
+				if(originalIdsOfItemsSeenByUser.contains(recommendedItemIndexes.get(n))){
+					double intersectionSize = (double)intersection(originalIdsOfRecommendedItemIndexes, originalIdsOfItemsSeenByUser).size();
+					averagePrecision += intersectionSize / recommendedItemSize;
+				}
+			}
+			averagePrecision /= recommendedItemSize;
+			meanAveragePrecision += averagePrecision;
 		}
+		meanAveragePrecision /= (double) numberOfUsers;
+		evaluationResults.put(EvaluationMeasure.MEAN_AVERAGE_PRECISION, meanAveragePrecision);
 	}
 	
 	private void evaluateMeanAverageRecall(){
