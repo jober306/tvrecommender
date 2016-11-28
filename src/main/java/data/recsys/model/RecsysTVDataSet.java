@@ -169,6 +169,11 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		return (int) eventsData.count();
 	}
 	
+
+	public List<Integer> getProgramIndexesSeenByUser(int userIndex) {
+		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex).map(tvEvent -> tvEvent.getProgramID()).distinct().collect();
+	}
+	
 	/**
 	 * Method that return the size of the data set. It is the same as getNumberOfEvents.
 	 */
@@ -301,7 +306,6 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	}
 
 	public int getMappedProgramID(int programID) {
-		System.out.println(idMap.getProgramIDtoIDMap().containsKey(programID));
 		return idMap.getProgramIDtoIDMap().get(programID);
 	}
 

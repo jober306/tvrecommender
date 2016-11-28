@@ -103,6 +103,23 @@ public class RecsysTVDataSetTest {
 		assertTrue(numberOfPrograms == 2);
 		assertTrue(numberOfEvents == 3);
 	}
+	
+	@Test
+	public void getProgramIndexesSeenByUserTest(){
+		List<Integer> programsSeenByUser1 = dataSet.getProgramIndexesSeenByUser(1);
+		assertEquals(1, programsSeenByUser1.size());
+		assertTrue(programsSeenByUser1.contains(tvEvent1.getProgramID()));
+		List<Integer> programsSeenByUser3 = dataSet.getProgramIndexesSeenByUser(3);
+		assertEquals(2, programsSeenByUser3.size());
+		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramID()));
+		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramID()));
+	}
+	
+	@Test
+	public void getProgramIndexesSeenByUserNotExistingTest(){
+		List<Integer> userNotExisting = dataSet.getProgramIndexesSeenByUser(-1);
+		assertEquals(0, userNotExisting.size());
+	}
 
 	@Test
 	public void getIndexesCorrespondingToRatiosTest() {

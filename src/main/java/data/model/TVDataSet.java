@@ -64,6 +64,7 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable{
 	abstract public List<Integer> getAllEventIds();
 	abstract public int getNumberOfUsers();
 	abstract public int getNumberOfItems();
+	abstract public List<Integer> getProgramIndexesSeenByUser(int userIndex);
 	abstract public int count();
 	abstract public JavaRDD<T>[] splitTVEventsRandomly(double[] ratios);
 }
