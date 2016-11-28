@@ -54,6 +54,12 @@ public class QuickSelectTest {
 			assertTrue(pos == (Arrays.asList(unsortedNumbers).indexOf(value)));
 		}
 	}
+	
+	@Test
+	public void selectTopNWithNGreaterThanListSizeTest(){
+		List<Tuple2<Integer, Double>> top10 = QuickSelect.selectTopN(unsortedNumbers, 10);
+		assertEquals(unsortedNumbers.length, top10.size());
+	}
 
 	@Test
 	public void selectWithIndicesValues() {

@@ -41,6 +41,7 @@ public class QuickSelect {
 	 * 
 	 **********************************************************************/
 	public static Tuple2<Integer, Double> select(Double[] G, int k) {
+		k = k > G.length ? G.length : k;
 		List<Tuple2<Integer, Double>> Gp = new ArrayList<Tuple2<Integer, Double>>();
 		for (int i = 0; i < G.length; i++) {
 			Gp.add(new Tuple2<Integer, Double>(i, G[i]));
@@ -49,6 +50,7 @@ public class QuickSelect {
 	}
 
 	public static List<Tuple2<Integer, Double>> selectTopN(Double[] G, int k) {
+		k = k > G.length ? G.length : k;
 		List<Tuple2<Integer, Double>> topN = new ArrayList<Tuple2<Integer, Double>>();
 		for (int i = 1; i <= k; i++) {
 			topN.add(QuickSelect.select(G, i));
