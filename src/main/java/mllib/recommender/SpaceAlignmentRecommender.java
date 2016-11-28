@@ -4,6 +4,9 @@ import static java.lang.Math.toIntExact;
 
 import static mllib.utility.MllibUtilities.*;
 
+import static list.utility.ListUtilities.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
@@ -156,20 +159,17 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * @param userId The user id to which the recommendation will be done.
 	 * @param numberOfResults The number of results to return.
 	 * @param newTvShowsContent An array of vector containing the content of new tv shows.
+	 * @param n The number of items neighbors that will be used to calculate similarity with new items.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public int[] recommend(int userId, int numberOfResults, Vector[] newTvShowsContent, int n) {
-		Double[] neighboursScores = new Double[newTvShowsContent.length];
-		for(int i = 0; i < newTvShowsContent.length; i++){
-			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent[i], userId, n);
+	public List<Integer> recommend(int userId, int numberOfResults, List<Vector> newTvShowsContent, int n) {
+		Double[] neighboursScores = new Double[newTvShowsContent.size()];
+		for(int i = 0; i < newTvShowsContent.size(); i++){
+			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent.get(i), userId, n);
 			neighboursScores[i] = calculateNeighboursScore(neighbours);
 		}
 		List<Tuple2<Integer, Double>> sortedScore = QuickSelect.selectTopN(neighboursScores, numberOfResults);
-		int[] recommendationIndexes = new int[numberOfResults];
-		for(int i = 0; i < numberOfResults; i++){
-			recommendationIndexes[i] = sortedScore.get(i)._1();
-		}
-		return recommendationIndexes;
+		return getFirstArgument(sortedScore);
 	}
 
 	private double[] predictAllItemSimilarities(Vector coldStartItemContent,

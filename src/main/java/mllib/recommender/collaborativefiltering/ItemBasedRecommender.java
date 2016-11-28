@@ -56,8 +56,6 @@ public class ItemBasedRecommender<T extends TVEvent>{
 	public ItemBasedRecommender(TVDataSet<T> dataSet) {
 		R = dataSet.convertToDistUserItemMatrix();
 		S = R.getItemSimilarities();
-		System.out.println("S size: " + (S.numCols() * S.numRows()) + " S entries: " + S.entries().count());
-		S.entries().toJavaRDD().foreach(entry -> System.out.println("coord: (" + entry.i() + ", " + entry.j() + ")" + " : " + entry.value()));
 	}
 
 	/**

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.ml.neuralnet.sofm.NeighbourhoodSizeFunction;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
@@ -21,6 +22,7 @@ import data.recsys.model.RecsysTVEvent;
 import mllib.recommender.SpaceAlignmentRecommender;
 import mllib.recommender.collaborativefiltering.ItemBasedRecommender;
 import scala.Tuple2;
+import spark.utilities.SparkUtilities;
 
 /**
  * Class that evaluate the space alignment recommender on a given data set.
@@ -40,6 +42,11 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	 * The test set on which the item based recommender will be trained.
 	 */
 	TVDataSet<T> testSet;
+	
+	/**
+	 * The data set containing all the tv events of the last day (the test day).
+	 */
+	TVDataSet<T> lastDaySet;
 	
 	/**
 	 * The space alignment recommender trained on training set.
@@ -96,12 +103,12 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	 * @param r The rank constraint needed by the space alignment recommender.
 	 */
 	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures, int week, int r){
-		buildTrainingAndTestSet(tvDataSet);
+		this.week = week;
+		buildTVDataSets(tvDataSet);
 		buildRecommenders();
 		initializeMap();
 		this.measures = measures;
 		this.evaluationResults = new HashMap<EvaluationMeasure, Double>();
-		this.week = week;
 		this.r = r;
 	}
 	
@@ -135,13 +142,14 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		return evaluationResults;
 	}
 	
-	private void buildTrainingAndTestSet(TVDataSet<T> tvDataSet){
+	private void buildTVDataSets(TVDataSet<T> tvDataSet){
 		JavaSparkContext sc = tvDataSet.getJavaSparkContext();
 		JavaRDD<T> fullDataSet = filterByMinTimeView(tvDataSet.getEventsData(), 7);
 		JavaRDD<T> week3 = filterByIntervalOfWeek(fullDataSet, week, week);
 		JavaRDD<T> weekFourDayOne = filterByIntervalOfDay(filterByIntervalOfWeek(fullDataSet, week+1, week+1),1,1);
 		trainingSet = tvDataSet.buildDataSetFromRawData(week3, sc);
 		testSet = tvDataSet.buildDataSetFromRawData(week3.union(weekFourDayOne), sc);
+		lastDaySet = tvDataSet.buildDataSetFromRawData(weekFourDayOne, sc);
 		originalsNewItemsIds = weekFourDayOne.mapToPair(tvEvent -> new Tuple2<Integer, Vector>(tvEvent.getProgramID(), tvEvent.getProgramFeatureVector())).reduceByKey((arg1, arg2) -> arg1).collect();
 	}
 	
@@ -158,7 +166,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	}
 	
 	private void evaluateNeighbourhoodCoverage(){
-		int n = 10;
+		int n = 50;
 		double totalCoverage = 0.0d;
 		for(Tuple2<Integer,Vector> originalItemIdsContent : originalsNewItemsIds){
 			int originalNewItemId = originalItemIdsContent._1();
@@ -167,9 +175,17 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 			List<Integer> actualNeighboursMappedID = getFirstArgument(actualRecommender.predictNewItemNeighbourhood(newItemContent, n));
 			List<Integer> expectedNeighboursMappedID = getFirstArgument(expectedRecommender.predictItemNeighbourhood(mappedExpectedItemId, n));
 			expectedNeighboursMappedID = substract(expectedNeighboursMappedID, getFirstArgument(originalsNewItemsIds));
+			System.out.print("ACTUAL NEIGHBOUR MAPPED ID: ");
+			actualNeighboursMappedID.stream().forEach(neighbour -> System.out.print(neighbour + " "));
+			System.out.println();
+			System.out.print("EXPECTED NEIGHBOUR MAPPED ID: ");
+			expectedNeighboursMappedID.stream().forEach(neighbour -> System.out.print(neighbour + " "));
+			System.out.println();
 			List<Integer> actualNeighboursOriginalID = trainingSetIdsMapped ? getOriginalItemIds(trainingSetMap, actualNeighboursMappedID) : actualNeighboursMappedID;
 			List<Integer> expectedNeighboursOriginalID = testSetIdsMapped ? getOriginalItemIds(testSetMap, expectedNeighboursMappedID) : expectedNeighboursMappedID;
-			totalCoverage += (double)intersection(actualNeighboursOriginalID, expectedNeighboursOriginalID).size() / (double)expectedNeighboursOriginalID.size();
+			double neighbourhoodCoverage = (double)intersection(actualNeighboursOriginalID, expectedNeighboursOriginalID).size() / (double)expectedNeighboursOriginalID.size();
+			System.out.println("Coverage for item: " + originalNewItemId + " = " + neighbourhoodCoverage);
+			totalCoverage += neighbourhoodCoverage;
 		}
 		evaluationResults.put(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE, totalCoverage / (double) originalsNewItemsIds.size());
 	}
@@ -179,7 +195,15 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	}
 	
 	private void evaluateMeanAveragePrecision(){
-		
+		int numberOfUsers = trainingSet.getNumberOfUsers();
+		int numberOfResults = 50;
+		int numberOfNeighbour = 20;
+		for(int userIndex = 0; userIndex < numberOfUsers; userIndex++){
+			int originalUserIndex = trainingSetIdsMapped ? trainingSetMap.getOriginalUserID(userIndex) : userIndex;
+			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, numberOfResults, getSecondArgument(originalsNewItemsIds), numberOfNeighbour);
+			List<Integer> originalIdsOfRecommendedItemIndexes = recommendedItemIndexes.stream().map(index -> originalsNewItemsIds.get(index)._1()).collect(Collectors.toList());
+			List<Integer> originalIdsOfItemsSeenByUser = lastDaySet.getProgramIndexesSeenByUser(originalUserIndex);
+		}
 	}
 	
 	private void evaluateMeanAverageRecall(){
@@ -188,9 +212,11 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	
 	public static void main(String[] args){
 		EvaluationMeasure[] measures = new EvaluationMeasure[]{EvaluationMeasure.NEIGHBOURHOOD_COVERAGE};
-		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
+		JavaSparkContext sc = SparkUtilities.getADefaultSparkContext();
+		sc.setLogLevel("ERROR");
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		RecsysTVDataSet dataSet = loader.loadDataSet();
-		SpaceAlignmentEvaluator<RecsysTVEvent> evaluator = new SpaceAlignmentEvaluator<RecsysTVEvent>(dataSet, measures,3,4);
+		SpaceAlignmentEvaluator<RecsysTVEvent> evaluator = new SpaceAlignmentEvaluator<RecsysTVEvent>(dataSet, measures,4,4);
 		evaluator.evaluate();
 		System.out.println("RESULT: " + evaluator.getResults().get(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE));
 	}
