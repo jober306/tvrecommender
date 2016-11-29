@@ -2,6 +2,8 @@ package data.recsys.model;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
@@ -168,9 +170,16 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	    if (other == this) return true;
 	    if (!(other instanceof RecsysTVEvent))return false;
 	    RecsysTVEvent tvEvent = (RecsysTVEvent)other;
-	    return channelID == tvEvent.getChannelID() && slot == tvEvent.getSlot() && week == tvEvent.getWeek() &&
-	    		genreID == tvEvent.getGenreID() && subgenreID == tvEvent.getSubgenreID() && userID == tvEvent.getUserID() &&
-	    		programID == tvEvent.getProgramID() && eventID == tvEvent.getEventID() && duration == tvEvent.getDuration();
+	    return new EqualsBuilder().append(channelID,tvEvent.getChannelID()).
+	    		append(slot, tvEvent.getSlot()).
+	    		append(week, tvEvent.getWeek()).
+	    		append(genreID, tvEvent.getGenreID()). 
+	    		append(subgenreID, tvEvent.getSubgenreID()).
+	    		append(userID, tvEvent.getUserID()).
+	    		append(programID, tvEvent.getProgramID()). 
+	    		append(eventID, tvEvent.getEventID()).
+	    		append(duration, tvEvent.getDuration()).
+	    		isEquals();
 	}
 	
 	/**
@@ -178,7 +187,7 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 */
 	@Override
 	public int hashCode(){
-		return new Integer(userID).hashCode() + new Integer(eventID).hashCode();
+		return new HashCodeBuilder().append(userID).append(eventID).hashCode();
 	}
 	
 	/**
