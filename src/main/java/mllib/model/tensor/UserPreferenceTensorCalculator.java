@@ -4,9 +4,8 @@ import data.model.TVDataSet;
 import data.model.TVEvent;
 
 /**
- * Class that calculates the user preference tensor on a given data set.
- * The user preference tensor p_ufs is the total number of minutes user u spent
- * watching a program with features f in time slot s.
+ * Class that calculates the user preference tensor on a given data set. See the
+ * <class>UserPreferenceTensor</class> for details on what it is.
  * @author Jonathan Bergeron
  *
  */
