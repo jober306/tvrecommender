@@ -1,4 +1,4 @@
-package mlllib.evaluator;
+package mllib.evaluator;
 
 import static data.utility.TVDataSetUtilities.*;
 import static list.utility.ListUtilities.*;
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.math3.ml.neuralnet.sofm.NeighbourhoodSizeFunction;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
@@ -201,7 +200,9 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		double meanAveragePrecision = 0.0d;
 		for(int userIndex = 0; userIndex < numberOfUsers; userIndex++){
 			int originalUserIndex = trainingSetIdsMapped ? trainingSetMap.getOriginalUserID(userIndex) : userIndex;
+			System.out.println("Recommending for user " + originalUserIndex);
 			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, numberOfResults, getSecondArgument(originalsNewItemsIds), numberOfNeighbour);
+			System.out.println("Done");
 			List<Integer> originalIdsOfRecommendedItemIndexes = recommendedItemIndexes.stream().map(index -> originalsNewItemsIds.get(index)._1()).collect(Collectors.toList());
 			List<Integer> originalIdsOfItemsSeenByUser = lastDaySet.getProgramIndexesSeenByUser(originalUserIndex);
 			double averagePrecision = 0.0d;
@@ -213,6 +214,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 				}
 			}
 			averagePrecision /= recommendedItemSize;
+			System.out.println("Mean Average for user: " + originalUserIndex + " is " + averagePrecision);
 			meanAveragePrecision += averagePrecision;
 		}
 		meanAveragePrecision /= (double) numberOfUsers;

@@ -1,4 +1,4 @@
-package mlllib.evaluator;
+package mllib.evaluator;
 
 /**
  * Enum that represents different evaluation measure to pass to a recommender evaluator.
