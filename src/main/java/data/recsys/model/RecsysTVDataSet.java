@@ -330,7 +330,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	public void finalize() {
 		if (!mapClosed) {
 			idMap.close();
+			broadcastedIdMap.destroy();
 		}
-		broadcastedIdMap.destroy();
 	}
 }
