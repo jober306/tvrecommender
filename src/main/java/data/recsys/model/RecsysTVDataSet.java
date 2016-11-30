@@ -323,6 +323,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 			mapClosed = true;
 		}
 		eventsData = null;
+		broadcastedIdMap.destroy();
 	}
 
 	@Override
@@ -330,5 +331,6 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		if (!mapClosed) {
 			idMap.close();
 		}
+		broadcastedIdMap.destroy();
 	}
 }
