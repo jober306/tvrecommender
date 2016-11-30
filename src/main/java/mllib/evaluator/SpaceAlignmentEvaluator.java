@@ -167,6 +167,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	private void evaluateNeighbourhoodCoverage(){
 		int n = 50;
 		double totalCoverage = 0.0d;
+		int totalNewItemNumbers = originalsNewItemsIds.size();
 		for(Tuple2<Integer,Vector> originalItemIdsContent : originalsNewItemsIds){
 			int originalNewItemId = originalItemIdsContent._1();
 			Vector newItemContent  = originalItemIdsContent._2();
@@ -174,16 +175,10 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 			List<Integer> actualNeighboursMappedID = getFirstArgument(actualRecommender.predictNewItemNeighbourhood(newItemContent, n));
 			List<Integer> expectedNeighboursMappedID = getFirstArgument(expectedRecommender.predictItemNeighbourhood(mappedExpectedItemId, n));
 			expectedNeighboursMappedID = substract(expectedNeighboursMappedID, getFirstArgument(originalsNewItemsIds));
-			System.out.print("ACTUAL NEIGHBOUR MAPPED ID: ");
-			actualNeighboursMappedID.stream().forEach(neighbour -> System.out.print(neighbour + " "));
-			System.out.println();
-			System.out.print("EXPECTED NEIGHBOUR MAPPED ID: ");
-			expectedNeighboursMappedID.stream().forEach(neighbour -> System.out.print(neighbour + " "));
-			System.out.println();
 			List<Integer> actualNeighboursOriginalID = trainingSetIdsMapped ? getOriginalItemIds(trainingSetMap, actualNeighboursMappedID) : actualNeighboursMappedID;
 			List<Integer> expectedNeighboursOriginalID = testSetIdsMapped ? getOriginalItemIds(testSetMap, expectedNeighboursMappedID) : expectedNeighboursMappedID;
 			double neighbourhoodCoverage = (double)intersection(actualNeighboursOriginalID, expectedNeighboursOriginalID).size() / (double)expectedNeighboursOriginalID.size();
-			System.out.println("Coverage for item: " + originalNewItemId + " = " + neighbourhoodCoverage);
+			System.out.println("Coverage for item: " + originalNewItemId + "/" + totalNewItemNumbers + " = " + neighbourhoodCoverage);
 			totalCoverage += neighbourhoodCoverage;
 		}
 		evaluationResults.put(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE, totalCoverage / (double) originalsNewItemsIds.size());

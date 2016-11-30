@@ -6,7 +6,6 @@ import static mllib.utility.MllibUtilities.*;
 
 import static list.utility.ListUtilities.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
@@ -165,6 +164,7 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	public List<Integer> recommend(int userId, int numberOfResults, List<Vector> newTvShowsContent, int n) {
 		Double[] neighboursScores = new Double[newTvShowsContent.size()];
 		for(int i = 0; i < newTvShowsContent.size(); i++){
+			System.out.println("Calculating score for new show. " + i);
 			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent.get(i), userId, n);
 			neighboursScores[i] = calculateNeighboursScore(neighbours);
 		}
