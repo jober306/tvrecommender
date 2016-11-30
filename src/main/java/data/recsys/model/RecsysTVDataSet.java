@@ -15,6 +15,7 @@ import org.apache.spark.mllib.recommendation.Rating;
 
 import recommender.model.UserItemMatrix;
 import scala.Tuple2;
+import scala.tools.nsc.backend.opt.ClosureElimination.ClosureEliminationPhase;
 import spark.utilities.SparkUtilities;
 import data.model.TVDataSet;
 import data.recsys.mapper.MappedIds;
@@ -43,7 +44,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	/**
 	 * The broadcasted map reader to be used when the map is used with spark actions.
 	 */
-	Broadcast<RecSysMapReader> broadcastedIdMap;
+	final Broadcast<RecSysMapReader> broadcastedIdMap;
 
 	/**
 	 * Boolean to check if wether or not the map file have been erased.
@@ -67,6 +68,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 			broadcastedIdMap = sc.broadcast(idMap);
 			mapClosed = false;
 		}else{
+			broadcastedIdMap = null;
 			mapClosed = true;
 		}
 	}
@@ -317,19 +319,35 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 * Method that releases all resource attached to this dataset.
 	 */
 	public void close() {
-		sc.close();
 		if (!mapClosed) {
 			idMap.close();
 			mapClosed = true;
+			broadcastedIdMap.unpersist();
+			broadcastedIdMap.destroy();
 		}
+		sc.close();
 		eventsData = null;
-		broadcastedIdMap.destroy();
+	}
+	
+	public void closeMap(){
+		if (!mapClosed) {
+			idMap.close();
+			mapClosed = true;
+			broadcastedIdMap.unpersist();
+			broadcastedIdMap.destroy();
+		}
+	}
+	
+	public void closeSparkContext(){
+		sc.close();
+		eventsData = null;
 	}
 
 	@Override
 	public void finalize() {
 		if (!mapClosed) {
 			idMap.close();
+			broadcastedIdMap.unpersist();
 			broadcastedIdMap.destroy();
 		}
 	}

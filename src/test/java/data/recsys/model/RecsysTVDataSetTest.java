@@ -158,7 +158,7 @@ public class RecsysTVDataSetTest {
 				.union(splittedDataSet[1].getEventsData())
 				.union(splittedDataSet[2].getEventsData()).count() == 42);
 		for (RecsysTVDataSet dataSet : splittedDataSet) {
-			dataSet.close();
+			dataSet.closeMap();
 		}
 	}
 
