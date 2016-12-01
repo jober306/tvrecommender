@@ -37,7 +37,6 @@ public class SpaceAlignmentPredictorTest {
 			double similarity = predictor.predictItemsSimilarity(
 					Vectors.dense(new double[] { 46, 19, 5, 81 }), i);
 			assertTrue(similarity >= 0);
-			assertTrue(similarity <= 1);
 		}
 	}
 

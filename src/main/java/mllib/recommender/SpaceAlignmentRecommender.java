@@ -206,7 +206,6 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 				.computeSVD(toIntExact(C.numCols()), true, 0.0d);
 		IndexedRowMatrix U = Csvd.U();
 		Matrix V = Csvd.V();
-		Matrix Vt = V.transpose();
 		IndexedRowMatrix S = getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(R.getItemSimilarities(), tvDataset.getJavaSparkContext());
 		Vector sigma = Csvd.s();
 		Vector invertedSigma = invertVector(sigma);
@@ -219,13 +218,11 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 		// ***************************************************************************************************
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat
 				.computeSVD(r, true, 0.0d);
-		Matrix Qt = intMatsvd.V();
+		Matrix Q = intMatsvd.V();
+		DenseMatrix VQ = V.multiply((DenseMatrix)Matrices.dense(Q.numRows(), Q.numCols(), Q.toArray()));
+		DenseMatrix QtVt = VQ.transpose();
 		Vector hardTrhesholdedLambda = intMatsvd.s();
-		DenseMatrix QtVt = Qt.multiply((DenseMatrix)Matrices.dense(Vt.numRows(), Vt.numCols(), Vt.toArray()));
-		DenseMatrix VQ = QtVt.transpose();
 		Mprime = multiplyMatrixByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(QtVt);
-		System.out.println("Mprime size: ( " + Mprime.numRows() + ", " + Mprime.numCols()+ ")");
-		System.out.println(Arrays.toString(Mprime.toArray()));
 	}
 
 	private Vector invertVector(Vector v) {
