@@ -103,12 +103,12 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	 */
 	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures, int week, int r){
 		this.week = week;
+		this.r = r;
 		buildTVDataSets(tvDataSet);
 		buildRecommenders();
 		initializeMap();
 		this.measures = measures;
 		this.evaluationResults = new HashMap<EvaluationMeasure, Double>();
-		this.r = r;
 	}
 	
 	/**
@@ -172,7 +172,9 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 			int originalNewItemId = originalItemIdsContent._1();
 			Vector newItemContent  = originalItemIdsContent._2();
 			int mappedExpectedItemId = testSetMap == null ? originalNewItemId : testSetMap.getMappedProgramID(originalNewItemId);
+			System.out.println("CALCULATING NEIGHBOUR FOR SPACE ALIGNMENT RECOMMENDER...");
 			List<Integer> actualNeighboursMappedID = getFirstArgument(actualRecommender.predictNewItemNeighbourhood(newItemContent, n));
+			System.out.println("CALCULATING NEIGHBOUR FOR ITEM BASED RECOMMENDER...");
 			List<Integer> expectedNeighboursMappedID = getFirstArgument(expectedRecommender.predictItemNeighbourhood(mappedExpectedItemId, n));
 			expectedNeighboursMappedID = substract(expectedNeighboursMappedID, getFirstArgument(originalsNewItemsIds));
 			List<Integer> actualNeighboursOriginalID = trainingSetIdsMapped ? getOriginalItemIds(trainingSetMap, actualNeighboursMappedID) : actualNeighboursMappedID;

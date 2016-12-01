@@ -6,12 +6,15 @@ import static mllib.utility.MllibUtilities.*;
 
 import static list.utility.ListUtilities.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
 import scala.Tuple2;
 
+import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.mllib.linalg.DenseMatrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -48,13 +51,18 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * by d features, then the matrix C is of size n x d.
 	 */
 	IndexedRowMatrix C;
+	
+	/**
+	 * Local version of this indexed row matrix.
+	 */
+	List<Vector> localC;
 
 	/**
-	 * This parameter indicates the maximum rank that the matrix Mprime can
-	 * have. Note that by its size Mprime has maximum rank d, So r should be
-	 * between 1 and d. The higher it is the best it will fit the item
-	 * similarity matrix but the higher the chance it will overfit. On the other
-	 * hand if it is too high it could be impossible to represent the item
+	 * This parameter indicates the maximum rank the matrix Mprime can
+	 * have. Note that Mprime has maximum rank d, So r should be
+	 * between 1 and d. The higher r is set the better it will fit the item
+	 * similarity matrix but higher the chance it will overfit it. On the other
+	 * hand if it is too low it could be impossible to represent the item
 	 * similarity distribution properly.
 	 */
 	int r;
@@ -64,7 +72,7 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * and an ancient item content to their similarity in the collaborative
 	 * filtering sense. It is calculated once the class is created.
 	 */
-	IndexedRowMatrix Mprime;
+	Matrix Mprime;
 
 	/**
 	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates
@@ -83,6 +91,8 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 		this.r = r;
 		this.R = tvDataSet.convertToDistUserItemMatrix();
 		this.C = tvDataSet.getContentMatrix();
+		this.localC = getSecondArgument(C.rows().toJavaRDD().mapToPair(row -> new Tuple2<Integer, Vector>(toIntExact(row.index()), indexedRowToDenseVector(row))).
+				sortByKey().collect());
 		calculateMprime();
 	}
 
@@ -99,8 +109,8 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 */
 	public double predictItemsSimilarity(Vector coldStartItemContent,
 			int oldItemIndex) {
-		Vector targetItem = indexedRowToDenseVector(C.rows().toJavaRDD().filter(row -> row.index() == oldItemIndex).collect().get(0));
-		return scalarProduct(multiplyColumnVectorByMatrix(Mprime, coldStartItemContent),targetItem);
+		Vector targetItem = localC.get(oldItemIndex);
+		return scalarProduct(Mprime.multiply(coldStartItemContent),targetItem);
 	}
 
 	/**
@@ -204,24 +214,22 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 		// *********************************Intermediate// operations*********************************************
 		IndexedRowMatrix leftMat = multiplicateByLeftDiagonalMatrix(invertedSigma, Ut);
 		IndexedRowMatrix rightMat = multiplicateByRightDiagonalMatrix(U, Csvd.s());
-		Matrix localS = toDenseLocalMatrix(S);
-		Matrix localRightMat = toDenseLocalMatrix(rightMat);
-		IndexedRowMatrix intermediateMat = leftMat.multiply(localS).multiply(
-				localRightMat);
+		Matrix localRightMat = toDenseLocalMatrix(S.multiply(toDenseLocalMatrix(rightMat)));
+		IndexedRowMatrix intermediateMat = leftMat.multiply(localRightMat);
 		// ***************************************************************************************************
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat
-				.computeSVD(toIntExact(intermediateMat.numRows()), true,
-						1.0E-9d);
-		IndexedRowMatrix Q = intMatsvd.U();
-		Vector hardTrhesholdedLambda = hardThreshold(
-				intMatsvd.s(), r);
-		IndexedRowMatrix QtVt = transpose(Q).multiply(Vt);
-		IndexedRowMatrix VQ = transpose(QtVt);
-		Mprime = multiplicateByRightDiagonalMatrix(VQ,hardTrhesholdedLambda).multiply(toDenseLocalMatrix(QtVt));
+				.computeSVD(r, true, 0.0d);
+		Matrix Qt = intMatsvd.V();
+		Vector hardTrhesholdedLambda = intMatsvd.s();
+		DenseMatrix QtVt = Qt.multiply((DenseMatrix)Matrices.dense(Vt.numRows(), Vt.numCols(), Vt.toArray()));
+		DenseMatrix VQ = QtVt.transpose();
+		Mprime = multiplyMatrixByRightDiagonalMatrix(VQ, hardTrhesholdedLambda).multiply(QtVt);
+		System.out.println("Mprime size: ( " + Mprime.numRows() + ", " + Mprime.numCols()+ ")");
+		System.out.println(Arrays.toString(Mprime.toArray()));
 	}
 
 	private Vector invertVector(Vector v) {
-		double[] values = v.toArray();
+		double[] values = v.copy().toArray();
 		for (int i = 0; i < values.length; i++) {
 			values[i] = 1.0d / values[i];
 		}

@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.mllib.linalg.DenseMatrix;
+import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -121,6 +123,34 @@ public class MllibUtilitiesTest {
 				assertEquals(matrixValues[0][i], hardThresholdedValues[i], 0.0d);
 			}
 		}
+	}
+	
+	@Test
+	public void multiplyColVectorByRowVectorTest(){
+		Vector rowVec = Vectors.dense(new double[]{2.0d, 0.0d, 3.0d});
+		Vector colVec = Vectors.dense(new double[]{1.0d,2.0d,3.0d,4.0d});
+		DenseMatrix result = MllibUtilities.multiplyColVectorByRowVector(colVec, rowVec);
+		int expectedColSize = rowVec.size();
+		int expectedRowSize = colVec.size();
+		assertEquals(expectedRowSize, result.numRows());
+		assertEquals(expectedColSize, result.numCols());
+		double[] expectedValues = new double[]{2,4,6,8,0,0,0,0,3,6,9,12};
+		double[] actualValues = result.toArray();
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
+	}
+	
+	@Test
+	public void multiplyMatrixByRightDiagonalMatrixTest(){
+		Matrix mat = Matrices.dense(3, 2, new double[]{1,4,2,1,0,1});
+		Vector diagMat = Vectors.dense(new double[]{3,1});
+		DenseMatrix result = MllibUtilities.multiplyMatrixByRightDiagonalMatrix(mat, diagMat);
+		int expectedRowSize = mat.numRows();
+		int expectedColSize = diagMat.size();
+		assertEquals(expectedRowSize, result.numRows());
+		assertEquals(expectedColSize, result.numCols());
+		double[] expectedValues = new double[]{3,12,6,1,0,1};
+		double[] actualValues = result.toArray();
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
 	}
 	
 	@Test

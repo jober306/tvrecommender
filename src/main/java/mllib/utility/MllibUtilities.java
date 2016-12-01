@@ -2,7 +2,9 @@ package mllib.utility;
 
 import static java.lang.Math.toIntExact;
 
+import java.awt.print.Printable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -12,6 +14,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.mllib.linalg.DenseMatrix;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SparseVector;
@@ -20,6 +23,7 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.sql.execution.vectorized.ColumnarBatch.Row;
 
 import scala.Tuple2;
 import scala.Tuple3;
@@ -103,6 +107,48 @@ public class MllibUtilities {
 				});
 
 		return new IndexedRowMatrix(hardThresholdedMatrix.rdd());
+	}
+	
+	/**
+	 * Method the multiplies a column vector (v1) by a row vector (v2).
+	 * v1 would be of size n x 1 for an arbitrary n and v2 would be
+	 * of size 1 x m for an arbitrary m.
+	 * @param rowVector The row vector.
+	 * @param colVector The column vector.
+	 * @return The matrix of v1 * v2. The matrix is of size n x m.
+	 */
+	public static DenseMatrix multiplyColVectorByRowVector(Vector colVector, Vector rowVector){
+		int rowNumber = colVector.size();
+		int colNumber = rowVector.size();
+		double[] values = new double[rowNumber * colNumber];
+		int index = 0;
+		for(int col = 0; col < colNumber; col++){
+			for(int row = 0; row < rowNumber; row++){
+				values[index] = colVector.apply(row) * rowVector.apply(col);
+				index++;
+			}
+		}
+		return (DenseMatrix) Matrices.dense(rowNumber, colNumber, values);
+	}
+	
+	/**
+	 * Method that multiplies a matrix M to a diagonal matrix D that is on the right of M.
+	 * @param mat The arbitrary matrix of size m x n.
+	 * @param diagMat The diagonal matrix represented by a vector of size n.
+	 * @return A dense matrix M x D of size m x n.
+	 */
+	public static DenseMatrix multiplyMatrixByRightDiagonalMatrix(Matrix mat, Vector diagMat){
+		int rowNumber = mat.numRows();
+		int colNumber = diagMat.size();
+		double[] values = new double[rowNumber * colNumber];
+		int index = 0;
+		for(int col = 0; col < colNumber; col++){
+			for(int row = 0; row < rowNumber; row++){
+				values[index] = mat.apply(row, col) * diagMat.apply(col);
+				index++;
+			}
+		}
+		return (DenseMatrix) Matrices.dense(rowNumber, colNumber, values);
 	}
 
 	/**
@@ -378,6 +424,10 @@ public class MllibUtilities {
 			}
 		}
 		return contain;
+	}
+	
+	public static void printIndexedRowMatrix(IndexedRowMatrix mat){
+		mat.rows().toJavaRDD().foreach(row -> System.out.println("( " +row.index() + ", " + Arrays.toString(row.vector().toArray()) + " )"));
 	}
 
 	private static void sortTripletsByColumn(
