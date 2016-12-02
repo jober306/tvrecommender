@@ -14,6 +14,13 @@ import data.model.TVEvent;
  */
 public class UserPreferenceTensorCalculator <T extends TVEvent>{
 	
+	/**
+	 * Constructor of the class. It takes a data set and a sprak context to create the collection of user preference tensor associated
+	 * with the given data set.
+	 * @param dataSet A tv data set of given tv envent type.
+	 * @param sc The java spark context used to load the tv data set.
+	 * @return The user preference tensor collection.
+	 */
 	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<T> dataSet, JavaSparkContext sc){
 		UserPreferenceTensorCollectionAccumulator acc = new UserPreferenceTensorCollectionAccumulator();
 		JavaSparkContext.toSparkContext(sc).register(acc);
