@@ -49,7 +49,7 @@ public class UserPreferenceTensor {
 	 * Setter method that increment the value of total watch time by the given amount.
 	 * @param watchTime The amount of time that will be added to the total watch time.
 	 */
-	public void IncrementValue(int watchTime){
+	public void incrementValue(int watchTime){
 		totalWatchTime += watchTime;
 	}
 	

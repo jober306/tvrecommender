@@ -42,7 +42,7 @@ public class UserPreferenceTensorCollection {
 	 */
 	public void add(UserPreferenceTensor tensor){
 		if(syncMap.containsKey(tensor)){
-			syncMap.get(tensor).IncrementValue(tensor.getTotalWatchTime());
+			syncMap.get(tensor).incrementValue(tensor.getTotalWatchTime());
 		}else{
 			syncMap.put(tensor, tensor);
 		}
