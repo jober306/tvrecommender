@@ -211,7 +211,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 				}
 			}
 			averagePrecision /= recommendedItemSize;
-			System.out.println("Mean Average for user: " + originalUserIndex + " is " + averagePrecision);
+			System.out.println("Mean Average for user: " + userIndex + "/" + numberOfUsers + " is " + averagePrecision);
 			meanAveragePrecision += averagePrecision;
 		}
 		meanAveragePrecision /= (double) numberOfUsers;
@@ -223,13 +223,13 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	}
 	
 	public static void main(String[] args){
-		EvaluationMeasure[] measures = new EvaluationMeasure[]{EvaluationMeasure.NEIGHBOURHOOD_COVERAGE};
+		EvaluationMeasure[] measures = new EvaluationMeasure[]{EvaluationMeasure.MEAN_AVERAGE_PRECISION};
 		JavaSparkContext sc = SparkUtilities.getADefaultSparkContext();
 		sc.setLogLevel("ERROR");
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		RecsysTVDataSet dataSet = loader.loadDataSet();
 		SpaceAlignmentEvaluator<RecsysTVEvent> evaluator = new SpaceAlignmentEvaluator<RecsysTVEvent>(dataSet, measures,4,4);
 		evaluator.evaluate();
-		System.out.println("RESULT: " + evaluator.getResults().get(EvaluationMeasure.NEIGHBOURHOOD_COVERAGE));
+		System.out.println("RESULT: " + evaluator.getResults().get(EvaluationMeasure.MEAN_AVERAGE_PRECISION));
 	}
 }

@@ -2,7 +2,6 @@ package mllib.utility;
 
 import static java.lang.Math.toIntExact;
 
-import java.awt.print.Printable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

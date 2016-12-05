@@ -18,13 +18,16 @@ public class UserPreferenceTensorCalculator <T extends TVEvent>{
 	 * Constructor of the class. It takes a data set and a sprak context to create the collection of user preference tensor associated
 	 * with the given data set.
 	 * @param dataSet A tv data set of given tv envent type.
-	 * @param sc The java spark context used to load the tv data set.
 	 * @return The user preference tensor collection.
 	 */
-	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<T> dataSet, JavaSparkContext sc){
+	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<T> dataSet){
 		UserPreferenceTensorCollectionAccumulator acc = new UserPreferenceTensorCollectionAccumulator();
-		JavaSparkContext.toSparkContext(sc).register(acc);
-		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.getEventsData().map(event -> new UserPreferenceTensor(event.getUserID(), event.getProgramFeatureVector(), event.getSlot()));
+		JavaSparkContext.toSparkContext(dataSet.getJavaSparkContext()).register(acc);
+		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.getEventsData().map(event -> {
+			UserPreferenceTensor tensor = new UserPreferenceTensor(event.getUserID(), event.getProgramFeatureVector(), event.getSlot());
+			tensor.incrementValue(event.getDuration());
+			return tensor;
+		});
 		userPrefTensors.foreach(tensor -> acc.add(tensor));
 		return acc.value();
 	}

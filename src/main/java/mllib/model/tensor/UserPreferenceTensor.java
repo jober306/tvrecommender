@@ -1,5 +1,7 @@
 package mllib.model.tensor;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.spark.mllib.linalg.Vector;
@@ -10,8 +12,10 @@ import org.apache.spark.mllib.linalg.Vector;
  * @author Jonathan Bergeron
  *
  */
-public class UserPreferenceTensor {
+public class UserPreferenceTensor implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The user of this tensor.
 	 */

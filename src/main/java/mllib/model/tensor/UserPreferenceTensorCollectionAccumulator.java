@@ -1,5 +1,7 @@
 package mllib.model.tensor;
 
+import java.io.Serializable;
+
 import org.apache.spark.util.AccumulatorV2;
 
 /**
@@ -8,7 +10,7 @@ import org.apache.spark.util.AccumulatorV2;
  * @author Jonathan Bergeron
  *
  */
-public class UserPreferenceTensorCollectionAccumulator extends AccumulatorV2<UserPreferenceTensor, UserPreferenceTensorCollection> {
+public class UserPreferenceTensorCollectionAccumulator extends AccumulatorV2<UserPreferenceTensor, UserPreferenceTensorCollection> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	

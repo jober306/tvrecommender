@@ -1,5 +1,6 @@
 package mllib.model.tensor;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +19,9 @@ import org.apache.spark.mllib.linalg.Vectors;
  * @author Jonathan Bergeron
  *
  */
-public class UserPreferenceTensorCollection {
+public class UserPreferenceTensorCollection implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	public static final int ANY = -1;
 	
