@@ -151,15 +151,6 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 		return duration;
 	}
 	
-	public Vector getProgramFeatureVector(){
-		double[] features = new double[4];
-		features[0] = channelID;
-		features[1] = slot;
-		features[2] = genreID;
-		features[3] = subgenreID;
-		return Vectors.dense(features);
-	}
-	
 	/**
 	 * Method that overrides the equals method. Two RecsysTVEvents are considered equals if all of their
 	 * attributes are equals.

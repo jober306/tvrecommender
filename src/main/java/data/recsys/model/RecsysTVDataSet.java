@@ -1,6 +1,7 @@
 package data.recsys.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -13,11 +14,16 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
+import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+
 import recommender.model.UserItemMatrix;
 import scala.Tuple2;
 import scala.tools.nsc.backend.opt.ClosureElimination.ClosureEliminationPhase;
 import spark.utilities.SparkUtilities;
+import data.feature.FeatureExtractor;
 import data.model.TVDataSet;
+import data.model.TVEvent;
+import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.mapper.MappedIds;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
@@ -50,7 +56,8 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 * Boolean to check if wether or not the map file have been erased.
 	 */
 	transient boolean mapClosed;
-
+	
+	
 	/**
 	 * Main constructor of the class. Use the
 	 * <class>RecsysTVDataSetLoader</class> to get the RDD off a csv file.
@@ -62,7 +69,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 */
 	public RecsysTVDataSet(JavaRDD<RecsysTVEvent> eventsData,
 			JavaSparkContext sc, boolean createMap) {
-		super(eventsData, sc);
+		super(eventsData, sc, RecsysFeatureExtractor.getInstance());
 		if(createMap){
 			initializeMapReader();
 			broadcastedIdMap = sc.broadcast(idMap);
@@ -73,6 +80,9 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		}
 	}
 	
+	/**
+	 * Method used to build another data set of this specific type from this current data set.
+	 */
 	public  TVDataSet<RecsysTVEvent> buildDataSetFromRawData(JavaRDD<RecsysTVEvent> eventsData, JavaSparkContext sc){
 		return new RecsysTVDataSet(eventsData, sc, true);
 	}
@@ -271,7 +281,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		.reduceByKey((tvEvent1,tvEvent2) -> tvEvent1).map( pair -> {		
 			RecsysTVEvent event =  pair._2();
 			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramID());
-			return new IndexedRow(programIndex, event.getProgramFeatureVector());
+			return new IndexedRow(programIndex, featureExtracor.extractFeatures(event));
 		});
 		return new IndexedRowMatrix(contentMatrix.rdd());
 	}

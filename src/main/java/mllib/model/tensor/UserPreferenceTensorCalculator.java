@@ -3,6 +3,7 @@ package mllib.model.tensor;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import data.feature.FeatureExtractor;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 
@@ -23,8 +24,9 @@ public class UserPreferenceTensorCalculator <T extends TVEvent>{
 	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<T> dataSet){
 		UserPreferenceTensorCollectionAccumulator acc = new UserPreferenceTensorCollectionAccumulator();
 		JavaSparkContext.toSparkContext(dataSet.getJavaSparkContext()).register(acc);
+		FeatureExtractor<T> feautreExtractor = dataSet.getFeatureExtractor();
 		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.getEventsData().map(event -> {
-			UserPreferenceTensor tensor = new UserPreferenceTensor(event.getUserID(), event.getProgramFeatureVector(), event.getSlot());
+			UserPreferenceTensor tensor = new UserPreferenceTensor(event.getUserID(), feautreExtractor.extractFeatures(event), event.getSlot());
 			tensor.incrementValue(event.getDuration());
 			return tensor;
 		});

@@ -12,6 +12,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
 
+import data.feature.FeatureExtractor;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 import data.recsys.loader.RecsysTVDataSetLoader;
@@ -85,6 +86,11 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	Map<EvaluationMeasure, Double> evaluationResults;
 	
 	/**
+	 * The feature extractor used in the given data set. It will be assigned to all data set created.
+	 */
+	FeatureExtractor<T> feautreExtractor;
+	
+	/**
 	 * The week that will be used to train the space alignment recommender, the test day will be the next day after that week.
 	 */
 	int week;
@@ -104,6 +110,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures, int week, int r){
 		this.week = week;
 		this.r = r;
+		this.feautreExtractor = tvDataSet.getFeatureExtractor();
 		buildTVDataSets(tvDataSet);
 		buildRecommenders();
 		initializeMap();
@@ -147,9 +154,11 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		JavaRDD<T> week3 = filterByIntervalOfWeek(fullDataSet, week, week);
 		JavaRDD<T> weekFourDayOne = filterByIntervalOfDay(filterByIntervalOfWeek(fullDataSet, week+1, week+1),1,1);
 		trainingSet = tvDataSet.buildDataSetFromRawData(week3, sc);
+		trainingSet.setFeatureExtractor(feautreExtractor);
 		testSet = tvDataSet.buildDataSetFromRawData(week3.union(weekFourDayOne), sc);
+		testSet.setFeatureExtractor(feautreExtractor);
 		lastDaySet = tvDataSet.buildDataSetFromRawData(weekFourDayOne, sc);
-		originalsNewItemsIds = weekFourDayOne.mapToPair(tvEvent -> new Tuple2<Integer, Vector>(tvEvent.getProgramID(), tvEvent.getProgramFeatureVector())).reduceByKey((arg1, arg2) -> arg1).collect();
+		originalsNewItemsIds = weekFourDayOne.mapToPair(tvEvent -> new Tuple2<Integer, Vector>(tvEvent.getProgramID(), feautreExtractor.extractFeatures(tvEvent))).reduceByKey((arg1, arg2) -> arg1).collect();
 	}
 	
 	private void initializeMap(){

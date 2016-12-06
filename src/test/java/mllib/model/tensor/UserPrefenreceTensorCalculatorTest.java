@@ -16,7 +16,6 @@ import org.junit.Test;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
-import scala.annotation.implicitNotFound;
 
 public class UserPrefenreceTensorCalculatorTest {
 	
