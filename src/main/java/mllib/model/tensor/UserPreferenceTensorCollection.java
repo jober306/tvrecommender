@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
+
 /**
  * Class that represents a collection of user preference tensor that extends hash map. The main advantage is when using
  * the put method the time value of the new user preference tensor will be added if one was already existing with same
@@ -88,6 +90,17 @@ public class UserPreferenceTensorCollection implements Serializable{
 			}
 			return true;
 		}).map(Entry::getValue).collect(Collectors.toList());
+	}
+	
+	/**
+	 * 
+	 * @param userId
+	 * @param programFeatures
+	 * @param slot
+	 * @return
+	 */
+	public int getUserPreferenceTensorsWatchTime(int userId, Vector programFeatures, int slot){
+		return getUserPreferenceTensors(userId, programFeatures, slot).stream().mapToInt(tensor -> tensor.getTotalWatchTime()).sum();
 	}
 	
 	

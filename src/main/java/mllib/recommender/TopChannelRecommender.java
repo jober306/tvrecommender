@@ -2,14 +2,18 @@ package mllib.recommender;
 
 import static mllib.model.tensor.UserPreferenceTensorCollection.*; 
 
+import static data.utility.TVDataSetUtilities.*;
+
 import java.util.List;
 
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 import data.feature.ChannelFeatureExtractor;
 import data.model.TVDataSet;
 import data.model.TVEvent;
+import data.recsys.model.RecsysTVEvent;
 import mllib.model.tensor.UserPreferenceTensorCalculator;
 import mllib.model.tensor.UserPreferenceTensorCollection;
 import scala.Tuple2;
@@ -39,13 +43,24 @@ public class TopChannelRecommender <T extends TVEvent>{
 		calculateTopChannel();
 	}
 	
+	/**
+	 * Recommend a program based on the given slot and week.
+	 * @param week
+	 * @param slot
+	 * @return The original id of the tv program.
+	 */
+	public int recommend(int week, int slot){
+		JavaRDD<T> programDuringWeekSlot = filterByIntervalOfSlot(filterByIntervalOfWeek(tvDataset.getEventsData(), week, week), slot, slot);
+		return programDuringWeekSlot.filter(tvEvent -> tvEvent.getChannelID() == topChannelId).collect().get(0).getProgramID();
+	}
+	
 	private void calculateTopChannel(){
 		UserPreferenceTensorCalculator<T> calculator = new UserPreferenceTensorCalculator<T>();
 		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(tvDataset);
 		List<Integer> channelIds = tvDataset.getAllProgramIds();
 		topChannelId = channelIds.stream().map(channelId -> 
 			new Tuple2<Integer,Integer>(channelId, 
-					tensors.getUserPreferenceTensors(ANY, getChannelAsVector(channelId), ANY).stream().mapToInt(tensor -> tensor.getTotalWatchTime()).sum()))
+					tensors.getUserPreferenceTensorsWatchTime(ANY, getChannelAsVector(channelId), ANY)))
 		.max((channel1WatchTime, channel2WatchTime) -> channel1WatchTime._2().compareTo(channel2WatchTime._2())).get()._1();
 	}
 	
