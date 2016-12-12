@@ -1,8 +1,7 @@
 package data.model;
 
 import java.time.Duration;
-import java.time.LocalTime;
-
+import java.time.LocalDateTime;
 /**
  * Class that represents a tv program in the most simple way.
  * It has a start time, an end time and a channel id (the duration is implicitly calculated
@@ -12,8 +11,8 @@ import java.time.LocalTime;
  */
 public abstract class TVProgram {
 
-	protected final LocalTime startTime;
-	protected final LocalTime endTime;
+	protected final LocalDateTime startTime;
+	protected final LocalDateTime endTime;
 	protected final Duration duration;
 	protected final int channelId;
 	
@@ -23,7 +22,7 @@ public abstract class TVProgram {
 	 * @param endTime The end time of the tv program.
 	 * @param channelId The channel id of the tv program.
 	 */
-	public TVProgram(LocalTime startTime, LocalTime endTime, int channelId){
+	public TVProgram(LocalDateTime startTime, LocalDateTime endTime, int channelId){
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.duration = Duration.between(startTime, endTime);
@@ -33,14 +32,14 @@ public abstract class TVProgram {
 	/**
 	 * @return the startTime
 	 */
-	public LocalTime getStartTime() {
+	public LocalDateTime getStartTime() {
 		return startTime;
 	}
 
 	/**
 	 * @return the endTime
 	 */
-	public LocalTime getEndTime() {
+	public LocalDateTime getEndTime() {
 		return endTime;
 	}
 

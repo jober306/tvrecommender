@@ -13,8 +13,18 @@ import data.model.TVEvent;
  *
  */
 public class RecsysTVEvent extends TVEvent implements Serializable {
-
+	
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * slot: hour inside the week relative to the start of the view, from 1 to 24*7 = 168.
+	 */
+	protected int slot;
+
+	/**
+	 * week: week from 1 to 19. Weeks 14 and 19 should not be used because they contain errors.
+	 */
+	protected int week;
 	
 	/**
 	 * genre ID: it is the id of the genre, form 1 to 8.
@@ -28,6 +38,7 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	
 	/**
 	 * Constructor of a Recsys tv event. See documentation about attributes of this class for param documentation.
+	 * The watch time is initialized implicitly, considering the recsys tv events data set started 
 	 */
 	public RecsysTVEvent(short channelID, short slot, byte week, byte genreID, byte subgenreID,
 			int userID, int programID, int eventID, int duration){
@@ -40,8 +51,25 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 		this.programID = programID;
 		this.eventID = eventID;
 		this.duration = duration;
+		this.watchTime = RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot-1);
+	}
+	
+	/**
+	 * Getter for the slot parameter.
+	 * @return The slot of the tv event.
+	 */
+	public int getSlot() {
+		return slot;
 	}
 
+	/**
+	 * Getter for the week parameter
+	 * @return The week of the tv event.
+	 */
+	public int getWeek() {
+		return week;
+	}
+	
 	/**
 	 * Getter for the genre parameter.
 	 * @return The genre Id.

@@ -1,7 +1,12 @@
 package data.recsys.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDateTime;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class RecsysTVEventTest {
@@ -16,9 +21,15 @@ public class RecsysTVEventTest {
 	private final int eventID = 3813;
 	private final int duration = 30;
 	
+	private RecsysTVEvent event;
+	
+	@Before
+	public void setUp(){
+		event = new RecsysTVEvent(channelID, slot, week, genreID, subgenreID, userID, programID, eventID, duration);
+	}
+	
 	@Test
 	public void constructorAndGetterTest(){
-		RecsysTVEvent event = new RecsysTVEvent(channelID, slot, week, genreID, subgenreID, userID, programID, eventID, duration);
 		assertTrue(event != null);
 		assertTrue(channelID == event.getChannelID());
 		assertTrue(slot == event.getSlot());
@@ -29,14 +40,25 @@ public class RecsysTVEventTest {
 		assertTrue(programID == event.getProgramID());
 		assertTrue(eventID == event.getEventID());
 		assertTrue(duration == event.getDuration());
+		System.out.println(event.getWatchTime().toString());
+	}
+	
+	@Test
+	public void watchTimeSetCorrectlyTest(){
+		LocalDateTime expectedWatchTime = LocalDateTime.of(1995, 4,16,7,0);
+		assertEquals(expectedWatchTime, event.getWatchTime());
 	}
 	
 	@Test
 	public void equalsTvEventTest(){
-		RecsysTVEvent event1 = new RecsysTVEvent(channelID, slot, week, genreID, subgenreID, userID, programID, eventID, duration);
 		RecsysTVEvent event2 = new RecsysTVEvent(channelID, slot, week, genreID, subgenreID, userID, programID, eventID, duration);
-		assertTrue(event1.equals(event2));
+		assertTrue(event.equals(event2));
 		RecsysTVEvent event3 = new RecsysTVEvent((byte)22, slot, week, genreID, subgenreID, userID, programID, eventID, duration);
-		assertTrue(event1 != event3);
+		assertTrue(event != event3);
+	}
+	
+	@After
+	public void tearDown(){
+		event = null;
 	}
 }

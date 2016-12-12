@@ -1,6 +1,9 @@
 package data.recsys.model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.util.HashSet;
 import java.util.List;
 
@@ -32,6 +35,12 @@ import mllib.model.DistributedUserItemMatrix;
  *
  */
 public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serializable, MappedIds{
+	
+	/**
+	 * The date the data set started recording tv audience behavior (This is not the real one).
+	 * Monday, april 1995 at midnigh.
+	 */
+	public static final LocalDateTime START_TIME = LocalDateTime.of(1995, Month.APRIL, 10, 0,0);
 	
 	private static final long serialVersionUID = 1L;
 

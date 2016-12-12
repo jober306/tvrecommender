@@ -1,5 +1,7 @@
 package data.model;
 
+import java.time.LocalDateTime;
+
 /**
  * Abstract class that force the class extending it to implement a minimum of getter methods essential to tv
  * recommendation.
@@ -14,14 +16,9 @@ public abstract class TVEvent {
 	protected int channelID;
 	
 	/**
-	 * slot: hour inside the week relative to the start of the view, from 1 to 24*7 = 168.
+	 * The time at which the user started watching.
 	 */
-	protected int slot;
-
-	/**
-	 * week: week from 1 to 19. Weeks 14 and 19 should not be used because they contain errors.
-	 */
-	protected int week;
+	protected LocalDateTime watchTime;
 	
 	/**
 	 * user ID: it is the id of the user.
@@ -52,19 +49,11 @@ public abstract class TVEvent {
 	}
 	
 	/**
-	 * Getter for the slot parameter.
-	 * @return The slot of the tv event.
+	 * Getter method for the watch time param.
+	 * @return the watchTime
 	 */
-	public int getSlot() {
-		return slot;
-	}
-
-	/**
-	 * Getter for the week parameter
-	 * @return The week of the tv event.
-	 */
-	public int getWeek() {
-		return week;
+	public LocalDateTime getWatchTime() {
+		return watchTime;
 	}
 	
 	/**
