@@ -21,6 +21,8 @@ public class SpaceAlignmentPredictorTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	final static int r = 2;
+	final static int numberOfResults =2;
+	final static int neighbourhoodSize = 2;
 	static RecsysTVDataSet dataSet;
 	static SpaceAlignmentRecommender<RecsysTVEvent> predictor;
 
@@ -28,7 +30,7 @@ public class SpaceAlignmentPredictorTest {
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
-		predictor = new SpaceAlignmentRecommender<RecsysTVEvent>(dataSet, r);
+		predictor = new SpaceAlignmentRecommender<RecsysTVEvent>(dataSet, r, neighbourhoodSize, numberOfResults);
 	}
 
 	@Test
@@ -68,14 +70,12 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest(){
 		int userId = 2;
-		int numberOfResults =2;
-		int n = 2;
 		List<Vector> newItems = new ArrayList<Vector>();
 		newItems.add(Vectors.dense(new double[] { 46, 19, 5, 81 }));
 		newItems.add(Vectors.dense(new double[] { 30000, 100000, 488888, 29199}));
 		newItems.add(Vectors.dense(new double[] { 54, 18, 10, 78 }));
 		newItems.add(Vectors.dense(new double[] { 200, 29, 25, 11 }));
-		List<Integer> prediction = predictor.recommend(userId, numberOfResults, newItems, n);
+		List<Integer> prediction = predictor.recommend(userId, newItems);
 		assertEquals(numberOfResults, prediction.size());
 	}
 

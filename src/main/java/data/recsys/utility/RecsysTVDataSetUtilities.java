@@ -67,4 +67,48 @@ public class RecsysTVDataSetUtilities {
 	public static boolean isGenreSubgenreMapNotEmpty(){
 		return !genreToNameMap.isEmpty() && !subgenreToNameMap.isEmpty();
 	}
+	
+	public int slotDistance(int slot1, int slot2){
+		int dayDist = dayDistance(slot1, slot2);
+		int minDist = minDistance(slot1, slot2);
+		int indicFunction = bothWeekendOrBothWeekDay(slot1, slot2); 
+		return (dayDist + (minDist / 60)) * indicFunction;
+	}
+	
+	public int dayDistance(int slot1, int slot2){
+		int day1 = (slot1 -1) % 24;
+		int day2 = (slot2 -1) % 24;
+		return Math.abs(day1 - day2);
+	}
+	
+	public int minDistance(int slot1, int slot2){
+		int slot1Day = (slot1 -1) % 24;
+		int slot2Day = (slot2 -1) % 24;
+		if(Math.abs(slot1Day-slot2Day) > 12){
+			int loweredMax = Math.max(slot1Day,slot2Day) -12;
+			int min = Math.min(slot1Day, slot2Day);
+			return Math.abs(loweredMax - min) * 60; 
+		}else{
+			return Math.abs(slot1Day - slot2Day) * 60;
+		}
+	}
+	
+	//TODO: not specified when the week start.
+	public int bothWeekendOrBothWeekDay(int slot1, int slot2){
+		if((isAWeekDay(slot1) && isAWeekDay(slot2)) || (isAWeekendDay(slot1) && isAWeekendDay(slot2))){
+			return 1;
+		}else{
+			return 0;
+		}
+	}
+	
+	public boolean isAWeekDay(int slot){
+		int day = (slot -1) % 24;
+		return day <= 4;
+	}
+	
+	public boolean isAWeekendDay(int slot){
+		int day = (slot -1) % 24;
+		return day >= 5;
+	}
 }

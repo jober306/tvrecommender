@@ -101,15 +101,27 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	int r;
 	
 	/**
+	 * The neighbourhood size used when calculating similarity between items.
+	 */
+	int neighbourhoodSize;
+	
+	/**
+	 * The number of results returned when recommending.
+	 */
+	int numberOfResults;
+	
+	/**
 	 * Constructor of the SpaceAlignmentEvaluator.
 	 * @param tvDataSet A data set of tv events with more than just a week.
 	 * @param measures The array of evaluation measures that will be calculated.
 	 * @param week The week on which the training will be made.
 	 * @param r The rank constraint needed by the space alignment recommender.
 	 */
-	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures, int week, int r){
+	public SpaceAlignmentEvaluator(TVDataSet<T> tvDataSet, EvaluationMeasure[] measures, int week, int r, int neighbourhoodSize, int numberOfResults){
 		this.week = week;
 		this.r = r;
+		this.neighbourhoodSize = neighbourhoodSize;
+		this.numberOfResults = numberOfResults;
 		this.feautreExtractor = tvDataSet.getFeatureExtractor();
 		buildTVDataSets(tvDataSet);
 		buildRecommenders();
@@ -169,7 +181,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	}
 	
 	private void buildRecommenders(){
-		actualRecommender = new SpaceAlignmentRecommender<T>(trainingSet, r);
+		actualRecommender = new SpaceAlignmentRecommender<T>(trainingSet, r, neighbourhoodSize, numberOfResults);
 		expectedRecommender = new ItemBasedRecommender<T>(testSet);
 	}
 	
@@ -201,13 +213,11 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 	
 	private void evaluateMeanAveragePrecision(){
 		int numberOfUsers = trainingSet.getNumberOfUsers();
-		int numberOfResults = 50;
-		int numberOfNeighbour = 20;
 		double meanAveragePrecision = 0.0d;
 		for(int userIndex = 0; userIndex < numberOfUsers; userIndex++){
 			int originalUserIndex = trainingSetIdsMapped ? trainingSetMap.getOriginalUserID(userIndex) : userIndex;
 			System.out.println("Recommending for user " + originalUserIndex);
-			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, numberOfResults, getSecondArgument(originalsNewItemsIds), numberOfNeighbour);
+			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, getSecondArgument(originalsNewItemsIds));
 			System.out.println("Done");
 			List<Integer> originalIdsOfRecommendedItemIndexes = recommendedItemIndexes.stream().map(index -> originalsNewItemsIds.get(index)._1()).collect(Collectors.toList());
 			List<Integer> originalIdsOfItemsSeenByUser = lastDaySet.getProgramIndexesSeenByUser(originalUserIndex);
@@ -237,7 +247,7 @@ public class SpaceAlignmentEvaluator <T extends TVEvent>{
 		sc.setLogLevel("ERROR");
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		RecsysTVDataSet dataSet = loader.loadDataSet();
-		SpaceAlignmentEvaluator<RecsysTVEvent> evaluator = new SpaceAlignmentEvaluator<RecsysTVEvent>(dataSet, measures,4,4);
+		SpaceAlignmentEvaluator<RecsysTVEvent> evaluator = new SpaceAlignmentEvaluator<RecsysTVEvent>(dataSet, measures,4,4, 20, 50);
 		evaluator.evaluate();
 		System.out.println("RESULT: " + evaluator.getResults().get(EvaluationMeasure.MEAN_AVERAGE_PRECISION));
 	}

@@ -1,7 +1,6 @@
 package data.recsys.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -14,15 +13,10 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
-import com.fasterxml.jackson.annotation.JsonFormat.Feature;
-
 import recommender.model.UserItemMatrix;
 import scala.Tuple2;
-import scala.tools.nsc.backend.opt.ClosureElimination.ClosureEliminationPhase;
 import spark.utilities.SparkUtilities;
-import data.feature.FeatureExtractor;
 import data.model.TVDataSet;
-import data.model.TVEvent;
 import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.mapper.MappedIds;
 import data.recsys.mapper.RecSysMapCreator;
@@ -121,36 +115,6 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 				.<RecsysTVEvent> elementToJavaRDD(event, sc);
 		JavaRDD<RecsysTVEvent> intersection = eventsData.intersection(eventRDD);
 		return !intersection.isEmpty();
-	}
-
-	/**
-	 * Method that return the list of all distinct user Ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct user Ids.
-	 */
-	public List<Integer> getAllUserIds() {
-		return eventsData.map(tvEvent -> tvEvent.getUserID()).distinct()
-				.collect();
-	}
-
-	/**
-	 * Method that return the list of all distinct program Ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct program Ids.
-	 */
-	public List<Integer> getAllProgramIds() {
-		return eventsData.map(tvEvent -> tvEvent.getProgramID()).distinct()
-				.collect();
-	}
-
-	/**
-	 * Method that return the list of all distinct event Ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct event Ids.
-	 */
-	public List<Integer> getAllEventIds() {
-		return eventsData.map(tvEvent -> tvEvent.getEventID()).distinct()
-				.collect();
 	}
 
 	/**

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import mllib.model.DistributedUserItemMatrix;
+import recommender.prediction.TVRecommender;
 import scala.Tuple2;
 
 import org.apache.spark.mllib.linalg.Matrices;
@@ -34,7 +35,7 @@ import data.model.TVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentRecommender <T extends TVEvent>{
+public class SpaceAlignmentRecommender <T extends TVEvent> {
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
@@ -66,6 +67,16 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * similarity distribution properly.
 	 */
 	int r;
+	
+	/**
+	 * The neighbourhood size used when calculating similarity between items.
+	 */
+	int neighbourhoodSize;
+	
+	/**
+	 * The number of results returned when recommending.
+	 */
+	int numberOfResults;
 
 	/**
 	 * This matrix of size d x d represents the model to map a new item content
@@ -86,9 +97,11 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentRecommender(TVDataSet<T> tvDataSet, int r) {
+	public SpaceAlignmentRecommender(TVDataSet<T> tvDataSet, int r, int neighbourhoddSize, int numberOfResults) {
 		this.tvDataset = tvDataSet;
 		this.r = r;
+		this.neighbourhoodSize = neighbourhoddSize;
+		this.numberOfResults = numberOfResults;
 		this.R = tvDataSet.convertToDistUserItemMatrix();
 		this.C = tvDataSet.getContentMatrix();
 		this.localC = getSecondArgument(C.rows().toJavaRDD().mapToPair(row -> new Tuple2<Integer, Vector>(toIntExact(row.index()), indexedRowToDenseVector(row))).
@@ -171,11 +184,11 @@ public class SpaceAlignmentRecommender <T extends TVEvent>{
 	 * @param n The number of items neighbors that will be used to calculate similarity with new items.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public List<Integer> recommend(int userId, int numberOfResults, List<Vector> newTvShowsContent, int n) {
+	public List<Integer> recommend(int userId, List<Vector> newTvShowsContent) {
 		Double[] neighboursScores = new Double[newTvShowsContent.size()];
 		for(int i = 0; i < newTvShowsContent.size(); i++){
 			System.out.println("Calculating score for new show. " + i);
-			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent.get(i), userId, n);
+			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent.get(i), userId, neighbourhoodSize);
 			neighboursScores[i] = calculateNeighboursScore(neighbours);
 		}
 		List<Tuple2<Integer, Double>> sortedScore = QuickSelect.selectTopN(neighboursScores, numberOfResults);

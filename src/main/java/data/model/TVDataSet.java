@@ -79,9 +79,46 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable{
 	
 	abstract public boolean isEmpty();
 	abstract public boolean contains(T event);
-	abstract public List<Integer> getAllUserIds();
-	abstract public List<Integer> getAllProgramIds();
-	abstract public List<Integer> getAllEventIds();
+	
+	/**
+	 * Method that return the list of all distinct user Ids in the data set.
+	 * 
+	 * @return A list of integer representing all the distinct user Ids.
+	 */
+	public List<Integer> getAllUserIds() {
+		return eventsData.map(tvEvent -> tvEvent.getUserID()).distinct()
+				.collect();
+	}
+
+	/**
+	 * Method that return the list of all distinct program Ids in the data set.
+	 * 
+	 * @return A list of integer representing all the distinct program Ids.
+	 */
+	public List<Integer> getAllProgramIds() {
+		return eventsData.map(tvEvent -> tvEvent.getProgramID()).distinct()
+				.collect();
+	}
+
+	/**
+	 * Method that return the list of all distinct event Ids in the data set.
+	 * 
+	 * @return A list of integer representing all the distinct event Ids.
+	 */
+	public List<Integer> getAllEventIds() {
+		return eventsData.map(tvEvent -> tvEvent.getEventID()).distinct()
+				.collect();
+	}
+	
+	/**
+	 * Method that return the list of all distinct channel ids in the data set.
+	 * 
+	 * @return A list of integer representing all the distinct channel ids.
+	 */
+	public List<Integer> getAllChannelIds(){
+		return eventsData.map(tvEvent -> tvEvent.getChannelID()).distinct().collect();
+	}
+	
 	abstract public int getNumberOfUsers();
 	abstract public int getNumberOfItems();
 	abstract public List<Integer> getProgramIndexesSeenByUser(int userIndex);

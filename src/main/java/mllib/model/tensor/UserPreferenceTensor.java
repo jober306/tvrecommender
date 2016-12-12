@@ -29,7 +29,7 @@ public class UserPreferenceTensor implements Serializable{
 	/**
 	 * The time slot of this tensor.
 	 */
-	final short slot;
+	final int slot;
 	
 	/**
 	 * Total watch time for this particular user, program feature vector and slot.
@@ -42,7 +42,7 @@ public class UserPreferenceTensor implements Serializable{
 	 * @param programFeatureVector The program feature vector representing the program of this tensor.
 	 * @param slot The time slot of this tensor.
 	 */
-	public UserPreferenceTensor(int userId, Vector programFeatureVector, short slot){
+	public UserPreferenceTensor(int userId, Vector programFeatureVector, int slot){
 		this.userId = userId;
 		this.programFeatureVector = programFeatureVector;
 		this.slot = slot;
@@ -77,7 +77,7 @@ public class UserPreferenceTensor implements Serializable{
 	 * Getter method that returns the slot of this tensor.
 	 * @return The slot of this tensor.
 	 */
-	public short getSlot(){
+	public int getSlot(){
 		return slot;
 	}
 	
