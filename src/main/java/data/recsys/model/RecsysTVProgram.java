@@ -1,13 +1,31 @@
 package data.recsys.model;
 
-import java.time.LocalDateTime;
-
+import static data.recsys.utility.RecsysTVDataSetUtilities.getStartTimeFromWeekAndSlot;
+import static data.recsys.utility.RecsysTVDataSetUtilities.getEndTimeFromWeekAndSlot;
 import data.model.TVProgram;
 
 public class RecsysTVProgram extends TVProgram{
-
-	public RecsysTVProgram(LocalDateTime startTime, LocalDateTime endTime, int channelId, int genreId, int subGenreId) {
-		super(startTime, endTime, channelId);
+	
+	final int genreId;
+	final int subGenreId;
+	
+	public RecsysTVProgram(int week, short slot, int channelId, int programId, int genreId, int subGenreId) {
+		super(getStartTimeFromWeekAndSlot(week, slot), getEndTimeFromWeekAndSlot(week, slot), channelId, programId);
+		this.genreId = genreId;
+		this.subGenreId = subGenreId;
 	}
 	
+	/**
+	 * @return the genreId
+	 */
+	public int getGenreId() {
+		return genreId;
+	}
+
+	/**
+	 * @return the subGenreId
+	 */
+	public int getSubGenreId() {
+		return subGenreId;
+	}
 }

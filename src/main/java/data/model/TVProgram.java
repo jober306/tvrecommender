@@ -15,18 +15,21 @@ public abstract class TVProgram {
 	protected final LocalDateTime endTime;
 	protected final Duration duration;
 	protected final int channelId;
-	
+	protected final int programId;
+
 	/**
 	 * Constructor of the TVProgram class, to be accessed only by the children of this class.
 	 * @param startTime The start time of the tv program.
 	 * @param endTime The end time of the tv program.
 	 * @param channelId The channel id of the tv program.
+	 * @param programId The id of this program.
 	 */
-	public TVProgram(LocalDateTime startTime, LocalDateTime endTime, int channelId){
+	public TVProgram(LocalDateTime startTime, LocalDateTime endTime, int channelId, int programId){
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.duration = Duration.between(startTime, endTime);
 		this.channelId = channelId;
+		this.programId = programId;
 	}
 	
 	/**
@@ -55,5 +58,12 @@ public abstract class TVProgram {
 	 */
 	public int getChannelId() {
 		return channelId;
+	}
+	
+	/**
+	 * @return the programId
+	 */
+	public int getProgramId() {
+		return programId;
 	}
 }

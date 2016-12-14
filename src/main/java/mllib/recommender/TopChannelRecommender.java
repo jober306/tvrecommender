@@ -13,6 +13,8 @@ import org.apache.spark.mllib.linalg.Vectors;
 import data.feature.ChannelFeatureExtractor;
 import data.model.TVDataSet;
 import data.model.TVEvent;
+import data.model.TVProgram;
+import data.model.recsys.model.tensor.RecsysUserPreferenceTensorCalculator;
 import mllib.model.tensor.UserPreferenceTensorCalculator;
 import mllib.model.tensor.UserPreferenceTensorCollection;
 import scala.Tuple2;
@@ -23,7 +25,7 @@ import scala.Tuple2;
  * @author Jonathan Bergeron
  *
  */
-public class TopChannelRecommender <T extends TVEvent>{
+public class TopChannelRecommender <U extends TVProgram, T extends TVEvent>{
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
@@ -31,14 +33,19 @@ public class TopChannelRecommender <T extends TVEvent>{
 	TVDataSet<T> tvDataset;
 	
 	/**
+	 * The user preference tensor calculator used to create the tensors.
+	 */
+	UserPreferenceTensorCalculator<U,T> tensorCalculator;
+	
+	/**
 	 * The top channel id for this data set. I.e. the channel with most watching
 	 * time.
 	 */
 	int topChannelId;
 	
-	public TopChannelRecommender(TVDataSet<T> tvDataSet){
-		tvDataSet.setFeatureExtractor(new ChannelFeatureExtractor<T>());
+	public TopChannelRecommender(TVDataSet<T> tvDataSet, UserPreferenceTensorCalculator<U,T> tensorCalculator){
 		this.tvDataset = tvDataSet;
+		this.tensorCalculator = tensorCalculator;
 		calculateTopChannel();
 	}
 	
@@ -51,13 +58,12 @@ public class TopChannelRecommender <T extends TVEvent>{
 	public int recommend(int week, int slot){
 		final int topChannelId = this.topChannelId;
 		JavaRDD<T> programDuringWeekSlot = filterByIntervalOfSlot(filterByIntervalOfWeek(tvDataset.getEventsData(), week, week), slot, slot);
-		List<T> oh = programDuringWeekSlot.filter(tvEvent -> tvEvent.getChannelID() == topChannelId).collect();
-		return oh.get(0).getProgramID();
+		List<T> oh = programDuringWeekSlot.filter(tvEvent -> tvEvent.getChannelId() == topChannelId).collect();
+		return oh.get(0).getProgramId();
 	}
 	
 	private void calculateTopChannel(){
-		UserPreferenceTensorCalculator<T> calculator = new UserPreferenceTensorCalculator<T>();
-		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(tvDataset);
+		UserPreferenceTensorCollection tensors = tensorCalculator.calculateUserPreferenceTensorForDataSet(tvDataset, new ChannelFeatureExtractor<U,T>());
 		List<Integer> channelIds = tvDataset.getAllChannelIds();
 		topChannelId = channelIds.stream().map(channelId -> 
 			new Tuple2<Integer,Integer>(channelId, 

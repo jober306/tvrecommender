@@ -11,19 +11,20 @@ import org.junit.Test;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import data.recsys.model.RecsysTVProgram;
 import scala.Tuple2;
 
 public class ItemBasedRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
-	static ItemBasedRecommender<RecsysTVEvent> recommender;
+	static ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
 	static RecsysTVDataSet dataSet;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
-		recommender = new ItemBasedRecommender<RecsysTVEvent>(dataSet);
+		recommender = new ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent>(dataSet);
 	}
 
 	@Test

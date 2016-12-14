@@ -83,8 +83,8 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void getAllProgramIdsTest() {
 		List<Integer> programIds = dataSet.getAllProgramIds();
-		assertTrue(programIds.contains(tvEvent1.getProgramID()));
-		assertTrue(programIds.contains(tvEvent2.getProgramID()));
+		assertTrue(programIds.contains(tvEvent1.getProgramId()));
+		assertTrue(programIds.contains(tvEvent2.getProgramId()));
 	}
 
 	@Test
@@ -108,11 +108,11 @@ public class RecsysTVDataSetTest {
 	public void getProgramIndexesSeenByUserTest(){
 		List<Integer> programsSeenByUser1 = dataSet.getProgramIndexesSeenByUser(1);
 		assertEquals(1, programsSeenByUser1.size());
-		assertTrue(programsSeenByUser1.contains(tvEvent1.getProgramID()));
+		assertTrue(programsSeenByUser1.contains(tvEvent1.getProgramId()));
 		List<Integer> programsSeenByUser3 = dataSet.getProgramIndexesSeenByUser(3);
 		assertEquals(2, programsSeenByUser3.size());
-		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramID()));
-		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramID()));
+		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramId()));
+		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramId()));
 	}
 	
 	@Test
@@ -195,11 +195,11 @@ public class RecsysTVDataSetTest {
 		UserItemMatrix userItemMatrix = dataSet.convertToUserItemMatrix();
 		double[][] expectedMatrix = new double[2][2];
 		expectedMatrix[dataSet.getMappedUserID(tvEvent1.getUserID())][dataSet
-				.getMappedProgramID(tvEvent1.getProgramID())] = 1;
+				.getMappedProgramID(tvEvent1.getProgramId())] = 1;
 		expectedMatrix[dataSet.getMappedUserID(tvEvent2.getUserID())][dataSet
-				.getMappedProgramID(tvEvent2.getProgramID())] = 1;
+				.getMappedProgramID(tvEvent2.getProgramId())] = 1;
 		expectedMatrix[dataSet.getMappedUserID(tvEvent3.getUserID())][dataSet
-				.getMappedProgramID(tvEvent3.getProgramID())] = 1;
+				.getMappedProgramID(tvEvent3.getProgramId())] = 1;
 		for (int user = 0; user < 2; user++) {
 			for (int program = 0; program < 2; program++) {
 				assertEquals(expectedMatrix[user][program],

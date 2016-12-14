@@ -1,7 +1,6 @@
 package data.utility;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import static data.utility.TVDataSetUtilities.*;
 
@@ -38,35 +37,17 @@ public class TVDataSetUtilitiesTest {
 		sc = SparkUtilities.getADefaultSparkContext();
 		dataSet = SparkUtilities.<RecsysTVEvent> elementsToJavaRDD(events, sc);
 	}
-	
+
 	@Test
 	public void filterByMinTimeViewTest() {
 		JavaRDD<RecsysTVEvent> filtered_0 = filterByMinTimeView(dataSet,0);
-		assertTrue(filtered_0.count() == 3);
+		assertEquals(3, filtered_0.count());
 		JavaRDD<RecsysTVEvent> filtered_10 = filterByMinTimeView(dataSet,10);
-		assertTrue(filtered_10.count() == 2);
+		assertEquals(2, filtered_10.count());
 		JavaRDD<RecsysTVEvent> filtered_20 = filterByMinTimeView(dataSet,20);
-		assertTrue(filtered_20.count() == 1);
+		assertEquals(1, filtered_20.count());
 		JavaRDD<RecsysTVEvent> filtered_30 = filterByMinTimeView(dataSet,30);
-		assertTrue(filtered_30.count() == 0);
-	}
-
-	@Test
-	public void filterByIntervalOfWeekTest() {
-		JavaRDD<RecsysTVEvent> filtered = filterByIntervalOfWeek(dataSet,1, 2);
-		assertEquals(2, filtered.count());
-	}
-
-	@Test
-	public void filterByIntervalOfSlotTest() {
-		JavaRDD<RecsysTVEvent> filtered = filterByIntervalOfSlot(dataSet,7, 7);
-		assertEquals(1, filtered.count());
-	}
-
-	@Test
-	public void filterByIntervalOfDayTest() {
-		JavaRDD<RecsysTVEvent> filtered = filterByIntervalOfDay(dataSet,2, 7);
-		assertEquals(1, filtered.count());
+		assertEquals(0, filtered_30.count());
 	}
 	
 	@AfterClass

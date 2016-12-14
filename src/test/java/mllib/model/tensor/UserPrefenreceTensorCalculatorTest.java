@@ -1,7 +1,6 @@
 package mllib.model.tensor;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -13,9 +12,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import data.model.recsys.model.tensor.RecsysUserPreferenceTensorCalculator;
+import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
-import data.recsys.model.RecsysTVEvent;
 
 public class UserPrefenreceTensorCalculatorTest {
 	
@@ -32,8 +32,8 @@ public class UserPrefenreceTensorCalculatorTest {
 	
 	@Test
 	public void calculateUserPreferenceTensorForDataSetTest(){
-		UserPreferenceTensorCalculator<RecsysTVEvent> calculator = new UserPreferenceTensorCalculator<RecsysTVEvent>();
-		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(dataSet);
+		RecsysUserPreferenceTensorCalculator calculator = new RecsysUserPreferenceTensorCalculator();
+		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(dataSet, RecsysFeatureExtractor.getInstance());
 		List<UserPreferenceTensor> user1Tensors = tensors.getUserPreferenceTensors(1, getAnyFeatureVector(4), ANY);
 		assertEquals(3, user1Tensors.size());
 		int expectedWatchTime = 61;

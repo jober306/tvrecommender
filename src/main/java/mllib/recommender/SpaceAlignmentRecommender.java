@@ -24,6 +24,7 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import algorithm.QuickSelect;
 import data.model.TVDataSet;
 import data.model.TVEvent;
+import data.model.TVProgram;
 
 /**
  * Class that finds the optimal mapping between item content and the item
@@ -35,12 +36,12 @@ import data.model.TVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentRecommender <T extends TVEvent> {
+public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> {
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
 	 */
-	TVDataSet<T> tvDataset;
+	TVDataSet<U> tvDataset;
 	
 	/**
 	 * The user item (or rating) matrix that represents the tv data set.
@@ -97,7 +98,7 @@ public class SpaceAlignmentRecommender <T extends TVEvent> {
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentRecommender(TVDataSet<T> tvDataSet, int r, int neighbourhoddSize, int numberOfResults) {
+	public SpaceAlignmentRecommender(TVDataSet<U> tvDataSet, int r, int neighbourhoddSize, int numberOfResults) {
 		this.tvDataset = tvDataSet;
 		this.r = r;
 		this.neighbourhoodSize = neighbourhoddSize;

@@ -2,7 +2,6 @@ package data.recsys.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Month;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +71,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 */
 	public RecsysTVDataSet(JavaRDD<RecsysTVEvent> eventsData,
 			JavaSparkContext sc, boolean createMap) {
-		super(eventsData, sc, RecsysFeatureExtractor.getInstance());
+		super(eventsData, sc);
 		if(createMap){
 			initializeMapReader();
 			broadcastedIdMap = sc.broadcast(idMap);
@@ -142,7 +141,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 * @return The number of distinct items.
 	 */
 	public int getNumberOfItems() {
-		return (int) eventsData.map(tvEvent -> tvEvent.getProgramID())
+		return (int) eventsData.map(tvEvent -> tvEvent.getProgramId())
 				.distinct().count();
 	}
 
@@ -156,7 +155,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	
 
 	public List<Integer> getProgramIndexesSeenByUser(int userIndex) {
-		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex).map(tvEvent -> tvEvent.getProgramID()).distinct().collect();
+		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex).map(tvEvent -> tvEvent.getProgramId()).distinct().collect();
 	}
 	
 	/**
@@ -230,7 +229,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 */
 	public JavaRDD<Rating> convertToMLlibRatings() {
 		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(event
-				.getUserID(), event.getProgramID(), 1.0));
+				.getUserID(), event.getProgramId(), 1.0));
 		return ratings;
 	}
 	
@@ -241,7 +240,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
 		final int numberOfTvShows = getNumberOfItems();
 		JavaRDD<IndexedRow> ratingMatrix = eventsData.mapToPair(event -> new Tuple2<Integer, RecsysTVEvent>(broadcastedIdMap.getValue().getUserIDToIdMap().get(event.getUserID()), event))
-		.aggregateByKey(new HashSet<Tuple2<Integer, Double>>(), (list, event) -> {list.add(new Tuple2<Integer,Double>(broadcastedIdMap.getValue().getProgramIDtoIDMap().get(event.getProgramID()), 1.0d)); return list;}, (list1,list2)->{list1.addAll(list2); return list1;})
+		.aggregateByKey(new HashSet<Tuple2<Integer, Double>>(), (list, event) -> {list.add(new Tuple2<Integer,Double>(broadcastedIdMap.getValue().getProgramIDtoIDMap().get(event.getProgramId()), 1.0d)); return list;}, (list1,list2)->{list1.addAll(list2); return list1;})
 		.map(sparseRowRepresenation -> new IndexedRow(sparseRowRepresenation._1(), Vectors.sparse(numberOfTvShows, sparseRowRepresenation._2())));
 		return new DistributedUserItemMatrix(ratingMatrix);
 	}
@@ -250,11 +249,11 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 * Method that returns the content matrix of each tv show.
 	 */
 	public IndexedRowMatrix getContentMatrix(){
-		JavaRDD<IndexedRow> contentMatrix = eventsData.mapToPair(tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent.getProgramID(), tvEvent))
+		JavaRDD<IndexedRow> contentMatrix = eventsData.mapToPair(tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent.getProgramId(), tvEvent))
 		.reduceByKey((tvEvent1,tvEvent2) -> tvEvent1).map( pair -> {		
 			RecsysTVEvent event =  pair._2();
-			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramID());
-			return new IndexedRow(programIndex, featureExtracor.extractFeatures(event));
+			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramId());
+			return new IndexedRow(programIndex, RecsysFeatureExtractor.getInstance().extractFeaturesFromEvent(event));
 		});
 		return new IndexedRowMatrix(contentMatrix.rdd());
 	}
@@ -268,7 +267,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 								idMap.getUserIDToIdMap().get(
 										tvEvent.getUserID()),
 								idMap.getProgramIDtoIDMap().get(
-										tvEvent.getProgramID())));
+										tvEvent.getProgramId())));
 		return X;
 	}
 

@@ -11,41 +11,41 @@ import java.time.LocalDateTime;
 public abstract class TVEvent {
 	
 	/**
-	 * channel ID: channel id from 1 to 217.
-	 */
-	protected int channelID;
-	
-	/**
 	 * The time at which the user started watching.
 	 */
-	protected LocalDateTime watchTime;
+	protected final LocalDateTime watchTime;
+	
+	/**
+	 * The id of the watched program.
+	 */
+	protected final int programId;
+	/**
+	 * The watched channel id.
+	 */
+	protected final int channelId;
 	
 	/**
 	 * user ID: it is the id of the user.
 	 */
-	protected int userID;
-	
-	/**
-	 * program ID: it is the id of the program. The same program can occur multiple times (e.g. a tv show).
-	 */
-	protected int programID;
+	protected final int userID;
 	
 	/**
 	 * event ID: it is the id of the particular instance of a program. It is unique, but it can span multiple slots.
 	 */
-	protected int eventID;
+	protected final int eventID;
 	
 	/**
 	 * duration: duration of the view.
 	 */
-	protected int duration;
+	protected final int duration;
 	
-	/**
-	 * Getter for the channelID param.
-	 * @return The channel ID.
-	 */
-	public int getChannelID(){
-		return channelID;
+	public TVEvent(LocalDateTime watchTime, int programId, int channelId, int userID, int eventId, int duration){
+		this.watchTime = watchTime;
+		this.programId = programId;
+		this.channelId = channelId;
+		this.userID = userID;
+		this.eventID = eventId;
+		this.duration = duration;
 	}
 	
 	/**
@@ -57,19 +57,25 @@ public abstract class TVEvent {
 	}
 	
 	/**
+	 * @return the programId
+	 */
+	public int getProgramId() {
+		return programId;
+	}
+
+	/**
+	 * @return the channelId
+	 */
+	public int getChannelId() {
+		return channelId;
+	}
+	
+	/**
 	 * Getter for the user parameter.
 	 * @return The user Id.
 	 */
 	public int getUserID() {
 		return userID;
-	}
-
-	/**
-	 * Getter for the program parameter.
-	 * @return The program Id.
-	 */
-	public int getProgramID() {
-		return programID;
 	}
 
 	/**

@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalDateTime;
+import java.time.temporal.WeekFields;
+import java.util.Locale;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,14 +32,15 @@ public class RecsysTVEventTest {
 	
 	@Test
 	public void constructorAndGetterTest(){
+		System.out.println(WeekFields.of(Locale.getDefault()).getFirstDayOfWeek());
 		assertTrue(event != null);
-		assertTrue(channelID == event.getChannelID());
+		assertTrue(channelID == event.getChannelId());
 		assertTrue(slot == event.getSlot());
 		assertTrue(week == event.getWeek());
 		assertTrue(genreID == event.getGenreID());
 		assertTrue(subgenreID == event.getSubgenreID());
 		assertTrue(userID == event.getUserID());
-		assertTrue(programID == event.getProgramID());
+		assertTrue(programID == event.getProgramId());
 		assertTrue(eventID == event.getEventID());
 		assertTrue(duration == event.getDuration());
 		System.out.println(event.getWatchTime().toString());

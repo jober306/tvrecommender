@@ -20,6 +20,7 @@ import com.google.common.primitives.Ints;
 import algorithm.QuickSelect;
 import data.model.TVDataSet;
 import data.model.TVEvent;
+import data.model.TVProgram;
 
 /**
  * Class that recommends items for a specific user using collaborative filtering
@@ -28,12 +29,12 @@ import data.model.TVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender<T extends TVEvent>{
+public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>{
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
 	 */
-	TVDataSet<T> tvDataset;
+	TVDataSet<U> tvDataset;
 	
 	/**
 	 * The user item matrix.
@@ -53,7 +54,7 @@ public class ItemBasedRecommender<T extends TVEvent>{
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(TVDataSet<T> dataSet) {
+	public ItemBasedRecommender(TVDataSet<U> dataSet) {
 		R = dataSet.convertToDistUserItemMatrix();
 		S = R.getItemSimilarities();
 	}

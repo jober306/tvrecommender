@@ -4,8 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.spark.api.java.JavaRDD;
+
+import data.model.TVEvent;
+import data.recsys.model.RecsysTVDataSet;
+import data.recsys.model.RecsysTVEvent;
 
 /**
  * Class that provides some utilities methods related to the recsys tv data set.
@@ -61,11 +68,51 @@ public class RecsysTVDataSetUtilities {
 	}
 	
 	/**
+	 * Method that filters out all the events that occurred before min week and after max week.
+	 * @param minWeek The minimum week number.
+	 * @param maxWeek The maximum week number.
+	 * @return The filtered tv events.
+	 */
+	public static JavaRDD<RecsysTVEvent> filterByIntervalOfWeek(JavaRDD<RecsysTVEvent> events, int minWeek, int maxWeek){
+		return events.filter(tvEvent -> tvEvent.getWeek() >= minWeek && tvEvent.getWeek() <= maxWeek);
+	}
+	
+	/**
+	 * Method that filters out all the events that occurred before min slot and after max slot.
+	 * @param minSlot The minimum week number.
+	 * @param maxSlot The maximum week number.
+	 * @return The filtered tv events.
+	 */
+	public static JavaRDD<RecsysTVEvent> filterByIntervalOfSlot(JavaRDD<RecsysTVEvent> events, int minSlot, int maxSlot){
+		return events.filter(tvEvent -> tvEvent.getSlot() >= minSlot && tvEvent.getSlot() <= maxSlot);
+	}
+	
+	/**
+	 * Method that filters out all the events that occurred before min day and after max day.
+	 * The data set does not specify at what day the week start. Min day and Max day take values
+	 * between 1 (the first day of the week) and 7 (the last day of the week).
+	 * @param minDay The minimum day number.
+	 * @param maxDay The maximum day number.
+	 * @return The filtered tv events.
+	 */
+	public static JavaRDD<RecsysTVEvent> filterByIntervalOfDay(JavaRDD<RecsysTVEvent> events, int minDay, int maxDay){
+		return filterByIntervalOfSlot(events, (minDay-1)*24 + 1, (maxDay)*24);
+	}
+	
+	/**
 	 * Method that check if both map are not empty.
 	 * @return True if both map are not empty, false otherwise.
 	 */
 	public static boolean isGenreSubgenreMapNotEmpty(){
 		return !genreToNameMap.isEmpty() && !subgenreToNameMap.isEmpty();
+	}
+	
+	public static LocalDateTime getStartTimeFromWeekAndSlot(int week, short slot){
+		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot-1);
+	}
+	
+	public static LocalDateTime getEndTimeFromWeekAndSlot(int week, short slot){
+		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot);
 	}
 	
 	public int slotDistance(int slot1, int slot2){
@@ -93,7 +140,7 @@ public class RecsysTVDataSetUtilities {
 		}
 	}
 	
-	//TODO: not specified when the week start.
+	//TODO: Assuming the week start on monday
 	public int bothWeekendOrBothWeekDay(int slot1, int slot2){
 		if((isAWeekDay(slot1) && isAWeekDay(slot2)) || (isAWeekendDay(slot1) && isAWeekendDay(slot2))){
 			return 1;

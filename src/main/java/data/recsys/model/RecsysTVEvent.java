@@ -1,4 +1,5 @@
 package data.recsys.model;
+import static data.recsys.utility.RecsysTVDataSetUtilities.getStartTimeFromWeekAndSlot;
 
 import java.io.Serializable;
 
@@ -42,16 +43,11 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 */
 	public RecsysTVEvent(short channelID, short slot, byte week, byte genreID, byte subgenreID,
 			int userID, int programID, int eventID, int duration){
-		this.channelID = channelID;
+		super(getStartTimeFromWeekAndSlot(week, slot),programID,channelID,userID,eventID,duration);
 		this.slot = slot;
 		this.week = week;
 		this.genreID = genreID;
 		this.subgenreID = subgenreID;
-		this.userID = userID;
-		this.programID = programID;
-		this.eventID = eventID;
-		this.duration = duration;
-		this.watchTime = RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot-1);
 	}
 	
 	/**
@@ -96,13 +92,13 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	    if (other == this) return true;
 	    if (!(other instanceof RecsysTVEvent))return false;
 	    RecsysTVEvent tvEvent = (RecsysTVEvent)other;
-	    return new EqualsBuilder().append(channelID,tvEvent.getChannelID()).
+	    return new EqualsBuilder().append(channelId,tvEvent.getChannelId()).
 	    		append(slot, tvEvent.getSlot()).
 	    		append(week, tvEvent.getWeek()).
 	    		append(genreID, tvEvent.getGenreID()). 
 	    		append(subgenreID, tvEvent.getSubgenreID()).
 	    		append(userID, tvEvent.getUserID()).
-	    		append(programID, tvEvent.getProgramID()). 
+	    		append(programId, tvEvent.getProgramId()). 
 	    		append(eventID, tvEvent.getEventID()).
 	    		append(duration, tvEvent.getDuration()).
 	    		isEquals();
@@ -123,7 +119,7 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	@Override
 	public String toString(){
 		String tvEventStr = "";
-		tvEventStr += "Channel ID: " + channelID + "\n";
+		tvEventStr += "Channel ID: " + channelId + "\n";
 		tvEventStr += "Slot: " + slot + "\n";
 		tvEventStr += "Week: " + week + "\n";
 		tvEventStr += "Genre ID: " + genreID + "\n";

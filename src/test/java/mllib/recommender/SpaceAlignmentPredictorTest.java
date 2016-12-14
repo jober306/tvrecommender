@@ -15,6 +15,7 @@ import org.junit.Test;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import data.recsys.model.RecsysTVProgram;
 import scala.Tuple2;
 
 public class SpaceAlignmentPredictorTest {
@@ -24,13 +25,13 @@ public class SpaceAlignmentPredictorTest {
 	final static int numberOfResults =2;
 	final static int neighbourhoodSize = 2;
 	static RecsysTVDataSet dataSet;
-	static SpaceAlignmentRecommender<RecsysTVEvent> predictor;
+	static SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
-		predictor = new SpaceAlignmentRecommender<RecsysTVEvent>(dataSet, r, neighbourhoodSize, numberOfResults);
+		predictor = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(dataSet, r, neighbourhoodSize, numberOfResults);
 	}
 
 	@Test

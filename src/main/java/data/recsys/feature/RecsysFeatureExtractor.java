@@ -7,8 +7,9 @@ import org.apache.spark.mllib.linalg.Vectors;
 
 import data.feature.FeatureExtractor;
 import data.recsys.model.RecsysTVEvent;
+import data.recsys.model.RecsysTVProgram;
 
-public class RecsysFeatureExtractor extends FeatureExtractor<RecsysTVEvent> implements Serializable{
+public class RecsysFeatureExtractor extends FeatureExtractor<RecsysTVProgram, RecsysTVEvent> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -21,12 +22,21 @@ public class RecsysFeatureExtractor extends FeatureExtractor<RecsysTVEvent> impl
 	}
 	
 	@Override
-	public Vector extractFeatures(RecsysTVEvent tvEvent) {
+	public Vector extractFeaturesFromProgram(RecsysTVProgram program) {
+		double[] features = new double[3];
+		features[0] = program.getChannelId();
+		features[1] = program.getGenreId();
+		features[2] = program.getSubGenreId();
+		return Vectors.dense(features);
+	}
+	
+	@Override
+	public Vector extractFeaturesFromEvent(RecsysTVEvent event) {
 		double[] features = new double[4];
-		features[0] = tvEvent.getChannelID();
-		features[1] = tvEvent.getSlot();
-		features[2] = tvEvent.getGenreID();
-		features[3] = tvEvent.getSubgenreID();
+		features[0] = event.getChannelId();
+		features[1] = event.getSlot();
+		features[2] = event.getGenreID();
+		features[3] = event.getSubgenreID();
 		return Vectors.dense(features);
 	}
 	
