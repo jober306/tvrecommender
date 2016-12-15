@@ -9,7 +9,7 @@ public class RecsysTVProgram extends TVProgram{
 	final int genreId;
 	final int subGenreId;
 	
-	public RecsysTVProgram(int week, short slot, int channelId, int programId, int genreId, int subGenreId) {
+	public RecsysTVProgram(short week, short slot, int channelId, int programId, byte genreId, byte subGenreId) {
 		super(getStartTimeFromWeekAndSlot(week, slot), getEndTimeFromWeekAndSlot(week, slot), channelId, programId);
 		this.genreId = genreId;
 		this.subGenreId = subGenreId;

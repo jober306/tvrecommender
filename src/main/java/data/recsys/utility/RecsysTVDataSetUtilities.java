@@ -107,11 +107,11 @@ public class RecsysTVDataSetUtilities {
 		return !genreToNameMap.isEmpty() && !subgenreToNameMap.isEmpty();
 	}
 	
-	public static LocalDateTime getStartTimeFromWeekAndSlot(int week, short slot){
+	public static LocalDateTime getStartTimeFromWeekAndSlot(short week, short slot){
 		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot-1);
 	}
 	
-	public static LocalDateTime getEndTimeFromWeekAndSlot(int week, short slot){
+	public static LocalDateTime getEndTimeFromWeekAndSlot(short week, short slot){
 		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot);
 	}
 	

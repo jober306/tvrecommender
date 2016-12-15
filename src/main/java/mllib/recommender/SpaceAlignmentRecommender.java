@@ -6,11 +6,12 @@ import static mllib.utility.MllibUtilities.*;
 
 import static list.utility.ListUtilities.*;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import mllib.model.DistributedUserItemMatrix;
-import recommender.prediction.TVRecommender;
 import scala.Tuple2;
 
 import org.apache.spark.mllib.linalg.Matrices;
@@ -22,6 +23,8 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import algorithm.QuickSelect;
+import data.feature.FeatureExtractor;
+import data.model.EPG;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 import data.model.TVProgram;
@@ -36,12 +39,12 @@ import data.model.TVProgram;
  * @author Jonathan Bergeron
  *
  */
-public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> {
+public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent> extends TVRecommender<T,U>{
 	
 	/**
-	 * The tv data set on which the matrix M prime will be build.
+	 * The feature extractor that will be used to extract features when training the model and whne predicting.
 	 */
-	TVDataSet<U> tvDataset;
+	FeatureExtractor<T,U> extractor;
 	
 	/**
 	 * The user item (or rating) matrix that represents the tv data set.
@@ -73,11 +76,6 @@ public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> 
 	 * The neighbourhood size used when calculating similarity between items.
 	 */
 	int neighbourhoodSize;
-	
-	/**
-	 * The number of results returned when recommending.
-	 */
-	int numberOfResults;
 
 	/**
 	 * This matrix of size d x d represents the model to map a new item content
@@ -98,13 +96,13 @@ public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> 
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentRecommender(TVDataSet<U> tvDataSet, int r, int neighbourhoddSize, int numberOfResults) {
-		this.tvDataset = tvDataSet;
+	public SpaceAlignmentRecommender(EPG<T> epg, TVDataSet<U> tvDataSet, FeatureExtractor<T,U> extractor, int r, int neighbourhoddSize) {
+		super(epg, tvDataSet);
+		this.extractor = extractor;
 		this.r = r;
 		this.neighbourhoodSize = neighbourhoddSize;
-		this.numberOfResults = numberOfResults;
 		this.R = tvDataSet.convertToDistUserItemMatrix();
-		this.C = tvDataSet.getContentMatrix();
+		this.C = tvDataSet.getContentMatrix(extractor);
 		this.localC = getSecondArgument(C.rows().toJavaRDD().mapToPair(row -> new Tuple2<Integer, Vector>(toIntExact(row.index()), indexedRowToDenseVector(row))).
 				sortByKey().collect());
 		calculateMprime();
@@ -185,11 +183,11 @@ public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> 
 	 * @param n The number of items neighbors that will be used to calculate similarity with new items.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public List<Integer> recommend(int userId, List<Vector> newTvShowsContent) {
-		Double[] neighboursScores = new Double[newTvShowsContent.size()];
-		for(int i = 0; i < newTvShowsContent.size(); i++){
-			System.out.println("Calculating score for new show. " + i);
-			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShowsContent.get(i), userId, neighbourhoodSize);
+	public List<Integer> recommend(int userId, LocalDateTime targetWatchTime, int numberOfResults) {
+		List<Tuple2<Integer, Vector>> newTvShows = epg.getListProgramsAtWatchTime(targetWatchTime).stream().map(program -> new Tuple2<Integer,Vector>(program.getProgramId(), extractor.extractFeaturesFromProgram(program))).collect(Collectors.toList());
+		Double[] neighboursScores = new Double[newTvShows.size()];
+		for(int i = 0; i < newTvShows.size(); i++){
+			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(newTvShows.get(i)._2(), userId, neighbourhoodSize);
 			neighboursScores[i] = calculateNeighboursScore(neighbours);
 		}
 		List<Tuple2<Integer, Double>> sortedScore = QuickSelect.selectTopN(neighboursScores, numberOfResults);
@@ -207,7 +205,7 @@ public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> 
 	}
 	
 	private Double[] predictAllItemSimilarities(Vector coldStartItemContent) {
-		int numberOfItems = tvDataset.getNumberOfItems();
+		int numberOfItems = dataSet.getNumberOfItems();
 		Double[] similarities = new Double[numberOfItems];
 		for (int i = 0; i < numberOfItems; i++) {
 			similarities[i] = predictItemsSimilarity(coldStartItemContent,i);
@@ -220,7 +218,7 @@ public class SpaceAlignmentRecommender <T extends TVProgram, U extends TVEvent> 
 				.computeSVD(toIntExact(C.numCols()), true, 0.0d);
 		IndexedRowMatrix U = Csvd.U();
 		Matrix V = Csvd.V();
-		IndexedRowMatrix S = getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(R.getItemSimilarities(), tvDataset.getJavaSparkContext());
+		IndexedRowMatrix S = getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(R.getItemSimilarities(), dataSet.getJavaSparkContext());
 		Vector sigma = Csvd.s();
 		Vector invertedSigma = invertVector(sigma);
 		IndexedRowMatrix Ut = transpose(U);

@@ -30,7 +30,7 @@ public class ItemBasedRecommender {
 	
 	public static void main(String[] args){
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
-		RecsysTVDataSet dataSet = loader.loadDataSet();
+		RecsysTVDataSet dataSet = loader.loadDataSet()._2();
 		double[] ratios = {0.01,0.99};
 		RecsysTVDataSet trainingSet = dataSet.splitDataDistributed(ratios)[0];
 		System.out.println(trainingSet.getNumberOfItems());

@@ -5,8 +5,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import data.recsys.model.RecsysEPG;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import scala.Tuple2;
 
 public class RecsysTVDataSetLoaderTest {
 	
@@ -16,21 +18,23 @@ public class RecsysTVDataSetLoaderTest {
 	final RecsysTVEvent tvEvent3InMock = new RecsysTVEvent((short)6,(short)12,(byte)1,(byte)4,(byte)30,3,5785,51097405,5);
 	
 	static RecsysTVDataSetLoader loader;
-	static RecsysTVDataSet dataSet;
+	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
 	
 	@BeforeClass
 	public static void setUp(){
 		loader = new RecsysTVDataSetLoader(path);
-		dataSet = loader.loadDataSet();
+		data = loader.loadDataSet();
 	}
 	
 	@Test
 	public void loadedDataSetNotEmptyTest(){
+		RecsysTVDataSet dataSet = data._2();
 		assertTrue(!dataSet.isEmpty());
 	}
 	
 	@Test
 	public void loadedDataCorrectlyTest(){
+		RecsysTVDataSet dataSet = data._2();
 		assertTrue(dataSet.contains(tvEvent1InMock));
 		assertTrue(dataSet.contains(tvEvent2InMock));
 		assertTrue(dataSet.contains(tvEvent3InMock));
@@ -38,6 +42,7 @@ public class RecsysTVDataSetLoaderTest {
 	
 	@AfterClass
 	public static void tearDown(){
+		RecsysTVDataSet dataSet = data._2();
 		dataSet.close();
 		loader = null;
 	}

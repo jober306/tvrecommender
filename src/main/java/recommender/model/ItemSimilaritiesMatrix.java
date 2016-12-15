@@ -48,7 +48,7 @@ public class ItemSimilaritiesMatrix extends SimilarityMatrix {
 
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
-		RecsysTVDataSet dataSet = loader.loadDataSet();
+		RecsysTVDataSet dataSet = loader.loadDataSet()._2();
 		ItemSimilaritiesMatrix I = new ItemSimilaritiesMatrix(
 				dataSet.convertToUserItemMatrix(),
 				CosineSimilarity.getInstance());

@@ -8,6 +8,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
+import data.feature.FeatureExtractor;
 import mllib.model.DistributedUserItemMatrix;
 import recommender.model.UserItemMatrix;
 
@@ -38,7 +39,7 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable{
 	//----------ML lib convertion methods----------------
 	abstract public JavaRDD<Rating> convertToMLlibRatings();
 	abstract public DistributedUserItemMatrix convertToDistUserItemMatrix();
-	abstract public IndexedRowMatrix getContentMatrix();
+	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<?, T> extractor);
 	
 	//--------General Utilities methods--------------------
 	/**

@@ -30,18 +30,18 @@ public class TVDataSetUtilities {
 	}
 	
 	/**
-	 * Method that returns tv events that have been started watching between start time and end time inclusively.
+	 * Method that returns tv events that have been started watching between start time inclusively and end time exclusively.
 	 * @param events All the tv events.
 	 * @param startTime The start time.
 	 * @param endTime The end time.
 	 * @return The tv events between startTime and endTime.
 	 */
 	public static <T extends TVEvent> JavaRDD<T> filterByDateTime(JavaRDD<T> events, LocalDateTime startTime,LocalDateTime endTime ){
-		return events.filter(tvEvent -> isDateTimeBetweenInclusive(startTime, endTime, tvEvent.getWatchTime()));
+		return events.filter(tvEvent -> isDateTimeBetween(startTime, endTime, tvEvent.getWatchTime()));
 	}
 	
 	/**
-	 * Method that returns tv events that have been started watching between start time and end time inclusively ignoring
+	 * Method that returns tv events that have been started watching between start time inclusively and end time exclusively ignoring
 	 * the date. For instance it could filter out all the events that are not between 12h00 and 16h30.
 	 * @param events All the tv events.
 	 * @param startTime The start time.
@@ -49,6 +49,6 @@ public class TVDataSetUtilities {
 	 * @return The tv events between startTime and endTime.
 	 */
 	public static <T extends TVEvent> JavaRDD<T> filterByTime(JavaRDD<T> events, LocalTime startTime,LocalTime endTime){
-		return events.filter(tvEvent -> isTimeBetweenInclusive(startTime, endTime, tvEvent.getWatchTime().toLocalTime()));
+		return events.filter(tvEvent -> isTimeBetween(startTime, endTime, tvEvent.getWatchTime().toLocalTime()));
 	}
 }

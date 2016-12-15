@@ -18,6 +18,7 @@ import org.apache.spark.mllib.recommendation.Rating;
 import recommender.model.UserItemMatrix;
 import scala.Tuple2;
 import spark.utilities.SparkUtilities;
+import data.feature.FeatureExtractor;
 import data.model.TVDataSet;
 import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.mapper.MappedIds;
@@ -248,12 +249,12 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	/**
 	 * Method that returns the content matrix of each tv show.
 	 */
-	public IndexedRowMatrix getContentMatrix(){
+	public IndexedRowMatrix getContentMatrix(FeatureExtractor<?, RecsysTVEvent> extractor){
 		JavaRDD<IndexedRow> contentMatrix = eventsData.mapToPair(tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent.getProgramId(), tvEvent))
 		.reduceByKey((tvEvent1,tvEvent2) -> tvEvent1).map( pair -> {		
 			RecsysTVEvent event =  pair._2();
 			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramId());
-			return new IndexedRow(programIndex, RecsysFeatureExtractor.getInstance().extractFeaturesFromEvent(event));
+			return new IndexedRow(programIndex, extractor.extractFeaturesFromEvent(event));
 		});
 		return new IndexedRowMatrix(contentMatrix.rdd());
 	}

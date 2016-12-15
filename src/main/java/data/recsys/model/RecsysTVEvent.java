@@ -20,12 +20,12 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	/**
 	 * slot: hour inside the week relative to the start of the view, from 1 to 24*7 = 168.
 	 */
-	protected int slot;
+	protected short slot;
 
 	/**
 	 * week: week from 1 to 19. Weeks 14 and 19 should not be used because they contain errors.
 	 */
-	protected int week;
+	protected short week;
 	
 	/**
 	 * genre ID: it is the id of the genre, form 1 to 8.
@@ -54,7 +54,7 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 * Getter for the slot parameter.
 	 * @return The slot of the tv event.
 	 */
-	public int getSlot() {
+	public short getSlot() {
 		return slot;
 	}
 
@@ -62,7 +62,7 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 * Getter for the week parameter
 	 * @return The week of the tv event.
 	 */
-	public int getWeek() {
+	public short getWeek() {
 		return week;
 	}
 	

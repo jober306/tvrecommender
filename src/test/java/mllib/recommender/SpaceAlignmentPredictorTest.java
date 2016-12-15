@@ -31,7 +31,7 @@ public class SpaceAlignmentPredictorTest {
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		dataSet = loader.loadDataSet();
-		predictor = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(dataSet, r, neighbourhoodSize, numberOfResults);
+		predictor = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(dataSet, r, neighbourhoodSize);
 	}
 
 	@Test

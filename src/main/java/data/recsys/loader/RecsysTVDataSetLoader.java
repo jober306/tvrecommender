@@ -5,8 +5,11 @@ import java.io.Serializable;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import data.recsys.model.RecsysEPG;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
+import data.recsys.model.RecsysTVProgram;
+import scala.Tuple2;
 import spark.utilities.SparkUtilities;
 
 /**
@@ -90,9 +93,12 @@ public class RecsysTVDataSetLoader implements Serializable {
 	 * 
 	 * @return A JavaRDD of <class>RecsysTVEvent</class>.
 	 */
-	public RecsysTVDataSet loadDataSet() {
+	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet() {
 		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
-		return new RecsysTVDataSet(events, sc, true);
+		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
+		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc, true);
+		RecsysEPG epg = new RecsysEPG(programs);
+		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
 	}
 	
 	/**
@@ -141,6 +147,18 @@ public class RecsysTVDataSetLoader implements Serializable {
 				Byte.parseByte(row[3]), Byte.parseByte(row[4]),
 				Integer.parseInt(row[5]), Integer.parseInt(row[6]),
 				Integer.parseInt(row[7]), Integer.parseInt(row[8]));
+	}
+	
+	/**
+	 * Method that creates implicitly from all the events the corresponding programs.
+	 * For example if a user listen to program 2 on channel 3 on slot 10 and another one
+	 * listen to the same program on slot 11, a program will be created with start time from slot 10 to 11.
+	 * Thus the programs returned do not form a continuous sequence of programs.
+	 * @param events The tv events.
+	 * @return The program implicitly created from the events.
+	 */
+	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(JavaRDD<RecsysTVEvent> events){
+		return events.map(event -> new RecsysTVProgram(event.getWeek(), event.getSlot(), event.getChannelId(), event.getProgramId(), event.getGenreID(), event.getSubgenreID()));
 	}
 	
 	public static void main(String[] args){

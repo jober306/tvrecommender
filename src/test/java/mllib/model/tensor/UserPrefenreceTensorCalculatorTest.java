@@ -27,7 +27,7 @@ public class UserPrefenreceTensorCalculatorTest {
 	@BeforeClass
 	public static void setUp(){
 		loader = new RecsysTVDataSetLoader(path);
-		dataSet = loader.loadDataSet();
+		dataSet = loader.loadDataSet()._2();
 	}
 	
 	@Test
