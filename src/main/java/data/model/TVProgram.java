@@ -14,10 +14,29 @@ public abstract class TVProgram implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
+	/**
+	 * The start date time of the program. This is considered inclusive.
+	 */
 	protected final LocalDateTime startTime;
+	
+	/**
+	 * The end date time of the program. This is considered exclusive.
+	 */
 	protected final LocalDateTime endTime;
+	
+	/**
+	 * The duration of the program, it is calculated implicitly with start time and end time.
+	 */
 	protected final Duration duration;
+	
+	/**
+	 * The channel id on which the program is broadcasted.
+	 */
 	protected final int channelId;
+	
+	/**
+	 * The id of the prorgram.
+	 */
 	protected final int programId;
 
 	/**

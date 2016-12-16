@@ -1,6 +1,6 @@
 package data.recsys.utility;
 
-import static data.recsys.utility.RecsysTVDataSetUtilities.*;
+import static data.recsys.utility.RecsysUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.InputStream;
@@ -64,21 +64,21 @@ public class RecsysTVDataSetUtilitiesTest {
 	
 	@Test
 	public void testResourceFileExists(){
-		InputStream stream = RecsysTVDataSetUtilitiesTest.class.getResourceAsStream(RecsysTVDataSetUtilities.GENRE_SUBGENRE_MAPPING_PATH);
+		InputStream stream = RecsysTVDataSetUtilitiesTest.class.getResourceAsStream(RecsysUtilities.GENRE_SUBGENRE_MAPPING_PATH);
 		assertTrue(stream != null);
 	}
 	
 	@Test
 	public void testMapLoadingCorrectly(){
-		assertTrue(RecsysTVDataSetUtilities.isGenreSubgenreMapNotEmpty());
+		assertTrue(RecsysUtilities.isGenreSubgenreMapNotEmpty());
 	}
 	
 	@Test
 	public void testGetGenreSubGenreMethod(){
-		assertTrue(RecsysTVDataSetUtilities.getGenreName((byte)3).equals("movie"));
-		assertTrue(RecsysTVDataSetUtilities.getGenreName((byte)1).equals("kids_and_music"));
-		assertTrue(RecsysTVDataSetUtilities.getGenreName((byte)4).equals("society"));
-		assertTrue(RecsysTVDataSetUtilities.getSubgenreName((byte) 2, (byte) 14).equals("skiing"));
-		assertTrue(RecsysTVDataSetUtilities.getSubgenreName((byte) 6, (byte) 90).equals("economics"));
+		assertTrue(RecsysUtilities.getGenreName((byte)3).equals("movie"));
+		assertTrue(RecsysUtilities.getGenreName((byte)1).equals("kids_and_music"));
+		assertTrue(RecsysUtilities.getGenreName((byte)4).equals("society"));
+		assertTrue(RecsysUtilities.getSubgenreName((byte) 2, (byte) 14).equals("skiing"));
+		assertTrue(RecsysUtilities.getSubgenreName((byte) 6, (byte) 90).equals("economics"));
 	}
 }

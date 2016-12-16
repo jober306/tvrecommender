@@ -88,16 +88,16 @@ public class RecsysTVDataSetLoader implements Serializable {
 	}
 
 	/**
-	 * Main method of the class. Used to load the data set all at once and
-	 * return it in a RDD of <class>RecsysTVEvent</class>.
+	 * Main method of the class. Used to load the recsys tv events from the specified file
+	 * location. The EPG is derived implicitly from the events.
 	 * 
-	 * @return A JavaRDD of <class>RecsysTVEvent</class>.
+	 * @return A tuple 2 containing in its first argument the EPG and the events in the other.
 	 */
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet() {
 		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
 		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc, true);
-		RecsysEPG epg = new RecsysEPG(programs);
+		RecsysEPG epg = new RecsysEPG(programs, sc);
 		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
 	}
 	

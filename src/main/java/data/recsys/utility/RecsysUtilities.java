@@ -10,16 +10,15 @@ import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
 
-import data.model.TVEvent;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
 
 /**
- * Class that provides some utilities methods related to the recsys tv data set.
+ * Class that provides some utilities methods related to the recsys classes.
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSetUtilities {
+public class RecsysUtilities {
 	
 	static final String GENRE_SUBGENRE_MAPPING_PATH = "/tv-audience-dataset/genreSubgenreMapping.txt";
 	
@@ -29,7 +28,7 @@ public class RecsysTVDataSetUtilities {
 		genreToNameMap = new HashMap<Byte,String>();
 		subgenreToNameMap = new HashMap<Byte, Map<Byte,String>>();
 		try {
-			InputStream genreSubgenreStream = RecsysTVDataSetUtilities.class.getResourceAsStream(GENRE_SUBGENRE_MAPPING_PATH);
+			InputStream genreSubgenreStream = RecsysUtilities.class.getResourceAsStream(GENRE_SUBGENRE_MAPPING_PATH);
 			BufferedReader br = new BufferedReader(new InputStreamReader(genreSubgenreStream));
 			String line = "";
 			while((line = br.readLine())!= null){
@@ -107,14 +106,35 @@ public class RecsysTVDataSetUtilities {
 		return !genreToNameMap.isEmpty() && !subgenreToNameMap.isEmpty();
 	}
 	
+	/**
+	 * Method that calculate the start time given a week and a slot.
+	 * Slot in the recsys tv data set are considered to be hours.
+	 * @param week The week.
+	 * @param slot The slot.
+	 * @return The time corresponding to this week and slot.
+	 */
 	public static LocalDateTime getStartTimeFromWeekAndSlot(short week, short slot){
 		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot-1);
 	}
 	
+	/**
+	 * Method that calculate the start time given a week and a slot.
+	 * Slot in the recsys tv data set are considered to be hours.
+	 * @param week The week.
+	 * @param slot The slot.
+	 * @return The time corresponding to this week and slot.
+	 */
 	public static LocalDateTime getEndTimeFromWeekAndSlot(short week, short slot){
 		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot);
 	}
 	
+	/**
+	 * Methods that calculate the distance between two slots. The distance function is given in this paper:
+	 * http://www.contentwise.tv/files/Time_based_TV_programs_prediction_Paper.pdf
+	 * @param slot1 The first slot.
+	 * @param slot2 The second slot.
+	 * @return The distance between the two slots.
+	 */
 	public int slotDistance(int slot1, int slot2){
 		int dayDist = dayDistance(slot1, slot2);
 		int minDist = minDistance(slot1, slot2);
@@ -122,13 +142,13 @@ public class RecsysTVDataSetUtilities {
 		return (dayDist + (minDist / 60)) * indicFunction;
 	}
 	
-	public int dayDistance(int slot1, int slot2){
+	private int dayDistance(int slot1, int slot2){
 		int day1 = (slot1 -1) % 24;
 		int day2 = (slot2 -1) % 24;
 		return Math.abs(day1 - day2);
 	}
 	
-	public int minDistance(int slot1, int slot2){
+	private int minDistance(int slot1, int slot2){
 		int slot1Day = (slot1 -1) % 24;
 		int slot2Day = (slot2 -1) % 24;
 		if(Math.abs(slot1Day-slot2Day) > 12){
@@ -140,8 +160,7 @@ public class RecsysTVDataSetUtilities {
 		}
 	}
 	
-	//TODO: Assuming the week start on monday
-	public int bothWeekendOrBothWeekDay(int slot1, int slot2){
+	private int bothWeekendOrBothWeekDay(int slot1, int slot2){
 		if((isAWeekDay(slot1) && isAWeekDay(slot2)) || (isAWeekendDay(slot1) && isAWeekendDay(slot2))){
 			return 1;
 		}else{
@@ -149,12 +168,12 @@ public class RecsysTVDataSetUtilities {
 		}
 	}
 	
-	public boolean isAWeekDay(int slot){
+	private boolean isAWeekDay(int slot){
 		int day = (slot -1) % 24;
 		return day <= 4;
 	}
 	
-	public boolean isAWeekendDay(int slot){
+	private boolean isAWeekendDay(int slot){
 		int day = (slot -1) % 24;
 		return day >= 5;
 	}

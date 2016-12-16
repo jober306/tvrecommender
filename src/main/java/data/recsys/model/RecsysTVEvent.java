@@ -1,5 +1,5 @@
 package data.recsys.model;
-import static data.recsys.utility.RecsysTVDataSetUtilities.getStartTimeFromWeekAndSlot;
+import static data.recsys.utility.RecsysUtilities.getStartTimeFromWeekAndSlot;
 
 import java.io.Serializable;
 
