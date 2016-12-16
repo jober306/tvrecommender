@@ -1,5 +1,6 @@
 package data.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -8,8 +9,10 @@ import java.time.LocalDateTime;
  * @author Jonathan Bergeron
  *
  */
-public abstract class TVEvent {
-	
+public abstract class TVEvent implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The time at which the user started watching.
 	 */

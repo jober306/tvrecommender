@@ -1,5 +1,6 @@
 package data.model;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 /**
@@ -9,8 +10,10 @@ import java.time.LocalDateTime;
  * @author Jonathan Bergeron
  *
  */
-public abstract class TVProgram {
+public abstract class TVProgram implements Serializable{
 
+	private static final long serialVersionUID = 1L;
+	
 	protected final LocalDateTime startTime;
 	protected final LocalDateTime endTime;
 	protected final Duration duration;

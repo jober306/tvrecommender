@@ -1,9 +1,8 @@
 package mllib.recommender;
 
-import static mllib.model.tensor.UserPreferenceTensorCollection.*; 
+import static mllib.model.tensor.UserPreferenceTensorCollection.ANY;
 
-import static data.utility.TVDataSetUtilities.*;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -11,10 +10,10 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 import data.feature.ChannelFeatureExtractor;
+import data.model.EPG;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 import data.model.TVProgram;
-import data.model.recsys.model.tensor.RecsysUserPreferenceTensorCalculator;
 import mllib.model.tensor.UserPreferenceTensorCalculator;
 import mllib.model.tensor.UserPreferenceTensorCollection;
 import scala.Tuple2;
@@ -25,7 +24,7 @@ import scala.Tuple2;
  * @author Jonathan Bergeron
  *
  */
-public class TopChannelRecommender <U extends TVProgram, T extends TVEvent>{
+public class TopChannelRecommender <U extends TVProgram, T extends TVEvent> extends TVRecommender<U, T>{
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
@@ -43,8 +42,8 @@ public class TopChannelRecommender <U extends TVProgram, T extends TVEvent>{
 	 */
 	int topChannelId;
 	
-	public TopChannelRecommender(TVDataSet<T> tvDataSet, UserPreferenceTensorCalculator<U,T> tensorCalculator){
-		this.tvDataset = tvDataSet;
+	public TopChannelRecommender(EPG<U> epg, TVDataSet<T> tvDataSet, UserPreferenceTensorCalculator<U,T> tensorCalculator){
+		super(epg, tvDataSet);
 		this.tensorCalculator = tensorCalculator;
 		calculateTopChannel();
 	}
@@ -55,11 +54,11 @@ public class TopChannelRecommender <U extends TVProgram, T extends TVEvent>{
 	 * @param slot The slot that the recommended program must be in.
 	 * @return The original id of the tv program.
 	 */
-	public int recommend(int week, int slot){
+	public List<Integer> recommend(int user, LocalDateTime targetWatchTime, int numberOfResults){
 		final int topChannelId = this.topChannelId;
-		JavaRDD<T> programDuringWeekSlot = filterByIntervalOfSlot(filterByIntervalOfWeek(tvDataset.getEventsData(), week, week), slot, slot);
-		List<T> oh = programDuringWeekSlot.filter(tvEvent -> tvEvent.getChannelId() == topChannelId).collect();
-		return oh.get(0).getProgramId();
+		JavaRDD<U> programDuringWeekSlot = epg.getJavaRDdProgramsAtWatchTime(targetWatchTime);
+		List<Integer> topChannelProgram = programDuringWeekSlot.filter(program -> program.getChannelId() == topChannelId).map(program -> program.getProgramId()).collect();
+		return topChannelProgram;
 	}
 	
 	private void calculateTopChannel(){

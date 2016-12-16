@@ -2,6 +2,7 @@ package mllib.evaluator;
 
 import static data.utility.TVDataSetUtilities.*;
 import static list.utility.ListUtilities.*;
+import static data.recsys.model.RecsysTVDataSet.START_TIME;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
 
 import data.feature.FeatureExtractor;
+import data.model.EPG;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 import data.model.TVProgram;
@@ -36,6 +38,11 @@ import spark.utilities.SparkUtilities;
 public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	
 	/**
+	 * The electronic programming guide.
+	 */
+	EPG<T> epg;
+	
+	/**
 	 * The training set on which the space alignment recommender will be trained.
 	 */
 	TVDataSet<U> trainingSet;
@@ -44,11 +51,6 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	 * The test set on which the item based recommender will be trained.
 	 */
 	TVDataSet<U> testSet;
-	
-	/**
-	 * The data set containing all the tv events of the last day (the test day).
-	 */
-	TVDataSet<U> lastDaySet;
 	
 	/**
 	 * The space alignment recommender trained on training set.
@@ -61,11 +63,6 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	ItemBasedRecommender<T,U> expectedRecommender;
 	
 	/**
-	 * The list of tuple containing the original ids and content vector of new tv programs on the test day.
-	 */
-	List<Tuple2<Integer, Vector>> originalsNewItemsIds;
-	
-	/**
 	 * Attributes indicating if whether or not the ids have been mapped by the recommenders.
 	 */
 	boolean trainingSetIdsMapped;
@@ -76,6 +73,11 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	 */
 	MappedIds trainingSetMap;
 	MappedIds testSetMap;
+	
+	/**
+	 * Feature extractor used for this date set and epg programs.
+	 */
+	FeatureExtractor<T, U> extractor;
 	
 	/**
 	 * The array of measures to evaluate.
@@ -114,11 +116,13 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	 * @param week The week on which the training will be made.
 	 * @param r The rank constraint needed by the space alignment recommender.
 	 */
-	public SpaceAlignmentEvaluator(TVDataSet<U> tvDataSet, EvaluationMeasure[] measures, int week, int r, int neighbourhoodSize, int numberOfResults){
+	public SpaceAlignmentEvaluator(EPG<T> epg, TVDataSet<U> tvDataSet, FeatureExtractor<T,U> extractor, EvaluationMeasure[] measures, int week, int r, int neighbourhoodSize, int numberOfResults){
+		this.epg = epg;
 		this.week = week;
 		this.r = r;
 		this.neighbourhoodSize = neighbourhoodSize;
 		this.numberOfResults = numberOfResults;
+		this.extractor = extractor;
 		buildTVDataSets(tvDataSet);
 		buildRecommenders();
 		initializeMap();
@@ -158,15 +162,11 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	
 	private void buildTVDataSets(TVDataSet<U> tvDataSet){
 		JavaSparkContext sc = tvDataSet.getJavaSparkContext();
-		JavaRDD<T> fullDataSet = filterByMinTimeView(tvDataSet.getEventsData(), 7);
-		JavaRDD<T> week3 = filterByIntervalOfWeek(fullDataSet, week, week);
-		JavaRDD<T> weekFourDayOne = filterByIntervalOfDay(filterByIntervalOfWeek(fullDataSet, week+1, week+1),1,1);
+		JavaRDD<U> fullDataSet = filterByMinTimeView(tvDataSet.getEventsData(), 7);
+		JavaRDD<U> week3 = filterByDateTime(fullDataSet, START_TIME.plusWeeks(week), START_TIME.plusWeeks(week+1));
+		JavaRDD<U> weekFourDayOne = filterByDateTime(fullDataSet, START_TIME.plusWeeks(week+1), START_TIME.plusWeeks(week+1).plusDays(1));
 		trainingSet = tvDataSet.buildDataSetFromRawData(week3, sc);
-		trainingSet.setFeatureExtractor(feautreExtractor);
 		testSet = tvDataSet.buildDataSetFromRawData(week3.union(weekFourDayOne), sc);
-		testSet.setFeatureExtractor(feautreExtractor);
-		lastDaySet = tvDataSet.buildDataSetFromRawData(weekFourDayOne, sc);
-		originalsNewItemsIds = weekFourDayOne.mapToPair(tvEvent -> new Tuple2<Integer, Vector>(tvEvent.getProgramId(), feautreExtractor.extractFeatures(tvEvent))).reduceByKey((arg1, arg2) -> arg1).collect();
 	}
 	
 	private void initializeMap(){
@@ -177,7 +177,7 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	}
 	
 	private void buildRecommenders(){
-		actualRecommender = new SpaceAlignmentRecommender<T,U>(trainingSet, r, neighbourhoodSize, numberOfResults);
+		actualRecommender = new SpaceAlignmentRecommender<T,U>(epg, trainingSet, extractor, r, neighbourhoodSize);
 		expectedRecommender = new ItemBasedRecommender<T,U>(testSet);
 	}
 	
@@ -213,10 +213,9 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 		for(int userIndex = 0; userIndex < numberOfUsers; userIndex++){
 			int originalUserIndex = trainingSetIdsMapped ? trainingSetMap.getOriginalUserID(userIndex) : userIndex;
 			System.out.println("Recommending for user " + originalUserIndex);
-			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, getSecondArgument(originalsNewItemsIds));
+			List<Integer> recommendedItemIndexes = actualRecommender.recommend(userIndex, START_TIME.plusWeeks(week+1).plusDays(1),numberOfResults);
 			System.out.println("Done");
-			List<Integer> originalIdsOfRecommendedItemIndexes = recommendedItemIndexes.stream().map(index -> originalsNewItemsIds.get(index)._1()).collect(Collectors.toList());
-			List<Integer> originalIdsOfItemsSeenByUser = lastDaySet.getProgramIndexesSeenByUser(originalUserIndex);
+			List<Integer> originalIdsOfItemsSeenByUser = getProgramIndexesSeenByUser(originalUserIndex);
 			double averagePrecision = 0.0d;
 			double recommendedItemSize = (double) originalIdsOfRecommendedItemIndexes.size();
 			for(int n = 1; n < 10; n++){

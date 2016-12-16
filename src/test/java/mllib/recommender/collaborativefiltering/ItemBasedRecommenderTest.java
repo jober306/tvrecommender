@@ -9,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.model.RecsysEPG;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
 import data.recsys.model.RecsysTVProgram;
@@ -18,13 +19,13 @@ public class ItemBasedRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
-	static RecsysTVDataSet dataSet;
+	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
-		dataSet = loader.loadDataSet();
-		recommender = new ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent>(dataSet);
+		data = loader.loadDataSet();
+		recommender = new ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent>(data._1(), data._2());
 	}
 
 	@Test
@@ -58,6 +59,6 @@ public class ItemBasedRecommenderTest {
 
 	@AfterClass
 	public static void tearDownOnce() {
-		dataSet.close();
+		data._2().close();
 	}
 }

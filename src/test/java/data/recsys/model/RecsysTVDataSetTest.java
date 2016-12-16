@@ -17,6 +17,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import data.recsys.feature.RecsysFeatureExtractor;
 import recommender.model.UserItemMatrix;
 import spark.utilities.SparkUtilities;
 
@@ -219,7 +220,7 @@ public class RecsysTVDataSetTest {
 	
 	@Test
 	public void getContentMatrixTest(){
-		IndexedRowMatrix C = dataSet.getContentMatrix();
+		IndexedRowMatrix C = dataSet.getContentMatrix(RecsysFeatureExtractor.getInstance());
 		assertEquals(2, C.rows().count());
 		assertEquals(2, C.numRows());
 		assertEquals(4, C.numCols());

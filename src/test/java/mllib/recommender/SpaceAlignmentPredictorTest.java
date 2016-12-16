@@ -1,5 +1,7 @@
 package mllib.recommender;
 
+import static data.recsys.model.RecsysTVDataSet.START_TIME; 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -12,7 +14,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.model.RecsysEPG;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
 import data.recsys.model.RecsysTVProgram;
@@ -24,14 +28,15 @@ public class SpaceAlignmentPredictorTest {
 	final static int r = 2;
 	final static int numberOfResults =2;
 	final static int neighbourhoodSize = 2;
-	static RecsysTVDataSet dataSet;
+	static Tuple2<RecsysEPG,RecsysTVDataSet> data;
+	static RecsysEPG epg;
 	static SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
-		dataSet = loader.loadDataSet();
-		predictor = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(dataSet, r, neighbourhoodSize);
+		data = loader.loadDataSet();
+		predictor = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(data._1(), data._2(),RecsysFeatureExtractor.getInstance(), r, neighbourhoodSize);
 	}
 
 	@Test
@@ -76,7 +81,7 @@ public class SpaceAlignmentPredictorTest {
 		newItems.add(Vectors.dense(new double[] { 30000, 100000, 488888, 29199}));
 		newItems.add(Vectors.dense(new double[] { 54, 18, 10, 78 }));
 		newItems.add(Vectors.dense(new double[] { 200, 29, 25, 11 }));
-		List<Integer> prediction = predictor.recommend(userId, newItems);
+		List<Integer> prediction = predictor.recommend(userId, START_TIME.plusHours(19), numberOfResults);
 		assertEquals(numberOfResults, prediction.size());
 	}
 
@@ -93,6 +98,6 @@ public class SpaceAlignmentPredictorTest {
 
 	@AfterClass
 	public static void tearDownOnce() {
-		dataSet.close();
+		data._2().close();
 	}
 }

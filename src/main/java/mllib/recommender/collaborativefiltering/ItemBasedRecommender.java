@@ -4,11 +4,13 @@ import static java.lang.Math.toIntExact;
 
 import static list.utility.ListUtilities.*;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import mllib.model.DistributedUserItemMatrix;
+import mllib.recommender.TVRecommender;
 import scala.Tuple2;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -18,6 +20,7 @@ import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 
 import algorithm.QuickSelect;
+import data.model.EPG;
 import data.model.TVDataSet;
 import data.model.TVEvent;
 import data.model.TVProgram;
@@ -29,7 +32,12 @@ import data.model.TVProgram;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>{
+public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent> extends TVRecommender<T, U>{
+	
+	/**
+	 * The electronic programming guide used by this recommender.
+	 */
+	EPG<T> epg;
 	
 	/**
 	 * The tv data set on which the matrix M prime will be build.
@@ -54,9 +62,10 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>{
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(TVDataSet<U> dataSet) {
-		R = dataSet.convertToDistUserItemMatrix();
-		S = R.getItemSimilarities();
+	public ItemBasedRecommender(EPG<T> epg, TVDataSet<U> dataSet) {
+		super(epg, dataSet);
+		this.R = dataSet.convertToDistUserItemMatrix();
+		this.S = R.getItemSimilarities();
 	}
 
 	/**
@@ -104,5 +113,14 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>{
 		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(itemIndex, n);
 		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood.stream().filter(pair -> itemsSeenByUser.contains(pair._1())).collect(Collectors.toList());
 		return itemsNeighbourhood.subList(0, Math.min(itemsNeighbourhoodForUser.size(), n));
+	}
+	
+	/**
+	 * TODO: to be implemented
+	 */
+	@Override
+	public List<Integer> recommend(int userId, LocalDateTime time, int numberOfResults) {
+		
+		return null;
 	}
 }

@@ -2,14 +2,17 @@ package data.model;
 
 import static time.utilities.TimeUtilities.isDateTimeBetween;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 
-public abstract class EPG<T extends TVProgram> {
+public abstract class EPG<T extends TVProgram> implements Serializable{
 	
-	protected JavaRDD<T> electronicProgrammingGuide;
+	private static final long serialVersionUID = 1L;
+	
+	transient protected JavaRDD<T> electronicProgrammingGuide;
 	
 	public EPG(JavaRDD<T> electronicProgrammingGuide){
 		this.electronicProgrammingGuide = electronicProgrammingGuide;
