@@ -178,7 +178,7 @@ public class SpaceAlignmentEvaluator <T extends TVProgram, U extends TVEvent>{
 	
 	private void buildRecommenders(){
 		actualRecommender = new SpaceAlignmentRecommender<T,U>(epg, trainingSet, extractor, r, neighbourhoodSize);
-		expectedRecommender = new ItemBasedRecommender<T,U>(testSet);
+		expectedRecommender = new ItemBasedRecommender<T,U>(epg, testSet);
 	}
 	
 	private void evaluateNeighbourhoodCoverage(){
