@@ -7,7 +7,7 @@ package data.recsys.mapper;
  * @author Jonathan Bergeron
  *
  */
-public interface MappedIds {
+public interface IDMap {
 	public int getOriginalUserID(int mappedID);
 	public int getOriginalProgramID(int mappedID);
 	public int getOriginalEventID(int mappedID);

@@ -1,8 +1,8 @@
 package mllib.recommender.collaborativefiltering;
 
 import static java.lang.Math.toIntExact;
-
-import static list.utility.ListUtilities.*;
+import static list.utility.ListUtilities.getFirstArgument;
+import static list.utility.ListUtilities.getSecondArgument;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -11,15 +11,16 @@ import java.util.stream.Collectors;
 
 import mllib.model.DistributedUserItemMatrix;
 import mllib.recommender.TVRecommender;
-import scala.Tuple2;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 
+import scala.Tuple2;
+import algorithm.QuickSelect;
+
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 
-import algorithm.QuickSelect;
 import data.model.EPG;
 import data.model.TVDataSet;
 import data.model.TVEvent;
@@ -32,18 +33,19 @@ import data.model.TVProgram;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent> extends TVRecommender<T, U>{
-	
+public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
+		extends TVRecommender<T, U> {
+
 	/**
 	 * The electronic programming guide used by this recommender.
 	 */
 	EPG<T> epg;
-	
+
 	/**
 	 * The tv data set on which the matrix M prime will be build.
 	 */
 	TVDataSet<U> tvDataset;
-	
+
 	/**
 	 * The user item matrix.
 	 */
@@ -64,13 +66,33 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent> extend
 	 */
 	public ItemBasedRecommender(EPG<T> epg, TVDataSet<U> dataSet) {
 		super(epg, dataSet);
-		this.R = dataSet.convertToDistUserItemMatrix();
+	}
+
+	/**
+	 * Method that train the space alignment recommender using the whole data
+	 * set.
+	 */
+	@Override
+	public void train() {
+		super.train();
+		this.R = trainingSet.convertToDistUserItemMatrix();
 		this.S = R.getItemSimilarities();
 	}
 
 	/**
-	 * Method that returns the neighborhood of an item. It
-	 * returns the top n item indices and values in decreasing order.
+	 * Method that train the space alignment recommender using only the tv
+	 * events that occurred between start and end time.
+	 */
+	@Override
+	public void train(LocalDateTime startTime, LocalDateTime endTime) {
+		super.train(startTime, endTime);
+		this.R = trainingSet.convertToDistUserItemMatrix();
+		this.S = R.getItemSimilarities();
+	}
+
+	/**
+	 * Method that returns the neighborhood of an item. It returns the top n
+	 * item indices and values in decreasing order.
 	 * 
 	 * @param itemIndex
 	 *            The item index from which we calculate its neighborhood.
@@ -79,21 +101,29 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent> extend
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	public List<Tuple2<Integer, Double>> predictItemNeighbourhood(int itemIndex, int n) {
-		List<Tuple2<Integer, Double>> indicesAndSimilarities = S.entries().toJavaRDD().filter(matrixEntry -> {
-			long rowIndex = matrixEntry.i();
-			long colIndex = matrixEntry.j();
-			if(rowIndex != colIndex && rowIndex == itemIndex){
-				return true;
-			}else{
-				return false;
-			}
-		}).map(matrixEntry -> new Tuple2<Integer,Double>(toIntExact(matrixEntry.j()), matrixEntry.value())).collect();
+	public List<Tuple2<Integer, Double>> predictItemNeighbourhood(
+			int itemIndex, int n) {
+		List<Tuple2<Integer, Double>> indicesAndSimilarities = S
+				.entries()
+				.toJavaRDD()
+				.filter(matrixEntry -> {
+					long rowIndex = matrixEntry.i();
+					long colIndex = matrixEntry.j();
+					if (rowIndex != colIndex && rowIndex == itemIndex) {
+						return true;
+					} else {
+						return false;
+					}
+				})
+				.map(matrixEntry -> new Tuple2<Integer, Double>(
+						toIntExact(matrixEntry.j()), matrixEntry.value()))
+				.collect();
 		int[] indices = Ints.toArray(getFirstArgument(indicesAndSimilarities));
-		double[] values = Doubles.toArray(getSecondArgument(indicesAndSimilarities));
+		double[] values = Doubles
+				.toArray(getSecondArgument(indicesAndSimilarities));
 		return QuickSelect.selectTopN(indices, values, n);
 	}
-	
+
 	/**
 	 * Method that returns the neighborhood of a new item for a specific user.
 	 * It returns the top n item indices and values in decreasing order.
@@ -108,19 +138,34 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent> extend
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	public List<Tuple2<Integer, Double>> predictItemNeighbourhoodForUser(int userIndex,int itemIndex, int n) {
-		List<Integer> itemsSeenByUser = Arrays.asList(ArrayUtils.toObject(R.getItemIndexesSeenByUser(userIndex)));
-		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(itemIndex, n);
-		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood.stream().filter(pair -> itemsSeenByUser.contains(pair._1())).collect(Collectors.toList());
-		return itemsNeighbourhood.subList(0, Math.min(itemsNeighbourhoodForUser.size(), n));
+	public List<Tuple2<Integer, Double>> predictItemNeighbourhoodForUser(
+			int userIndex, int itemIndex, int n) {
+		List<Integer> itemsSeenByUser = Arrays.asList(ArrayUtils.toObject(R
+				.getItemIndexesSeenByUser(userIndex)));
+		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(
+				itemIndex, n);
+		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood
+				.stream().filter(pair -> itemsSeenByUser.contains(pair._1()))
+				.collect(Collectors.toList());
+		return itemsNeighbourhood.subList(0,
+				Math.min(itemsNeighbourhoodForUser.size(), n));
 	}
-	
+
 	/**
 	 * TODO: to be implemented
 	 */
 	@Override
-	public List<Integer> recommend(int userId, LocalDateTime time, int numberOfResults) {
-		
+	public List<Integer> recommend(int userId, LocalDateTime time,
+			int numberOfResults) {
+		return null;
+	}
+
+	/**
+	 * TODO: to be implemented
+	 */
+	@Override
+	public List<Integer> recommend(int userId, LocalDateTime startTargetTime,
+			LocalDateTime endTargetTime, int numberOfResults) {
 		return null;
 	}
 }

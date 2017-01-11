@@ -8,12 +8,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import scala.Tuple2;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.model.RecsysEPG;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
 import data.recsys.model.RecsysTVProgram;
-import scala.Tuple2;
 
 public class ItemBasedRecommenderTest {
 
@@ -25,7 +25,9 @@ public class ItemBasedRecommenderTest {
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
-		recommender = new ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent>(data._1(), data._2());
+		recommender = new ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent>(
+				data._1(), data._2());
+		recommender.train();
 	}
 
 	@Test
@@ -35,7 +37,8 @@ public class ItemBasedRecommenderTest {
 		int n = 16;
 		List<Tuple2<Integer, Double>> neighborhood = recommender
 				.predictItemNeighbourhoodForUser(userIndex, itemIndex, n);
-		int[] itemIndexesSeenByUser = recommender.R.getItemIndexesSeenByUser(userIndex);
+		int[] itemIndexesSeenByUser = recommender.R
+				.getItemIndexesSeenByUser(userIndex);
 		for (int i = 0; i < neighborhood.size(); i++) {
 			Tuple2<Integer, Double> posValue = neighborhood.get(i);
 			int pos = posValue._1();
