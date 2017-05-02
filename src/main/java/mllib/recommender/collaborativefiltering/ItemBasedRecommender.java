@@ -69,23 +69,22 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	/**
-	 * Method that train the space alignment recommender using the whole data
-	 * set.
+	 * Constructor of the class that need a rating matrix to create the item
+	 * similarities matrix.
+	 * 
+	 * @param R
+	 *            The user item matrix.
 	 */
-	@Override
-	public void train() {
-		super.train();
-		this.R = trainingSet.convertToDistUserItemMatrix();
-		this.S = R.getItemSimilarities();
+	public ItemBasedRecommender(EPG<T> epg, TVDataSet<U> dataSet,
+			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime) {
+		super(epg, dataSet, trainingStartTime, trainingEndTime);
 	}
 
 	/**
-	 * Method that train the space alignment recommender using only the tv
-	 * events that occurred between start and end time.
+	 * Method that train the space alignment recommender using the whole data
+	 * set.
 	 */
-	@Override
-	public void train(LocalDateTime startTime, LocalDateTime endTime) {
-		super.train(startTime, endTime);
+	public void train() {
 		this.R = trainingSet.convertToDistUserItemMatrix();
 		this.S = R.getItemSimilarities();
 	}

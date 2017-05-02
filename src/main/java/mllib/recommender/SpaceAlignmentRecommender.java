@@ -113,26 +113,27 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	/**
-	 * Method that train the space alignment recommender using the whole data
-	 * set.
+	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates
+	 * the matrix Mprime with the ratings matrix and the corresponding content
+	 * matrix and also takes into account the parameter r.
+	 * 
+	 * @param R
+	 *            The rating matrix.
+	 * @param r
+	 *            The maximum rank the matrix Mprime can have.
+	 * @param C
+	 *            The content matrix of all the items.
 	 */
-	@Override
+	public SpaceAlignmentRecommender(EPG<T> epg, TVDataSet<U> tvDataSet,
+			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime,
+			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize) {
+		super(epg, tvDataSet, trainingStartTime, trainingEndTime);
+		this.extractor = extractor;
+		this.r = r;
+		this.neighbourhoodSize = neighbourhoddSize;
+	}
+
 	public void train() {
-		super.train();
-		trainFromTrainingSet(trainingSet);
-	}
-
-	/**
-	 * Method that train the space alignment recommender using only the tv
-	 * events that occurred between start and end time.
-	 */
-	@Override
-	public void train(LocalDateTime startTime, LocalDateTime endTime) {
-		super.train(startTime, endTime);
-		trainFromTrainingSet(trainingSet);
-	}
-
-	private void trainFromTrainingSet(TVDataSet<U> trainingSet) {
 		this.R = trainingSet.convertToDistUserItemMatrix();
 		this.C = trainingSet.getContentMatrix(extractor);
 		this.localC = getSecondArgument(C

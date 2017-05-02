@@ -1,6 +1,5 @@
 package mllib.evaluator;
 
-import static list.utility.ListUtilities.intersection;
 import static data.utility.TVDataSetUtilities.filterByDateTime;
 
 import java.time.LocalDateTime;
@@ -8,10 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mllib.recommender.TVRecommender;
+
 import org.apache.spark.api.java.JavaRDD;
 
-import mllib.recommender.TVRecommender;
-import data.feature.FeatureExtractor;
 import data.model.EPG;
 import data.model.TVDataSet;
 import data.model.TVEvent;
@@ -41,10 +40,11 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	 * trained.
 	 */
 	TVDataSet<U> tvDataSet;
-	
+
 	/**
-	 * The start time and end time on which testing will be done. testSet will be 
-	 * created automatically from tv data set and therefore contains the ground truth.
+	 * The start time and end time on which testing will be done. testSet will
+	 * be created automatically from tv data set and therefore contains the
+	 * ground truth.
 	 */
 	LocalDateTime testStartTime;
 	LocalDateTime testEndTime;
@@ -54,11 +54,6 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	 * The space alignment recommender trained on training set.
 	 */
 	G recommender;
-
-	/**
-	 * Feature extractor used for this date set and epg programs.
-	 */
-	FeatureExtractor<T, U> extractor;
 
 	/**
 	 * The array of measures to evaluate.
@@ -71,66 +66,40 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	Map<EvaluationMeasure, Double> evaluationResults;
 
 	/**
-	 * Constructor of the SpaceAlignmentEvaluator.
+	 * Constructor of the tv recommender evaluator.
 	 * 
+	 * @param epg
+	 *            The electronic programming guide. It must contains the
+	 *            information over the testing time.
 	 * @param tvDataSet
-	 *            A data set of tv events with more than just a week.
+	 *            The tv data events from which the test set will be created.
+	 * @param recommender
+	 *            The tv recommender. It must be ready to make recommendations
+	 *            (i.e it must have been trained if it needed to).
 	 * @param measures
-	 *            The array of evaluation measures that will be calculated.
-	 * @param week
-	 *            The week on which the training will be made.
-	 * @param r
-	 *            The rank constraint needed by the space alignment recommender.
+	 *            The evaluations measures that need to be computed.
+	 * @param testStartTime
+	 *            The starting time of the test period.
+	 * @param testEndTime
+	 *            The end time of the test period.
 	 */
 	public TVRecommenderEvaluator(EPG<T> epg, TVDataSet<U> tvDataSet,
-			G recommender, FeatureExtractor<T, U> extractor,
-			EvaluationMeasure[] measures, LocalDateTime trainingStartTime,
-			LocalDateTime trainingEndTime, LocalDateTime testStartTime,
-			LocalDateTime testEndTime) {
+			G recommender, EvaluationMeasure[] measures,
+			LocalDateTime testStartTime, LocalDateTime testEndTime) {
 		this.epg = epg;
 		this.tvDataSet = tvDataSet;
-		this.extractor = extractor;
 		this.measures = measures;
 		this.evaluationResults = new HashMap<EvaluationMeasure, Double>();
 		this.recommender = recommender;
-		this.recommender.train(trainingStartTime, trainingEndTime);
 		buildTestSet(testStartTime, testEndTime);
 	}
-	
-	private void buildTestSet(LocalDateTime testStartTime, LocalDateTime testEndTime){
-		JavaRDD<U> eventsOccuringDuringTestTime = filterByDateTime(tvDataSet.getEventsData(), testStartTime, testEndTime);
-		this.testSet = tvDataSet.buildDataSetFromRawData(eventsOccuringDuringTestTime, tvDataSet.getJavaSparkContext());
-	}
 
-	/**
-	 * Method that evaluates all the evaluation measures given in measures. The
-	 * results are stored in the evaluationResults map.
-	 */
-	public void evaluate() {
-		for (EvaluationMeasure measure : measures) {
-			switch (measure) {
-			case MEAN_AVERAGE_PRECISION_AT_10:
-				evaluateMeanAveragePrecision(10);
-				break;
-			case MEAN_AVERAGE_PRECISION_AT_20:
-				evaluateMeanAveragePrecision(20);
-				break;
-			case MEAN_AVERAGE_PRECISION_AT_50:
-				evaluateMeanAveragePrecision(50);
-				break;
-			case MEAN_AVERAGE_RECALL_AT_10:
-				evaluateMeanAverageRecall(10);
-				break;
-			case MEAN_AVERAGE_RECALL_AT_20:
-				evaluateMeanAverageRecall(20);
-				break;
-			case MEAN_AVERAGE_RECALL_AT_50:
-				evaluateMeanAverageRecall(50);
-				break;
-			default:
-				break;
-			}
-		}
+	private void buildTestSet(LocalDateTime testStartTime,
+			LocalDateTime testEndTime) {
+		JavaRDD<U> eventsOccuringDuringTestTime = filterByDateTime(
+				tvDataSet.getEventsData(), testStartTime, testEndTime);
+		this.testSet = tvDataSet.buildDataSetFromRawData(
+				eventsOccuringDuringTestTime, tvDataSet.getJavaSparkContext());
 	}
 
 	/**
@@ -144,22 +113,73 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 		return evaluationResults;
 	}
 
-	private void evaluateMeanAveragePrecision(int numberOfResults) {
-		List<Integer> userdIds = recommender.getTrainingSet().getAllUserIds();
-		double meanAveragePrecision = 0.0d;
-		for (int userId : userdIds) {
-			List<Integer> recommendedItemIndexes = recommender.recommend(
-					userId, testStartTime, testEndTime, numberOfResults);
-			double averagePrecision = 0.0d;
-			
-			meanAveragePrecision += averagePrecision;
+	/**
+	 * Method that evaluates all the evaluation measures given in measures. The
+	 * results are stored in the evaluationResults map.
+	 */
+	public void evaluate() {
+		for (EvaluationMeasure measure : measures) {
+			switch (measure) {
+			case MEAN_AVERAGE_PRECISION_AT_10:
+				evaluationResults.put(
+						EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10,
+						evaluateMeanAveragePrecision(10));
+				break;
+			case MEAN_AVERAGE_PRECISION_AT_20:
+				evaluationResults.put(
+						EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_20,
+						evaluateMeanAveragePrecision(20));
+				break;
+			case MEAN_AVERAGE_PRECISION_AT_50:
+				evaluationResults.put(
+						EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_50,
+						evaluateMeanAveragePrecision(50));
+				break;
+			default:
+				break;
+			}
 		}
-		meanAveragePrecision /= (double) numberOfUsers;
-		evaluationResults.put(EvaluationMeasure.MEAN_AVERAGE_PRECISION,
-				meanAveragePrecision);
 	}
 
-	private void evaluateMeanAverageRecall(int numberOfResults) {
+	private double evaluateMeanAveragePrecision(int numberOfResults) {
+		double meanAveragePrecision = 0.0d;
+		List<Integer> userdIds = recommender.getTrainingSet().getAllUserIds();
+		int numberOfActiveUsers = 0;
+		for (int userId : userdIds) {
+			// TODO: Apply the same minimum time filter (maybe it is already
+			// applied when loading the data).
+			List<Integer> actuallySeenTVShowIndexes = testSet
+					.getProgramIndexesSeenByUser(userId);
+			if (actuallySeenTVShowIndexes.size() > 0) {
+				numberOfActiveUsers++;
+				List<Integer> recommendedTVShowIndexes = recommender.recommend(
+						userId, testStartTime, testEndTime, numberOfResults);
+				double averagePrecision = calculateAveragePrecision(
+						numberOfResults, recommendedTVShowIndexes,
+						actuallySeenTVShowIndexes);
+				meanAveragePrecision += averagePrecision;
+			}
+		}
+		return meanAveragePrecision /= numberOfActiveUsers;
+	}
 
+	private double calculateAveragePrecision(int numberOfResults,
+			List<Integer> recommendedTVShowIndexes,
+			List<Integer> actuallySeenTVShowIndexes) {
+		double averagePrecision = 0.0d;
+		double truePositiveRecommendedTVShow = 0;
+		for (int k = 1; k <= Math.min(recommendedTVShowIndexes.size(),
+				numberOfResults); k++) {
+			int recommendedTVShowIndex = recommendedTVShowIndexes.get(k - 1);
+			if (actuallySeenTVShowIndexes.contains(recommendedTVShowIndex)) {
+				truePositiveRecommendedTVShow++;
+				averagePrecision += (double) truePositiveRecommendedTVShow
+						/ (double) k;
+			}
+		}
+		if (truePositiveRecommendedTVShow != 0) {
+			averagePrecision /= truePositiveRecommendedTVShow;
+		}
+		return averagePrecision;
 	}
 }

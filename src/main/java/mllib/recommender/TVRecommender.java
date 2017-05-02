@@ -19,6 +19,13 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent> {
 	public TVRecommender(EPG<T> epg, TVDataSet<U> dataSet) {
 		this.epg = epg;
 		this.dataSet = dataSet;
+		this.trainingSet = dataSet;
+	}
+
+	public TVRecommender(EPG<T> epg, TVDataSet<U> dataSet,
+			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime) {
+		this(epg, dataSet);
+		createTrainingSet(trainingStartTime, trainingEndTime);
 	}
 
 	/**
@@ -30,12 +37,8 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent> {
 		return trainingSet;
 	}
 
-	public void train() {
-		trainingSet = dataSet;
-	}
-
-	public void train(LocalDateTime startTime, LocalDateTime endTime) {
-		trainingSet = dataSet.buildDataSetFromRawData(
+	public void createTrainingSet(LocalDateTime startTime, LocalDateTime endTime) {
+		this.trainingSet = dataSet.buildDataSetFromRawData(
 				filterByDateTime(dataSet.getEventsData(), startTime, endTime),
 				dataSet.getJavaSparkContext());
 	}
