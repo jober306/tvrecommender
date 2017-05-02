@@ -1,11 +1,14 @@
 package mllib.evaluator;
 
 import static list.utility.ListUtilities.intersection;
+import static data.utility.TVDataSetUtilities.filterByDateTime;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.spark.api.java.JavaRDD;
 
 import mllib.recommender.TVRecommender;
 import data.feature.FeatureExtractor;
@@ -38,6 +41,14 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	 * trained.
 	 */
 	TVDataSet<U> tvDataSet;
+	
+	/**
+	 * The start time and end time on which testing will be done. testSet will be 
+	 * created automatically from tv data set and therefore contains the ground truth.
+	 */
+	LocalDateTime testStartTime;
+	LocalDateTime testEndTime;
+	TVDataSet<U> testSet;
 
 	/**
 	 * The space alignment recommender trained on training set.
@@ -60,20 +71,6 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	Map<EvaluationMeasure, Double> evaluationResults;
 
 	/**
-	 * Time attributes that represents the interval of time that will be used to
-	 * train the recommender.
-	 */
-	LocalDateTime trainingStartTime;
-	LocalDateTime trainingEndTime;
-
-	/**
-	 * Time attributes that represents the interval of time that will be used to
-	 * test the recommender.
-	 */
-	LocalDateTime testStartTime;
-	LocalDateTime testEndTime;
-
-	/**
 	 * Constructor of the SpaceAlignmentEvaluator.
 	 * 
 	 * @param tvDataSet
@@ -86,7 +83,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	 *            The rank constraint needed by the space alignment recommender.
 	 */
 	public TVRecommenderEvaluator(EPG<T> epg, TVDataSet<U> tvDataSet,
-			TVRecommender<T, U> recommender, FeatureExtractor<T, U> extractor,
+			G recommender, FeatureExtractor<T, U> extractor,
 			EvaluationMeasure[] measures, LocalDateTime trainingStartTime,
 			LocalDateTime trainingEndTime, LocalDateTime testStartTime,
 			LocalDateTime testEndTime) {
@@ -95,10 +92,14 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 		this.extractor = extractor;
 		this.measures = measures;
 		this.evaluationResults = new HashMap<EvaluationMeasure, Double>();
-		this.trainingStartTime = trainingStartTime;
-		this.trainingEndTime = trainingEndTime;
-		this.testStartTime = testStartTime;
-		this.testEndTime = testEndTime;
+		this.recommender = recommender;
+		this.recommender.train(trainingStartTime, trainingEndTime);
+		buildTestSet(testStartTime, testEndTime);
+	}
+	
+	private void buildTestSet(LocalDateTime testStartTime, LocalDateTime testEndTime){
+		JavaRDD<U> eventsOccuringDuringTestTime = filterByDateTime(tvDataSet.getEventsData(), testStartTime, testEndTime);
+		this.testSet = tvDataSet.buildDataSetFromRawData(eventsOccuringDuringTestTime, tvDataSet.getJavaSparkContext());
 	}
 
 	/**
@@ -149,21 +150,8 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 		for (int userId : userdIds) {
 			List<Integer> recommendedItemIndexes = recommender.recommend(
 					userId, testStartTime, testEndTime, numberOfResults);
-			System.out.println("Done");
 			double averagePrecision = 0.0d;
-			double recommendedItemSize = (double) recommendedItemIndexes.size();
-			for (int n = 1; n < 10; n++) {
-				if (originalIdsOfItemsSeenByUser
-						.contains(recommendedItemIndexes.get(n))) {
-					double intersectionSize = (double) intersection(
-							originalIdsOfRecommendedItemIndexes,
-							originalIdsOfItemsSeenByUser).size();
-					averagePrecision += intersectionSize / recommendedItemSize;
-				}
-			}
-			averagePrecision /= recommendedItemSize;
-			System.out.println("Mean Average for user: " + userIndex + "/"
-					+ numberOfUsers + " is " + averagePrecision);
+			
 			meanAveragePrecision += averagePrecision;
 		}
 		meanAveragePrecision /= (double) numberOfUsers;
