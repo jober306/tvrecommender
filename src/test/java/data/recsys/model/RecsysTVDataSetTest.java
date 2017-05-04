@@ -17,9 +17,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import data.recsys.feature.RecsysFeatureExtractor;
 import recommender.model.UserItemMatrix;
 import spark.utilities.SparkUtilities;
+import data.recsys.feature.RecsysFeatureExtractor;
 
 public class RecsysTVDataSetTest {
 
@@ -45,7 +45,7 @@ public class RecsysTVDataSetTest {
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
 				.<RecsysTVEvent> elementsToJavaRDD(events,
 						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext, true);
+		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
 	}
 
 	@Test
@@ -62,7 +62,7 @@ public class RecsysTVDataSetTest {
 				.<RecsysTVEvent> elementsToJavaRDD(
 						new ArrayList<RecsysTVEvent>(), defaultJavaSparkContext);
 		RecsysTVDataSet emptyDataSet = new RecsysTVDataSet(emptyRDD,
-				defaultJavaSparkContext, true);
+				defaultJavaSparkContext);
 		assertTrue(emptyDataSet.isEmpty());
 		emptyDataSet.close();
 	}
@@ -104,20 +104,22 @@ public class RecsysTVDataSetTest {
 		assertTrue(numberOfPrograms == 2);
 		assertTrue(numberOfEvents == 3);
 	}
-	
+
 	@Test
-	public void getProgramIndexesSeenByUserTest(){
-		List<Integer> programsSeenByUser1 = dataSet.getProgramIndexesSeenByUser(1);
+	public void getProgramIndexesSeenByUserTest() {
+		List<Integer> programsSeenByUser1 = dataSet
+				.getProgramIndexesSeenByUser(1);
 		assertEquals(1, programsSeenByUser1.size());
 		assertTrue(programsSeenByUser1.contains(tvEvent1.getProgramId()));
-		List<Integer> programsSeenByUser3 = dataSet.getProgramIndexesSeenByUser(3);
+		List<Integer> programsSeenByUser3 = dataSet
+				.getProgramIndexesSeenByUser(3);
 		assertEquals(2, programsSeenByUser3.size());
 		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramId()));
 		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramId()));
 	}
-	
+
 	@Test
-	public void getProgramIndexesSeenByUserNotExistingTest(){
+	public void getProgramIndexesSeenByUserNotExistingTest() {
 		List<Integer> userNotExisting = dataSet.getProgramIndexesSeenByUser(-1);
 		assertEquals(0, userNotExisting.size());
 	}
@@ -137,9 +139,12 @@ public class RecsysTVDataSetTest {
 	public void splitDataRandomlyTest() {
 		createBiggerDataSet(42);
 		double[] ratios = { 0.17, 0.43, 0.40 };
-		JavaRDD<RecsysTVEvent>[] splittedDataSet = dataSet.splitTVEventsRandomly(ratios);
-		assertTrue(splittedDataSet[0].intersection(splittedDataSet[1]).intersection(splittedDataSet[2]).isEmpty());
-		assertTrue(splittedDataSet[0].union(splittedDataSet[1]).union(splittedDataSet[2]).count() == 42);
+		JavaRDD<RecsysTVEvent>[] splittedDataSet = dataSet
+				.splitTVEventsRandomly(ratios);
+		assertTrue(splittedDataSet[0].intersection(splittedDataSet[1])
+				.intersection(splittedDataSet[2]).isEmpty());
+		assertTrue(splittedDataSet[0].union(splittedDataSet[1])
+				.union(splittedDataSet[2]).count() == 42);
 	}
 
 	@Test
@@ -175,7 +180,7 @@ public class RecsysTVDataSetTest {
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
 				.<RecsysTVEvent> elementsToJavaRDD(events,
 						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext, true);
+		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
 	}
 
 	@Test
@@ -217,10 +222,11 @@ public class RecsysTVDataSetTest {
 					.vector().toArray(), 0.0d);
 		}
 	}
-	
+
 	@Test
-	public void getContentMatrixTest(){
-		IndexedRowMatrix C = dataSet.getContentMatrix(RecsysFeatureExtractor.getInstance());
+	public void getContentMatrixTest() {
+		IndexedRowMatrix C = dataSet.getContentMatrix(RecsysFeatureExtractor
+				.getInstance());
 		assertEquals(2, C.rows().count());
 		assertEquals(2, C.numRows());
 		assertEquals(4, C.numCols());

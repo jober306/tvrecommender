@@ -38,7 +38,7 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent> {
 	}
 
 	public void createTrainingSet(LocalDateTime startTime, LocalDateTime endTime) {
-		this.trainingSet = dataSet.buildDataSetFromRawData(
+		this.trainingSet = dataSet.newInstance(
 				filterByDateTime(dataSet.getEventsData(), startTime, endTime),
 				dataSet.getJavaSparkContext());
 	}

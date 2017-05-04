@@ -6,6 +6,8 @@ import java.time.Month;
 import java.util.HashSet;
 import java.util.List;
 
+import mllib.model.DistributedUserItemMatrix;
+
 import org.apache.commons.collections.MapUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -20,11 +22,9 @@ import scala.Tuple2;
 import spark.utilities.SparkUtilities;
 import data.feature.FeatureExtractor;
 import data.model.TVDataSet;
-import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.mapper.IDMap;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
-import mllib.model.DistributedUserItemMatrix;
 
 /**
  * Class that represents a data set of recsys tv event. The class holds the
@@ -34,14 +34,16 @@ import mllib.model.DistributedUserItemMatrix;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serializable, IDMap{
-	
+public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
+		Serializable, IDMap {
+
 	/**
-	 * The date the data set started recording tv audience behavior (This is not the real one).
-	 * Monday, april 1995 at midnigh.
+	 * The date the data set started recording tv audience behavior (This is not
+	 * the real one). Monday, april 1995 at midnigh.
 	 */
-	public static final LocalDateTime START_TIME = LocalDateTime.of(1995, Month.APRIL, 10, 0,0);
-	
+	public static final LocalDateTime START_TIME = LocalDateTime.of(1995,
+			Month.APRIL, 10, 0, 0);
+
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -49,18 +51,18 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 * between 1 and #of users.
 	 */
 	transient RecSysMapReader idMap;
-	
+
 	/**
-	 * The broadcasted map reader to be used when the map is used with spark actions.
+	 * The broadcasted map reader to be used when the map is used with spark
+	 * actions.
 	 */
-	final Broadcast<RecSysMapReader> broadcastedIdMap;
+	Broadcast<RecSysMapReader> broadcastedIdMap;
 
 	/**
 	 * Boolean to check if wether or not the map file have been erased.
 	 */
 	transient boolean mapClosed;
-	
-	
+
 	/**
 	 * Main constructor of the class. Use the
 	 * <class>RecsysTVDataSetLoader</class> to get the RDD off a csv file.
@@ -71,23 +73,15 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	 *            The java spark context in which the data has been loaded.
 	 */
 	public RecsysTVDataSet(JavaRDD<RecsysTVEvent> eventsData,
-			JavaSparkContext sc, boolean createMap) {
+			JavaSparkContext sc) {
 		super(eventsData, sc);
-		if(createMap){
-			initializeMapReader();
-			broadcastedIdMap = sc.broadcast(idMap);
-			mapClosed = false;
-		}else{
-			broadcastedIdMap = null;
-			mapClosed = true;
-		}
 	}
-	
-	/**
-	 * Method used to build another data set of this specific type from this current data set.
-	 */
-	public  TVDataSet<RecsysTVEvent> buildDataSetFromRawData(JavaRDD<RecsysTVEvent> eventsData, JavaSparkContext sc){
-		return new RecsysTVDataSet(eventsData, sc, true);
+
+	@Override
+	protected void initialize() {
+		initializeMapReader();
+		broadcastedIdMap = sc.broadcast(idMap);
+		mapClosed = false;
 	}
 
 	/**
@@ -153,16 +147,17 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 	public int getNumberOfEvents() {
 		return (int) eventsData.count();
 	}
-	
 
 	public List<Integer> getProgramIndexesSeenByUser(int userIndex) {
-		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex).map(tvEvent -> tvEvent.getProgramId()).distinct().collect();
+		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex)
+				.map(tvEvent -> tvEvent.getProgramId()).distinct().collect();
 	}
-	
+
 	/**
-	 * Method that return the size of the data set. It is the same as getNumberOfEvents.
+	 * Method that return the size of the data set. It is the same as
+	 * getNumberOfEvents.
 	 */
-	public int count(){
+	public int count() {
 		return (int) eventsData.count();
 	}
 
@@ -193,11 +188,12 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 			final int lowerLimit = indexes[i - 1];
 			final int upperLimit = indexes[i];
 			JavaRDD<RecsysTVEvent> splitData = eventsData
-					.filter(tvEvent -> lowerLimit <= broadcastedIdMap.getValue().getEventIDtoIDMap()
+					.filter(tvEvent -> lowerLimit <= broadcastedIdMap
+							.getValue().getEventIDtoIDMap()
 							.get(tvEvent.getEventID())
-							&& broadcastedIdMap.getValue().getEventIDtoIDMap().get(
-									tvEvent.getEventID()) < upperLimit);
-			splittedData[i - 1] = new RecsysTVDataSet(splitData, sc, true);
+							&& broadcastedIdMap.getValue().getEventIDtoIDMap()
+									.get(tvEvent.getEventID()) < upperLimit);
+			splittedData[i - 1] = new RecsysTVDataSet(splitData, sc);
 		}
 		return splittedData;
 	}
@@ -221,7 +217,7 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		}
 		return indexes;
 	}
-	
+
 	/**
 	 * Method that converts the data set into the good format for using mllib
 	 * methods.
@@ -233,29 +229,55 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 				.getUserID(), event.getProgramId(), 1.0));
 		return ratings;
 	}
-	
+
 	/**
 	 * Method that converts the data set into a distributed user item matrix.
-	 * @return return the user item matrix in a distributed form corresponding to this data set.
+	 * 
+	 * @return return the user item matrix in a distributed form corresponding
+	 *         to this data set.
 	 */
-	public DistributedUserItemMatrix convertToDistUserItemMatrix(){
+	public DistributedUserItemMatrix convertToDistUserItemMatrix() {
 		final int numberOfTvShows = getNumberOfItems();
-		JavaRDD<IndexedRow> ratingMatrix = eventsData.mapToPair(event -> new Tuple2<Integer, RecsysTVEvent>(broadcastedIdMap.getValue().getUserIDToIdMap().get(event.getUserID()), event))
-		.aggregateByKey(new HashSet<Tuple2<Integer, Double>>(), (list, event) -> {list.add(new Tuple2<Integer,Double>(broadcastedIdMap.getValue().getProgramIDtoIDMap().get(event.getProgramId()), 1.0d)); return list;}, (list1,list2)->{list1.addAll(list2); return list1;})
-		.map(sparseRowRepresenation -> new IndexedRow(sparseRowRepresenation._1(), Vectors.sparse(numberOfTvShows, sparseRowRepresenation._2())));
+		JavaRDD<IndexedRow> ratingMatrix = eventsData
+				.mapToPair(
+						event -> new Tuple2<Integer, RecsysTVEvent>(
+								broadcastedIdMap.getValue().getUserIDToIdMap()
+										.get(event.getUserID()), event))
+				.aggregateByKey(
+						new HashSet<Tuple2<Integer, Double>>(),
+						(list, event) -> {
+							list.add(new Tuple2<Integer, Double>(
+									broadcastedIdMap.getValue()
+											.getProgramIDtoIDMap()
+											.get(event.getProgramId()), 1.0d));
+							return list;
+						}, (list1, list2) -> {
+							list1.addAll(list2);
+							return list1;
+						})
+				.map(sparseRowRepresenation -> new IndexedRow(
+						sparseRowRepresenation._1(), Vectors.sparse(
+								numberOfTvShows, sparseRowRepresenation._2())));
 		return new DistributedUserItemMatrix(ratingMatrix);
 	}
-	
+
 	/**
 	 * Method that returns the content matrix of each tv show.
 	 */
-	public IndexedRowMatrix getContentMatrix(FeatureExtractor<?, RecsysTVEvent> extractor){
-		JavaRDD<IndexedRow> contentMatrix = eventsData.mapToPair(tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent.getProgramId(), tvEvent))
-		.reduceByKey((tvEvent1,tvEvent2) -> tvEvent1).map( pair -> {		
-			RecsysTVEvent event =  pair._2();
-			int programIndex = broadcastedIdMap.value().getProgramIDtoIDMap().get(event.getProgramId());
-			return new IndexedRow(programIndex, extractor.extractFeaturesFromEvent(event));
-		});
+	public IndexedRowMatrix getContentMatrix(
+			FeatureExtractor<?, RecsysTVEvent> extractor) {
+		JavaRDD<IndexedRow> contentMatrix = eventsData
+				.mapToPair(
+						tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent
+								.getProgramId(), tvEvent))
+				.reduceByKey((tvEvent1, tvEvent2) -> tvEvent1)
+				.map(pair -> {
+					RecsysTVEvent event = pair._2();
+					int programIndex = broadcastedIdMap.value()
+							.getProgramIDtoIDMap().get(event.getProgramId());
+					return new IndexedRow(programIndex, extractor
+							.extractFeaturesFromEvent(event));
+				});
 		return new IndexedRowMatrix(contentMatrix.rdd());
 	}
 
@@ -311,8 +333,8 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 		sc.close();
 		eventsData = null;
 	}
-	
-	public void closeMap(){
+
+	public void closeMap() {
 		if (!mapClosed) {
 			idMap.close();
 			mapClosed = true;
@@ -320,8 +342,8 @@ public class RecsysTVDataSet extends  TVDataSet<RecsysTVEvent> implements Serial
 			broadcastedIdMap.destroy();
 		}
 	}
-	
-	public void closeSparkContext(){
+
+	public void closeSparkContext() {
 		sc.close();
 		eventsData = null;
 	}

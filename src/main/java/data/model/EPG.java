@@ -10,8 +10,8 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 /**
- * Abstract class that represents an electronic programming guide (EPG). It is
- * containing a JavaRDD of a given TVProgram child class.
+ * Abstract class that represents an electronic programming guide (EPG). It
+ * contains a JavaRDD of the given TVProgram child class.
  * 
  * @author Jonathan Bergeron
  *
@@ -60,7 +60,7 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 	 *            The target watch time.
 	 * @return The java rdd of tv programs occurring during target watch time.
 	 */
-	public JavaRDD<T> getJavaRDdProgramsAtWatchTime(
+	public JavaRDD<T> getJavaRDDProgramsAtWatchTime(
 			LocalDateTime targetWatchTime) {
 		return electronicProgrammingGuide.filter(program -> isDateTimeBetween(
 				program.getStartTime(), program.getEndTime(), targetWatchTime));
@@ -76,7 +76,7 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 	 *            The end target time.
 	 * @return The java rdd of tv programs occurring during target watch time.
 	 */
-	public JavaRDD<T> getJavaRDdProgramsBetweenTimes(
+	public JavaRDD<T> getJavaRDDProgramsBetweenTimes(
 			LocalDateTime startTargetTime, LocalDateTime endTargetTime) {
 		return electronicProgrammingGuide.filter(program -> !startTargetTime
 				.isAfter(program.getStartTime())
@@ -92,15 +92,13 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 	 * @return The list of all tv programs occurring during target watch time.
 	 */
 	public List<T> getListProgramsAtWatchTime(LocalDateTime targetWatchTime) {
-		return electronicProgrammingGuide.filter(
-				program -> isDateTimeBetween(program.getStartTime(),
-						program.getEndTime(), targetWatchTime)).collect();
+		return getJavaRDDProgramsAtWatchTime(targetWatchTime).collect();
 	}
 
 	/**
 	 * Method that returns programs that occurs between start and end target
-	 * time. The program must start after the start target time and ends before
-	 * the end target time.
+	 * time. The program may have started before the start target time or may
+	 * end after the end target time.
 	 * 
 	 * @param startTargetTime
 	 *            The start target time.
@@ -112,8 +110,7 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 	public List<T> getListProgramsBetweenTimes(LocalDateTime startTargetTime,
 			LocalDateTime endTargetTime) {
 		return electronicProgrammingGuide.filter(
-				program -> !startTargetTime.isAfter(program.getStartTime())
-						&& !endTargetTime.isBefore(program.getEndTime()))
-				.collect();
+				program -> startTargetTime.isBefore(program.endTime)
+						&& endTargetTime.isAfter(program.startTime)).collect();
 	}
 }

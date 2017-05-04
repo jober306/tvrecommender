@@ -1,16 +1,16 @@
 package data.recsys.loader;
 
-import java.io.Serializable;
+import static data.recsys.loader.RecsysTVDataSetLoaderUtilities.mapLinesToTVEvent;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import scala.Tuple2;
+import spark.utilities.SparkUtilities;
 import data.recsys.model.RecsysEPG;
 import data.recsys.model.RecsysTVDataSet;
 import data.recsys.model.RecsysTVEvent;
 import data.recsys.model.RecsysTVProgram;
-import scala.Tuple2;
-import spark.utilities.SparkUtilities;
 
 /**
  * Class used to load data in the form of the recsys tv data set. The loader is
@@ -20,9 +20,7 @@ import spark.utilities.SparkUtilities;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSetLoader implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class RecsysTVDataSetLoader {
 
 	/**
 	 * The default location of the recsys tv data set.
@@ -88,24 +86,26 @@ public class RecsysTVDataSetLoader implements Serializable {
 	}
 
 	/**
-	 * Main method of the class. Used to load the recsys tv events from the specified file
-	 * location. The EPG is derived implicitly from the events.
+	 * Main method of the class. Used to load the recsys tv events from the
+	 * specified file location. The EPG is derived implicitly from the events.
 	 * 
-	 * @return A tuple 2 containing in its first argument the EPG and the events in the other.
+	 * @return A tuple 2 containing in its first argument the EPG and the events
+	 *         in the other.
 	 */
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet() {
 		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
-		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc, true);
+		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc);
 		RecsysEPG epg = new RecsysEPG(programs, sc);
 		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
 	}
-	
+
 	/**
 	 * Method that returns the java spark context used to load the data set.
+	 * 
 	 * @return The java spark context used to load the data set.
 	 */
-	public JavaSparkContext getJavaSparkContext(){
+	public JavaSparkContext getJavaSparkContext() {
 		return sc;
 	}
 
@@ -121,48 +121,29 @@ public class RecsysTVDataSetLoader implements Serializable {
 	}
 
 	/**
-	 * Method that map all lines in a RDD to a RDD of
-	 * <class>RecsysTVEvent</class>.
+	 * Method that implicitly creates from all the events the corresponding
+	 * programs. For example if a user listen to program 2 on channel 3 on slot
+	 * 10 and another one listen to the same program on slot 11, a program will
+	 * be created with start time from slot 10 to 11. Thus the programs returned
+	 * do not form a continuous sequence of programs.
 	 * 
-	 * @param lines
-	 *            A JavaRDD of <class>String</class> containing the recsys tv
-	 *            event in csv format.
-	 * @return A JavaRDD of <class>RecsysTVEvent</class>.
-	 */
-	private JavaRDD<RecsysTVEvent> mapLinesToTVEvent(JavaRDD<String> lines) {
-		return lines.map(line -> mapLineToTVEvent(line));
-	}
-
-	/**
-	 * Method that map a single line to a Recsys tv event.
-	 * 
-	 * @param line
-	 *            The String representing the Recsys tv event in csv format.
-	 * @return The <class> RecsysTVEvent<\class> object representing the line.
-	 */
-	private RecsysTVEvent mapLineToTVEvent(String line) {
-		String[] row = line.split(",");
-		return new RecsysTVEvent(Short.parseShort(row[0]),
-				Short.parseShort(row[1]), Byte.parseByte(row[2]),
-				Byte.parseByte(row[3]), Byte.parseByte(row[4]),
-				Integer.parseInt(row[5]), Integer.parseInt(row[6]),
-				Integer.parseInt(row[7]), Integer.parseInt(row[8]));
-	}
-	
-	/**
-	 * Method that creates implicitly from all the events the corresponding programs.
-	 * For example if a user listen to program 2 on channel 3 on slot 10 and another one
-	 * listen to the same program on slot 11, a program will be created with start time from slot 10 to 11.
-	 * Thus the programs returned do not form a continuous sequence of programs.
-	 * @param events The tv events.
+	 * @param events
+	 *            The tv events.
 	 * @return The program implicitly created from the events.
 	 */
-	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(JavaRDD<RecsysTVEvent> events){
-		return events.map(event -> new RecsysTVProgram(event.getWeek(), event.getSlot(), event.getChannelId(), event.getProgramId(), event.getGenreID(), event.getSubgenreID()));
+	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(
+			JavaRDD<RecsysTVEvent> events) {
+		return events.map(
+				event -> new RecsysTVProgram(event.getWeek(), event.getSlot(),
+						event.getChannelId(), event.getProgramId(), event
+								.getGenreID(), event.getSubgenreID()))
+				.distinct();
 	}
-	
-	public static void main(String[] args){
+
+	public static void main(String[] args) {
 		RecsysTVDataSetLoader l = new RecsysTVDataSetLoader();
-		l.loadDataSet();
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = l.loadDataSet();
+		System.out.println(data._1.getEPG().count());
+		System.out.println(data._2.getEventsData().count());
 	}
 }

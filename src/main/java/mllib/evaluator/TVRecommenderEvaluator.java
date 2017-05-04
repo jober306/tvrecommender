@@ -43,8 +43,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 
 	/**
 	 * The start time and end time on which testing will be done. testSet will
-	 * be created automatically from tv data set and therefore contains the
-	 * ground truth.
+	 * be created automatically from tv data set.
 	 */
 	LocalDateTime testStartTime;
 	LocalDateTime testEndTime;
@@ -98,8 +97,8 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 			LocalDateTime testEndTime) {
 		JavaRDD<U> eventsOccuringDuringTestTime = filterByDateTime(
 				tvDataSet.getEventsData(), testStartTime, testEndTime);
-		this.testSet = tvDataSet.buildDataSetFromRawData(
-				eventsOccuringDuringTestTime, tvDataSet.getJavaSparkContext());
+		this.testSet = tvDataSet.newInstance(eventsOccuringDuringTestTime,
+				tvDataSet.getJavaSparkContext());
 	}
 
 	/**

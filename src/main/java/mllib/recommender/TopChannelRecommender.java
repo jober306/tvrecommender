@@ -79,7 +79,7 @@ public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
 	public List<Integer> recommend(int user, LocalDateTime targetWatchTime,
 			int numberOfResults) {
 		JavaRDD<T> programDuringTargetTime = epg
-				.getJavaRDdProgramsAtWatchTime(targetWatchTime);
+				.getJavaRDDProgramsAtWatchTime(targetWatchTime);
 		return retrieveTopChannelProgram(programDuringTargetTime);
 	}
 
@@ -103,7 +103,7 @@ public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
 	public List<Integer> recommend(int userId, LocalDateTime startTargetTime,
 			LocalDateTime endTargetTime, int numberOfResults) {
 		JavaRDD<T> programBetweenTargetTimes = epg
-				.getJavaRDdProgramsBetweenTimes(startTargetTime, endTargetTime);
+				.getJavaRDDProgramsBetweenTimes(startTargetTime, endTargetTime);
 		return retrieveTopChannelProgram(programBetweenTargetTimes);
 	}
 
