@@ -10,44 +10,56 @@ import data.recsys.model.RecsysTVEvent;
 import data.recsys.model.RecsysTVProgram;
 
 /**
- * A feature extractor singleton class for the recsys data set. 
+ * A feature extractor singleton class for the recsys data set.
+ * 
  * @author Jonathan Bergeron
  *
  */
-public class RecsysFeatureExtractor extends FeatureExtractor<RecsysTVProgram, RecsysTVEvent> implements Serializable{
-	
+public class RecsysFeatureExtractor extends
+		FeatureExtractor<RecsysTVProgram, RecsysTVEvent> implements
+		Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private static final RecsysFeatureExtractor RECSYS_FEATURE_EXTRACTOR = new RecsysFeatureExtractor();
-	
-	private RecsysFeatureExtractor(){};
-	
+
+	private RecsysFeatureExtractor() {
+	};
+
 	/**
 	 * Method to access the singleton feature extractor
+	 * 
 	 * @return The singleton feature extractor.
 	 */
-	public static RecsysFeatureExtractor getInstance(){
+	public static RecsysFeatureExtractor getInstance() {
 		return RECSYS_FEATURE_EXTRACTOR;
 	}
-	
+
 	/**
 	 * Method that extracts the principal features of a recsys tv program.
-	 * @param program The recsys tv program.
-	 * @return Return a vector containing the channel id, the genre id and the sub genre id.
+	 * 
+	 * @param program
+	 *            The recsys tv program.
+	 * @return Return a vector containing the channel id, the genre id and the
+	 *         sub genre id.
 	 */
 	@Override
 	public Vector extractFeaturesFromProgram(RecsysTVProgram program) {
-		double[] features = new double[3];
+		double[] features = new double[4];
 		features[0] = program.getChannelId();
-		features[1] = program.getGenreId();
-		features[2] = program.getSubGenreId();
+		features[1] = program.getSlot();
+		features[2] = program.getGenreId();
+		features[3] = program.getSubGenreId();
 		return Vectors.dense(features);
 	}
-	
+
 	/**
 	 * Method that extracts the principal features of a recsys tv event.
-	 * @param program The recsys tv event.
-	 * @return Return a vector containing the channel id, the slot, the genre id and the sub genre id.
+	 * 
+	 * @param program
+	 *            The recsys tv event.
+	 * @return Return a vector containing the channel id, the slot, the genre id
+	 *         and the sub genre id.
 	 */
 	@Override
 	public Vector extractFeaturesFromEvent(RecsysTVEvent event) {
@@ -58,5 +70,4 @@ public class RecsysFeatureExtractor extends FeatureExtractor<RecsysTVProgram, Re
 		features[3] = event.getSubgenreID();
 		return Vectors.dense(features);
 	}
-	
 }

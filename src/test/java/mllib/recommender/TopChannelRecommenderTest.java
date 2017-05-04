@@ -28,12 +28,11 @@ public class TopChannelRecommenderTest {
 		predictor = new TopChannelRecommender<RecsysTVProgram, RecsysTVEvent>(
 				data._1(), data._2(),
 				new RecsysUserPreferenceTensorCalculator());
-		predictor.train();
 	}
 
 	@Test
 	public void recommendTest() {
-		int expectedRecommendation = 202344;
+		int expectedRecommendation = 254329;
 		int recommendation = predictor
 				.recommend(0, START_TIME.plusHours(19), 1).get(0);
 		assertEquals(expectedRecommendation, recommendation);

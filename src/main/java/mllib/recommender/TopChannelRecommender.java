@@ -44,6 +44,7 @@ public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
 			UserPreferenceTensorCalculator<T, U> tensorCalculator) {
 		super(epg, tvDataSet);
 		this.tensorCalculator = tensorCalculator;
+		calculateTopChannel();
 	}
 
 	public TopChannelRecommender(EPG<T> epg, TVDataSet<U> tvDataSet,
@@ -51,13 +52,6 @@ public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
 			UserPreferenceTensorCalculator<T, U> tensorCalculator) {
 		super(epg, tvDataSet, trainingStartTime, trainingEndTime);
 		this.tensorCalculator = tensorCalculator;
-	}
-
-	/**
-	 * Method that train the space alignment recommender using the whole data
-	 * set.
-	 */
-	public void train() {
 		calculateTopChannel();
 	}
 

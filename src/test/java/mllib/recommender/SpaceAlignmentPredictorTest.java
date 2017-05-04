@@ -4,7 +4,6 @@ import static data.recsys.model.RecsysTVDataSet.START_TIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.mllib.linalg.Vector;
@@ -79,12 +78,6 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		List<Vector> newItems = new ArrayList<Vector>();
-		newItems.add(Vectors.dense(new double[] { 46, 19, 5, 81 }));
-		newItems.add(Vectors
-				.dense(new double[] { 30000, 100000, 488888, 29199 }));
-		newItems.add(Vectors.dense(new double[] { 54, 18, 10, 78 }));
-		newItems.add(Vectors.dense(new double[] { 200, 29, 25, 11 }));
 		List<Integer> prediction = predictor.recommend(userId,
 				START_TIME.plusHours(19), numberOfResults);
 		assertEquals(numberOfResults, prediction.size());
