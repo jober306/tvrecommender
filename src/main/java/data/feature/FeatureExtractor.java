@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import org.apache.spark.mllib.linalg.Vector;
 
-import data.model.TVEvent;
-import data.model.TVProgram;
+import data.TVEvent;
+import data.TVProgram;
 
 /**
  * Abstract class that represents a feature extractor, the class extending it must implements

@@ -6,11 +6,11 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
-import spark.utilities.SparkUtilities;
-import data.recsys.model.RecsysEPG;
-import data.recsys.model.RecsysTVDataSet;
-import data.recsys.model.RecsysTVEvent;
-import data.recsys.model.RecsysTVProgram;
+import util.SparkUtilities;
+import data.recsys.RecsysEPG;
+import data.recsys.RecsysTVDataSet;
+import data.recsys.RecsysTVEvent;
+import data.recsys.RecsysTVProgram;
 
 /**
  * Class used to load data in the form of the recsys tv data set. The loader is

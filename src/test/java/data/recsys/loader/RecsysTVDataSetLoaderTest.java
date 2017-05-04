@@ -1,13 +1,14 @@
 package data.recsys.loader;
 
 import static org.junit.Assert.assertTrue;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import data.recsys.model.RecsysEPG;
-import data.recsys.model.RecsysTVDataSet;
-import data.recsys.model.RecsysTVEvent;
+import data.recsys.RecsysEPG;
+import data.recsys.RecsysTVDataSet;
+import data.recsys.RecsysTVEvent;
 import scala.Tuple2;
 
 public class RecsysTVDataSetLoaderTest {

@@ -10,8 +10,8 @@ import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
 
-import data.recsys.model.RecsysTVDataSet;
-import data.recsys.model.RecsysTVEvent;
+import data.recsys.RecsysTVDataSet;
+import data.recsys.RecsysTVEvent;
 
 /**
  * Class that provides some utilities methods related to the recsys classes.

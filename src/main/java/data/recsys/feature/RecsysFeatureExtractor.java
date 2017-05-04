@@ -6,8 +6,8 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 import data.feature.FeatureExtractor;
-import data.recsys.model.RecsysTVEvent;
-import data.recsys.model.RecsysTVProgram;
+import data.recsys.RecsysTVEvent;
+import data.recsys.RecsysTVProgram;
 
 /**
  * A feature extractor singleton class for the recsys data set.

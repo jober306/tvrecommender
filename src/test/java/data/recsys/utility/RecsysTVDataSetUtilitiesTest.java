@@ -13,8 +13,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import data.recsys.model.RecsysTVEvent;
-import spark.utilities.SparkUtilities;
+import data.recsys.RecsysTVEvent;
+import util.SparkUtilities;
 
 public class RecsysTVDataSetUtilitiesTest {
 	

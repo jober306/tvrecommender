@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.apache.spark.api.java.JavaRDD;
 
-import data.recsys.model.RecsysTVEvent;
+import data.recsys.RecsysTVEvent;
 
 public class RecsysTVDataSetLoaderUtilities implements Serializable {
 

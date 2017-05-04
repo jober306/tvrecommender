@@ -5,8 +5,8 @@ import java.io.Serializable;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
-import data.model.TVEvent;
-import data.model.TVProgram;
+import data.TVEvent;
+import data.TVProgram;
 
 /**
  * A feature extractor class that returns the channel as feature vector.
