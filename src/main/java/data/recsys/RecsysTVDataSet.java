@@ -21,7 +21,7 @@ import scala.Tuple2;
 import util.SparkUtilities;
 import data.TVDataSet;
 import data.feature.FeatureExtractor;
-import data.recsys.mapper.IDMap;
+import data.recsys.mapper.MapID;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
 
@@ -34,7 +34,7 @@ import data.recsys.mapper.RecSysMapReader;
  *
  */
 public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
-		Serializable, IDMap {
+		Serializable, MapID {
 
 	/**
 	 * The date the data set started recording tv audience behavior (This is not

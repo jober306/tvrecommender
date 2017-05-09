@@ -20,12 +20,12 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	/**
 	 * The genre id of this program.
 	 */
-	final int genreId;
+	final byte genreId;
 
 	/**
 	 * The subgenre id of this program.
 	 */
-	final int subGenreId;
+	final byte subGenreId;
 
 	/**
 	 * The slot of time in which the program occurred.
@@ -61,14 +61,14 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	/**
 	 * @return the genreId
 	 */
-	public int getGenreId() {
+	public byte getGenreId() {
 		return genreId;
 	}
 
 	/**
 	 * @return the subGenreId
 	 */
-	public int getSubGenreId() {
+	public byte getSubGenreId() {
 		return subGenreId;
 	}
 

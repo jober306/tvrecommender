@@ -61,6 +61,7 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * @param sc
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public TVDataSet<T> newInstance(JavaRDD<T> eventsData, JavaSparkContext sc) {
 		try {
 			return this
