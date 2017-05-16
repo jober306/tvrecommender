@@ -9,11 +9,20 @@ import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
 
+import recommender.SpaceAlignmentRecommender;
 import recommender.TVRecommender;
+import scala.Tuple2;
+import util.IntHolder;
 import data.EPG;
 import data.TVDataSet;
 import data.TVEvent;
 import data.TVProgram;
+import data.recsys.RecsysEPG;
+import data.recsys.RecsysTVDataSet;
+import data.recsys.RecsysTVEvent;
+import data.recsys.RecsysTVProgram;
+import data.recsys.feature.RecsysBooleanFeatureExtractor;
+import data.recsys.loader.RecsysTVDataSetLoader;
 
 /**
  * Class that evaluate a tv recommender on a given data set.
@@ -27,7 +36,7 @@ import data.TVProgram;
  *            A class extending TVProgram on which the data set and the tv
  *            recommender is built.
  */
-public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G extends TVRecommender<T, U>> {
+public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 
 	/**
 	 * The electronic programming guide.
@@ -35,8 +44,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	EPG<T> epg;
 
 	/**
-	 * The training set on which the space alignment recommender will be
-	 * trained.
+	 * The whole data set.
 	 */
 	TVDataSet<U> tvDataSet;
 
@@ -49,17 +57,17 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	TVDataSet<U> testSet;
 
 	/**
-	 * The space alignment recommender trained on training set.
+	 * The tv recommender to evaluate.
 	 */
-	G recommender;
+	TVRecommender<T, U> recommender;
 
 	/**
-	 * The array of measures to evaluate.
+	 * The array of measures on which evaluation will be based.
 	 */
 	EvaluationMeasure[] measures;
 
 	/**
-	 * The map containing results for each evaluation measure in measures.
+	 * The map containing results for each evaluation measure.
 	 */
 	Map<EvaluationMeasure, Double> evaluationResults;
 
@@ -82,7 +90,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 	 *            The end time of the test period.
 	 */
 	public TVRecommenderEvaluator(EPG<T> epg, TVDataSet<U> tvDataSet,
-			G recommender, EvaluationMeasure[] measures,
+			TVRecommender<T, U> recommender, EvaluationMeasure[] measures,
 			LocalDateTime testStartTime, LocalDateTime testEndTime) {
 		this.epg = epg;
 		this.tvDataSet = tvDataSet;
@@ -121,17 +129,17 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 			case MEAN_AVERAGE_PRECISION_AT_10:
 				evaluationResults.put(
 						EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10,
-						evaluateMeanAveragePrecision(10));
+						calculateMeanAveragePrecision(10));
 				break;
 			case MEAN_AVERAGE_PRECISION_AT_20:
 				evaluationResults.put(
 						EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_20,
-						evaluateMeanAveragePrecision(20));
+						calculateMeanAveragePrecision(20));
 				break;
 			case MEAN_AVERAGE_PRECISION_AT_50:
 				evaluationResults.put(
 						EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_50,
-						evaluateMeanAveragePrecision(50));
+						calculateMeanAveragePrecision(50));
 				break;
 			default:
 				break;
@@ -139,26 +147,31 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 		}
 	}
 
-	private double evaluateMeanAveragePrecision(int numberOfResults) {
-		double meanAveragePrecision = 0.0d;
+	private double calculateMeanAveragePrecision(int numberOfResults) {
 		List<Integer> userdIds = recommender.getTrainingSet().getAllUserIds();
-		int numberOfActiveUsers = 0;
+		IntHolder numberOfActiveUser = new IntHolder();
+		double meanAveragePrecision = 0.0d;
 		for (int userId : userdIds) {
-			// TODO: Apply the same minimum time filter (maybe it is already
-			// applied when loading the data).
-			List<Integer> actuallySeenTVShowIndexes = testSet
-					.getProgramIndexesSeenByUser(userId);
-			if (actuallySeenTVShowIndexes.size() > 0) {
-				numberOfActiveUsers++;
-				List<Integer> recommendedTVShowIndexes = recommender.recommend(
-						userId, testStartTime, testEndTime, numberOfResults);
-				double averagePrecision = calculateAveragePrecision(
-						numberOfResults, recommendedTVShowIndexes,
-						actuallySeenTVShowIndexes);
-				meanAveragePrecision += averagePrecision;
-			}
+			meanAveragePrecision += calculateAveragePrecisionForUser(
+					numberOfResults, meanAveragePrecision, numberOfActiveUser,
+					userId);
 		}
-		return meanAveragePrecision /= numberOfActiveUsers;
+		return meanAveragePrecision /= numberOfActiveUser.value;
+	}
+
+	private double calculateAveragePrecisionForUser(int numberOfResults,
+			double meanAveragePrecision, IntHolder numberOfActiveUser,
+			int userId) {
+		List<Integer> groundTruth = testSet.getProgramIndexesSeenByUser(userId);
+		if (groundTruth.size() > 0) {
+			numberOfActiveUser.value += 1;
+			List<Integer> recommendedTVShowIndexes = recommender.recommend(
+					userId, testStartTime, testEndTime, numberOfResults);
+			double averagePrecision = calculateAveragePrecision(
+					numberOfResults, recommendedTVShowIndexes, groundTruth);
+			meanAveragePrecision += averagePrecision;
+		}
+		return meanAveragePrecision;
 	}
 
 	private double calculateAveragePrecision(int numberOfResults,
@@ -179,5 +192,30 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, G ex
 			averagePrecision /= truePositiveRecommendedTVShow;
 		}
 		return averagePrecision;
+	}
+
+	public static void main(String[] args) {
+		LocalDateTime trainingStartTime = RecsysTVDataSet.START_TIME;
+		LocalDateTime trainingEndTime = RecsysTVDataSet.START_TIME.plusDays(7);
+		LocalDateTime testStartTime = RecsysTVDataSet.START_TIME.plusDays(7);
+		LocalDateTime testEndTime = RecsysTVDataSet.START_TIME.plusDays(8);
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader();
+		int minDuration = 5;
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader
+				.loadDataSet(minDuration);
+		RecsysEPG epg = data._1;
+		RecsysTVDataSet events = data._2;
+		RecsysBooleanFeatureExtractor featureExtractor = new RecsysBooleanFeatureExtractor(
+				epg);
+		SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(
+				epg, events, trainingStartTime, trainingEndTime,
+				featureExtractor, 100, 10);
+		recommender.train();
+		EvaluationMeasure[] measures = { EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10 };
+		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent>(
+				epg, events, recommender, measures, testStartTime, testEndTime);
+		evaluator.evaluate();
+		System.out.println(evaluator.getResults().get(
+				EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10));
 	}
 }

@@ -39,13 +39,13 @@ public class TVDataSetUtilitiesTest {
 
 	@Test
 	public void filterByMinTimeViewTest() {
-		JavaRDD<RecsysTVEvent> filtered_0 = filterByMinTimeView(dataSet,0);
+		JavaRDD<RecsysTVEvent> filtered_0 = filterByMinDuration(dataSet,0);
 		assertEquals(3, filtered_0.count());
-		JavaRDD<RecsysTVEvent> filtered_10 = filterByMinTimeView(dataSet,10);
+		JavaRDD<RecsysTVEvent> filtered_10 = filterByMinDuration(dataSet,10);
 		assertEquals(2, filtered_10.count());
-		JavaRDD<RecsysTVEvent> filtered_20 = filterByMinTimeView(dataSet,20);
+		JavaRDD<RecsysTVEvent> filtered_20 = filterByMinDuration(dataSet,20);
 		assertEquals(1, filtered_20.count());
-		JavaRDD<RecsysTVEvent> filtered_30 = filterByMinTimeView(dataSet,30);
+		JavaRDD<RecsysTVEvent> filtered_30 = filterByMinDuration(dataSet,30);
 		assertEquals(0, filtered_30.count());
 	}
 	

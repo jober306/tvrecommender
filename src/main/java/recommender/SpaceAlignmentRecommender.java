@@ -2,14 +2,13 @@ package recommender;
 
 import static java.lang.Math.toIntExact;
 import static util.ListUtilities.getFirstArgument;
-import static util.ListUtilities.getSecondArgument;
 import static util.MllibUtilities.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix;
-import static util.MllibUtilities.indexedRowToDenseVector;
 import static util.MllibUtilities.multiplicateByLeftDiagonalMatrix;
 import static util.MllibUtilities.multiplicateByRightDiagonalMatrix;
 import static util.MllibUtilities.multiplyMatrixByRightDiagonalMatrix;
 import static util.MllibUtilities.scalarProduct;
 import static util.MllibUtilities.toDenseLocalMatrix;
+import static util.MllibUtilities.toDenseLocalVectors;
 import static util.MllibUtilities.transpose;
 
 import java.time.LocalDateTime;
@@ -136,13 +135,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	public void train() {
 		this.R = trainingSet.convertToDistUserItemMatrix();
 		this.C = trainingSet.getContentMatrix(extractor);
-		this.localC = getSecondArgument(C
-				.rows()
-				.toJavaRDD()
-				.mapToPair(
-						row -> new Tuple2<Integer, Vector>(toIntExact(row
-								.index()), indexedRowToDenseVector(row)))
-				.sortByKey().collect());
+		this.localC = toDenseLocalVectors(C);
 		calculateMprime();
 	}
 
@@ -231,6 +224,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	 */
 	public List<Integer> recommend(int userId, LocalDateTime targetWatchTime,
 			int numberOfResults) {
+		epg.getEPG().foreach(program -> System.out.println(program));
 		List<T> tvPrograms = epg.getListProgramsAtWatchTime(targetWatchTime);
 		return recommendPrograms(userId, numberOfResults, tvPrograms);
 	}

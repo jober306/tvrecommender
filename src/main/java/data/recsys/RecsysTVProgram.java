@@ -6,6 +6,7 @@ import static data.recsys.utility.RecsysUtilities.getStartTimeFromWeekAndSlot;
 import java.io.Serializable;
 
 import data.TVProgram;
+import data.recsys.utility.RecsysUtilities;
 
 /**
  * Class that represents a tv program from the recsys data set.
@@ -77,5 +78,14 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	 */
 	public short getSlot() {
 		return slot;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder(super.toString());
+		s.append("Genre: " + RecsysUtilities.getGenreName(genreId) + "\n");
+		s.append("Subgenre: "
+				+ RecsysUtilities.getSubgenreName(genreId, subGenreId) + "\n");
+		return s.toString();
 	}
 }

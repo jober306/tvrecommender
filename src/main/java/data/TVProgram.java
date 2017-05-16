@@ -122,4 +122,14 @@ public abstract class TVProgram implements Serializable {
 		return new HashCodeBuilder(17, 37).append(channelId).append(programId)
 				.toHashCode();
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append("Program Id: " + programId + "\n");
+		s.append("Channel Id: " + channelId + "\n");
+		s.append("Start time: " + startTime.toString() + "\n");
+		s.append("End Time: " + endTime.toString() + "\n");
+		return s.toString();
+	}
 }

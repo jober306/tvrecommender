@@ -78,9 +78,11 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 	 */
 	public JavaRDD<T> getJavaRDDProgramsBetweenTimes(
 			LocalDateTime startTargetTime, LocalDateTime endTargetTime) {
-		return electronicProgrammingGuide.filter(program -> !startTargetTime
-				.isAfter(program.getStartTime())
-				&& !endTargetTime.isBefore(program.getEndTime()));
+		electronicProgrammingGuide.foreach(program -> System.out
+				.println(program == null));
+		return electronicProgrammingGuide.filter(program -> startTargetTime
+				.isBefore(program.getEndTime())
+				&& endTargetTime.isAfter(program.getStartTime()));
 	}
 
 	/**
@@ -109,8 +111,7 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 	 */
 	public List<T> getListProgramsBetweenTimes(LocalDateTime startTargetTime,
 			LocalDateTime endTargetTime) {
-		return electronicProgrammingGuide.filter(
-				program -> startTargetTime.isBefore(program.endTime)
-						&& endTargetTime.isAfter(program.startTime)).collect();
+		return getJavaRDDProgramsBetweenTimes(startTargetTime, endTargetTime)
+				.collect();
 	}
 }

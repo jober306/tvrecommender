@@ -101,6 +101,14 @@ public class EPGTest {
 		assertEquals(expectedResults, results);
 	}
 
+	@Test
+	public void getListProgramBetweenTimeNoprogram() {
+		List<TVProgramMock> results = epg.getListProgramsBetweenTimes(
+				baseTime.plusDays(3), baseTime.plusDays(3));
+		assertEquals(0, results.size());
+
+	}
+
 	@AfterClass
 	public static void tearDown() {
 		sc.stop();

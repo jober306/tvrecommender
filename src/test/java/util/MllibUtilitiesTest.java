@@ -23,9 +23,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import util.MllibUtilities;
-import util.SparkUtilities;
-
 public class MllibUtilitiesTest {
 
 	private static final double[][] matrixValues = {
@@ -63,8 +60,7 @@ public class MllibUtilitiesTest {
 
 	@Test
 	public void inverseDiagonalMatrixTest() {
-		IndexedRowMatrix inv = MllibUtilities
-				.inverseDiagonalMatrix(R);
+		IndexedRowMatrix inv = MllibUtilities.inverseDiagonalMatrix(R);
 		double[] expectedValues = { 1.0d, 0.5d };
 		inv.rows()
 				.toJavaRDD()
@@ -90,8 +86,8 @@ public class MllibUtilitiesTest {
 	@Test
 	public void hardThresholdMatrixTest() {
 		int hardThresholdValue = 1;
-		IndexedRowMatrix hardThresholdedMat = MllibUtilities
-				.hardThreshold(R, hardThresholdValue);
+		IndexedRowMatrix hardThresholdedMat = MllibUtilities.hardThreshold(R,
+				hardThresholdValue);
 		hardThresholdedMat
 				.rows()
 				.toJavaRDD()
@@ -114,7 +110,7 @@ public class MllibUtilitiesTest {
 	public void hardThresholdVectorTest() {
 		int hardThresholdValue = 2;
 		Vector hardThresholdedMat = MllibUtilities.hardThreshold(
-				Vectors.dense(new double[]{1.0d,2.0d,5.0d,2.0d}), 2);
+				Vectors.dense(new double[] { 1.0d, 2.0d, 5.0d, 2.0d }), 2);
 		double[] hardThresholdedValues = hardThresholdedMat.toArray();
 		for (int i = 0; i < hardThresholdedValues.length; i++) {
 			if (i >= hardThresholdValue) {
@@ -124,154 +120,187 @@ public class MllibUtilitiesTest {
 			}
 		}
 	}
-	
+
 	@Test
-	public void multiplyColVectorByRowVectorTest(){
-		Vector rowVec = Vectors.dense(new double[]{2.0d, 0.0d, 3.0d});
-		Vector colVec = Vectors.dense(new double[]{1.0d,2.0d,3.0d,4.0d});
-		DenseMatrix result = MllibUtilities.multiplyColVectorByRowVector(colVec, rowVec);
+	public void multiplyColVectorByRowVectorTest() {
+		Vector rowVec = Vectors.dense(new double[] { 2.0d, 0.0d, 3.0d });
+		Vector colVec = Vectors.dense(new double[] { 1.0d, 2.0d, 3.0d, 4.0d });
+		DenseMatrix result = MllibUtilities.multiplyColVectorByRowVector(
+				colVec, rowVec);
 		int expectedColSize = rowVec.size();
 		int expectedRowSize = colVec.size();
 		assertEquals(expectedRowSize, result.numRows());
 		assertEquals(expectedColSize, result.numCols());
-		double[] expectedValues = new double[]{2,4,6,8,0,0,0,0,3,6,9,12};
+		double[] expectedValues = new double[] { 2, 4, 6, 8, 0, 0, 0, 0, 3, 6,
+				9, 12 };
 		double[] actualValues = result.toArray();
 		assertArrayEquals(expectedValues, actualValues, 0.0d);
 	}
-	
+
 	@Test
-	public void multiplyMatrixByRightDiagonalMatrixTest(){
-		Matrix mat = Matrices.dense(3, 2, new double[]{1,4,2,1,0,1});
-		Vector diagMat = Vectors.dense(new double[]{3,1});
-		DenseMatrix result = MllibUtilities.multiplyMatrixByRightDiagonalMatrix(mat, diagMat);
+	public void multiplyMatrixByRightDiagonalMatrixTest() {
+		Matrix mat = Matrices.dense(3, 2, new double[] { 1, 4, 2, 1, 0, 1 });
+		Vector diagMat = Vectors.dense(new double[] { 3, 1 });
+		DenseMatrix result = MllibUtilities
+				.multiplyMatrixByRightDiagonalMatrix(mat, diagMat);
 		int expectedRowSize = mat.numRows();
 		int expectedColSize = diagMat.size();
 		assertEquals(expectedRowSize, result.numRows());
 		assertEquals(expectedColSize, result.numCols());
-		double[] expectedValues = new double[]{3,12,6,1,0,1};
+		double[] expectedValues = new double[] { 3, 12, 6, 1, 0, 1 };
 		double[] actualValues = result.toArray();
 		assertArrayEquals(expectedValues, actualValues, 0.0d);
 	}
-	
+
 	@Test
-	public void multiplicateByLeftDiagonalMatrixGoodSizeTest(){
-		Vector diagMat = Vectors.dense(new double[]{1.0d,2.0d});
-		double[][] expectedValues = {{1,2,5,2},{6,4,8,2}};
-		IndexedRowMatrix result = MllibUtilities.multiplicateByLeftDiagonalMatrix(diagMat, R);
-		result.rows().toJavaRDD().foreach(row -> {
-			int rowIndex = toIntExact(row.index());
-			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
-		});
+	public void multiplicateByLeftDiagonalMatrixGoodSizeTest() {
+		Vector diagMat = Vectors.dense(new double[] { 1.0d, 2.0d });
+		double[][] expectedValues = { { 1, 2, 5, 2 }, { 6, 4, 8, 2 } };
+		IndexedRowMatrix result = MllibUtilities
+				.multiplicateByLeftDiagonalMatrix(diagMat, R);
+		result.rows()
+				.toJavaRDD()
+				.foreach(
+						row -> {
+							int rowIndex = toIntExact(row.index());
+							assertArrayEquals(expectedValues[rowIndex], row
+									.vector().toArray(), 0.0d);
+						});
 	}
-	
+
 	@Test
-	public void multiplicateByRightDiagonalMatrixGoodSizeTest(){
-		Vector diagMat = Vectors.dense(new double[]{1.0d,2.0d,3.0d,4.0d});
-		double[][] expectedValues = {{1,4,15,8},{3,4,12,4}};
-		IndexedRowMatrix result = MllibUtilities.multiplicateByRightDiagonalMatrix(R, diagMat);
-		result.rows().toJavaRDD().foreach(row -> {
-			int rowIndex = toIntExact(row.index());
-			assertArrayEquals(expectedValues[rowIndex], row.vector().toArray(),0.0d);
-		});
+	public void multiplicateByRightDiagonalMatrixGoodSizeTest() {
+		Vector diagMat = Vectors.dense(new double[] { 1.0d, 2.0d, 3.0d, 4.0d });
+		double[][] expectedValues = { { 1, 4, 15, 8 }, { 3, 4, 12, 4 } };
+		IndexedRowMatrix result = MllibUtilities
+				.multiplicateByRightDiagonalMatrix(R, diagMat);
+		result.rows()
+				.toJavaRDD()
+				.foreach(
+						row -> {
+							int rowIndex = toIntExact(row.index());
+							assertArrayEquals(expectedValues[rowIndex], row
+									.vector().toArray(), 0.0d);
+						});
 	}
-	
+
 	@Test
-	public void scalarProductTest(){
-		Vector v1 = Vectors.dense(new double[]{1,2,3,4});
-		Vector v2 = Vectors.dense(new double[]{4,3,2,1});
+	public void scalarProductTest() {
+		Vector v1 = Vectors.dense(new double[] { 1, 2, 3, 4 });
+		Vector v2 = Vectors.dense(new double[] { 4, 3, 2, 1 });
 		double expectedValue = 20.0d;
 		double actualValue = MllibUtilities.scalarProduct(v1, v2);
-		assertEquals(expectedValue, actualValue,0.0d);
+		assertEquals(expectedValue, actualValue, 0.0d);
 	}
-	
+
 	@Test
-	public void toSparseLocalMatrixTest(){
+	public void toSparseLocalMatrixTest() {
 		Matrix actualMatrix = MllibUtilities.toSparseLocalMatrix(R);
-		for(int rowIndex = 0; rowIndex < matrixValues.length; rowIndex++){
-			for(int colIndex = 0; colIndex < matrixValues[0].length; colIndex++){
-				assertEquals(matrixValues[rowIndex][colIndex], actualMatrix.apply(rowIndex, colIndex),0.0d);
+		for (int rowIndex = 0; rowIndex < matrixValues.length; rowIndex++) {
+			for (int colIndex = 0; colIndex < matrixValues[0].length; colIndex++) {
+				assertEquals(matrixValues[rowIndex][colIndex],
+						actualMatrix.apply(rowIndex, colIndex), 0.0d);
 			}
 		}
 	}
-	
+
 	@Test
-	public void toDenseLocalMatrixTest(){
+	public void toDenseLocalMatrixTest() {
 		Matrix actualMatrix = MllibUtilities.toDenseLocalMatrix(R);
-		for(int rowIndex = 0; rowIndex < matrixValues.length; rowIndex++){
-			for(int colIndex = 0; colIndex < matrixValues[0].length; colIndex++){
-				assertEquals(matrixValues[rowIndex][colIndex], actualMatrix.apply(rowIndex, colIndex),0.0d);
+		for (int rowIndex = 0; rowIndex < matrixValues.length; rowIndex++) {
+			for (int colIndex = 0; colIndex < matrixValues[0].length; colIndex++) {
+				assertEquals(matrixValues[rowIndex][colIndex],
+						actualMatrix.apply(rowIndex, colIndex), 0.0d);
 			}
 		}
 	}
-	
+
 	@Test
-	public void toSparseLocalMatrixWithEmptyColTest(){
-		double[][] emptyColValues = {{0,3,0,0}, {0,0,4,5}, {0,4,0,0}};
+	public void toDenseLocalVectorsTest() {
+		List<Vector> vectors = MllibUtilities.toDenseLocalVectors(R);
+		for (int i = 0; i < matrixValues.length; i++) {
+			System.out.println(vectors.get(i));
+			assertArrayEquals(matrixValues[i], vectors.get(i).toArray(), 0.0d);
+		}
+	}
+
+	@Test
+	public void toSparseLocalMatrixWithEmptyColTest() {
+		double[][] emptyColValues = { { 0, 3, 0, 0 }, { 0, 0, 4, 5 },
+				{ 0, 4, 0, 0 } };
 		List<IndexedRow> rowList = new ArrayList<IndexedRow>();
 		for (int i = 0; i < emptyColValues.length; i++) {
 			rowList.add(new IndexedRow(i, Vectors.dense(emptyColValues[i])));
 		}
-		IndexedRowMatrix emptyColMatrix = new IndexedRowMatrix(SparkUtilities.<IndexedRow> elementsToJavaRDD(rowList, sc).rdd());
-		Matrix actualMatrix = MllibUtilities.toSparseLocalMatrix(emptyColMatrix);
-		for(int rowIndex = 0; rowIndex < emptyColValues.length; rowIndex++){
-			for(int colIndex = 0; colIndex < emptyColValues[0].length; colIndex++){
-				assertEquals(emptyColValues[rowIndex][colIndex], actualMatrix.apply(rowIndex, colIndex),0.0d);
+		IndexedRowMatrix emptyColMatrix = new IndexedRowMatrix(SparkUtilities
+				.<IndexedRow> elementsToJavaRDD(rowList, sc).rdd());
+		Matrix actualMatrix = MllibUtilities
+				.toSparseLocalMatrix(emptyColMatrix);
+		for (int rowIndex = 0; rowIndex < emptyColValues.length; rowIndex++) {
+			for (int colIndex = 0; colIndex < emptyColValues[0].length; colIndex++) {
+				assertEquals(emptyColValues[rowIndex][colIndex],
+						actualMatrix.apply(rowIndex, colIndex), 0.0d);
 			}
 		}
 	}
-	
+
 	@Test
-	public void multiplyColumnVectorByMatrixTest(){
-		Vector vec = Vectors.dense(new double[]{1,0,2,3});
-		double[] expectedValues = {17,14};
-		double[] actualValues = MllibUtilities.multiplyColumnVectorByMatrix(R, vec).toArray();
+	public void multiplyColumnVectorByMatrixTest() {
+		Vector vec = Vectors.dense(new double[] { 1, 0, 2, 3 });
+		double[] expectedValues = { 17, 14 };
+		double[] actualValues = MllibUtilities.multiplyColumnVectorByMatrix(R,
+				vec).toArray();
 		assertEquals(expectedValues.length, actualValues.length);
-		assertArrayEquals(expectedValues, actualValues,0.0d);
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
 	}
-	
+
 	@Test
-	public void multiplyRowVectorByMatrixTest(){
-		Vector vec = Vectors.dense(new double[]{2,3});
-		double[] expectedValues = {11,10,22,7};
-		double[] actualValues = MllibUtilities.multiplyRowVectorByMatrix(vec, R).toArray();
+	public void multiplyRowVectorByMatrixTest() {
+		Vector vec = Vectors.dense(new double[] { 2, 3 });
+		double[] expectedValues = { 11, 10, 22, 7 };
+		double[] actualValues = MllibUtilities
+				.multiplyRowVectorByMatrix(vec, R).toArray();
 		assertEquals(expectedValues.length, actualValues.length);
-		assertArrayEquals(expectedValues, actualValues,0.0d);
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
 	}
-	
+
 	@Test
-	public void getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrixTest(){
+	public void getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrixTest() {
 		List<MatrixEntry> matrixEntries = new ArrayList<MatrixEntry>();
 		int numberOfRow = 3;
 		int numberOfCol = 2;
 		/**
-		 * Creating the following coordinate matrix 
-		 * 			0 1
-		 * 			1 0
-		 * 			0 0
+		 * Creating the following coordinate matrix 0 1 1 0 0 0
 		 */
-		double[][] coordMatValues = {{0,1},{1,0},{0,0}};
+		double[][] coordMatValues = { { 0, 1 }, { 1, 0 }, { 0, 0 } };
 		matrixEntries.add(new MatrixEntry(0, 1, coordMatValues[0][1]));
 		matrixEntries.add(new MatrixEntry(1, 0, coordMatValues[1][0]));
-		CoordinateMatrix coordMatrix =  new CoordinateMatrix(SparkUtilities.elementsToJavaRDD(matrixEntries, sc).rdd(),numberOfRow, numberOfCol);
-		IndexedRowMatrix actualMatrix = MllibUtilities.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(coordMatrix, sc);
+		CoordinateMatrix coordMatrix = new CoordinateMatrix(SparkUtilities
+				.elementsToJavaRDD(matrixEntries, sc).rdd(), numberOfRow,
+				numberOfCol);
+		IndexedRowMatrix actualMatrix = MllibUtilities
+				.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(
+						coordMatrix, sc);
 		List<IndexedRow> rows = actualMatrix.rows().toJavaRDD().collect();
 		assertEquals(numberOfRow, rows.size());
-		for(IndexedRow row : rows){
+		for (IndexedRow row : rows) {
 			int rowIndex = toIntExact(row.index());
-			assertArrayEquals(coordMatValues[rowIndex], row.vector().toArray(),0.0d);
+			assertArrayEquals(coordMatValues[rowIndex], row.vector().toArray(),
+					0.0d);
 		}
 	}
-	
+
 	@After
-	public void verifyMatrixRInvariant(){
+	public void verifyMatrixRInvariant() {
 		List<IndexedRow> rows = R.rows().toJavaRDD().collect();
 		assertEquals(matrixValues.length, rows.size());
-		for(IndexedRow row : rows){
+		for (IndexedRow row : rows) {
 			int rowIndex = toIntExact(row.index());
-			assertArrayEquals(matrixValues[rowIndex], row.vector().toArray(), 0.0d);
+			assertArrayEquals(matrixValues[rowIndex], row.vector().toArray(),
+					0.0d);
 		}
 	}
-	
+
 	@AfterClass
 	public static void tearDownOnce() {
 		sc.close();

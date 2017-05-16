@@ -1,6 +1,7 @@
 package util;
 
 import static java.lang.Math.toIntExact;
+import static util.ListUtilities.getSecondArgument;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -294,6 +295,26 @@ public class MllibUtilities {
 			System.arraycopy(colValues, 0, denseData, destPos, colValues.length);
 		}
 		return Matrices.dense(numRow, numCol, denseData);
+	}
+
+	/**
+	 * Method that transforms a distributed matrix into a local list of vectors
+	 * representing the original matrix.
+	 * 
+	 * @param mat
+	 *            The distributed matrix to transform.
+	 * @return A list of vector containing the rows of the given matrix. The
+	 *         first row of the matrix correspond to the first element of the
+	 *         list.
+	 */
+	public static List<Vector> toDenseLocalVectors(IndexedRowMatrix mat) {
+		return getSecondArgument(mat
+				.rows()
+				.toJavaRDD()
+				.mapToPair(
+						row -> new Tuple2<Integer, Vector>(toIntExact(row
+								.index()), indexedRowToDenseVector(row)))
+				.sortByKey().collect());
 	}
 
 	/**

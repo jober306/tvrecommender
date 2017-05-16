@@ -7,6 +7,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
 import util.SparkUtilities;
+import util.TVDataSetUtilities;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -95,6 +96,27 @@ public class RecsysTVDataSetLoader {
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet() {
 		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
+		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc);
+		RecsysEPG epg = new RecsysEPG(programs, sc);
+		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
+	}
+
+	/**
+	 * Main method of the class. Used to load the recsys tv events from the
+	 * specified file location. The EPG is derived implicitly from the events.
+	 * 
+	 * @param minDuration
+	 *            The min duration a tv event must have to be added into the
+	 *            data set.
+	 * 
+	 * @return A tuple 2 containing in its first argument the EPG and the events
+	 *         in the other.
+	 */
+	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet(int minDuration) {
+		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
+		JavaRDD<RecsysTVEvent> filteredEvents = TVDataSetUtilities
+				.filterByMinDuration(events, 5);
+		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(filteredEvents);
 		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc);
 		RecsysEPG epg = new RecsysEPG(programs, sc);
 		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
