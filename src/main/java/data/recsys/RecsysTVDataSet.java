@@ -3,10 +3,15 @@ package data.recsys;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
 
 import org.apache.commons.collections.MapUtils;
 import org.apache.spark.api.java.JavaRDD;
@@ -120,26 +125,6 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 	}
 
 	/**
-	 * Method that count all distinct user in the data set.
-	 * 
-	 * @return The number of distinct users.
-	 */
-	public int getNumberOfUsers() {
-		return (int) eventsData.map(tvEvent -> tvEvent.getUserID()).distinct()
-				.count();
-	}
-
-	/**
-	 * Method that count all distinct items in the data set.
-	 * 
-	 * @return The number of distinct items.
-	 */
-	public int getNumberOfItems() {
-		return (int) eventsData.map(tvEvent -> tvEvent.getProgramId())
-				.distinct().count();
-	}
-
-	/**
 	 * Method that count all the events in the data set. (Events are assumed to
 	 * be distinct).
 	 */
@@ -236,7 +221,7 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 	 *         to this data set.
 	 */
 	public DistributedUserItemMatrix convertToDistUserItemMatrix() {
-		final int numberOfTvShows = getNumberOfItems();
+		final int numberOfTvShows = (int) getNumberOfTvShows();
 		JavaRDD<IndexedRow> ratingMatrix = eventsData
 				.mapToPair(
 						event -> new Tuple2<Integer, RecsysTVEvent>(
@@ -258,6 +243,31 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 						sparseRowRepresenation._1(), Vectors.sparse(
 								numberOfTvShows, sparseRowRepresenation._2())));
 		return new DistributedUserItemMatrix(ratingMatrix);
+	}
+	
+	@Override
+	public LocalUserItemMatrix convertToLocalUserItemMatrix() {
+		final int numberOfUsers = (int)getNumberOfUsers();
+		final int numberOfTvShows = (int)getNumberOfTvShows();
+		List<Tuple2<Integer, Integer>> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new Tuple2<Integer, Integer>(broadcastedIdMap.getValue().getProgramIDtoIDMap().get(tvEvent.getProgramId()), broadcastedIdMap.getValue().getUserIDToIdMap().get(tvEvent.getUserID()))).distinct().collect();
+		Map<Integer, List<Integer>> userIdsByTvShows = tvShowIdUserIdEvent.stream().collect(Collectors.groupingBy(e -> e._1(), Collectors.mapping(e -> e._2(), Collectors.toList())));
+		int[] colPtrs = new int[numberOfTvShows+1];
+		int currentColPtrsValue = 0;
+		colPtrs[0] = currentColPtrsValue;
+		int[] rowIndices = new int[tvShowIdUserIdEvent.size()];
+		int currentRowIndex = 0;
+		for(int tvShowIndex = 0; tvShowIndex < numberOfTvShows; tvShowIndex++){
+			List<Integer> userIds = userIdsByTvShows.get(tvShowIndex);
+			colPtrs[tvShowIndex + 1] = currentColPtrsValue + userIds.size();
+			currentColPtrsValue += userIds.size();
+			for(Integer userId : userIds){
+				rowIndices[currentRowIndex] = userId;
+				currentRowIndex++;
+			}
+		}
+		double[] values = new double[tvShowIdUserIdEvent.size()];
+		Arrays.fill(values, 1.0d);
+		return new LocalUserItemMatrix(numberOfUsers, numberOfTvShows, colPtrs, rowIndices, values);
 	}
 
 	/**

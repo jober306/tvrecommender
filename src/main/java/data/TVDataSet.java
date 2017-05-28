@@ -3,8 +3,11 @@ package data;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.function.Supplier;
 
 import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
+import util.Lazy;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -24,7 +27,13 @@ import data.feature.FeatureExtractor;
  *            this class.
  */
 public abstract class TVDataSet<T extends TVEvent> implements Serializable {
-
+	
+	/**
+	 * Method to load lazily load attributes. See the lazy interface for more information.
+	 */
+    static <U> Supplier<U> lazily(Lazy<U> lazy) { return lazy; }
+	static <G> Supplier<G> value(G value) { return ()->value; }
+	
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -36,10 +45,19 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * The java spark context used to load the tv events.
 	 */
 	transient protected JavaSparkContext sc;
-
+	
+	
+	/**
+	 * Attributes that hold the number of users and tv shows. They are lazy initialized
+	 * when the getters are called because spark needs to do a collect on the whole data set which
+	 * can be long.
+	 */
+	transient Supplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
+	transient Supplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
+	
 	/**
 	 * Abstract constructor that initialize the tv events data and the spark
-	 * context.
+	 * context. It will call the initialize method.
 	 * 
 	 * @param eventsData
 	 * @param sc
@@ -49,7 +67,7 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 		this.sc = sc;
 		initialize();
 	}
-
+	
 	abstract protected void initialize();
 
 	/**
@@ -80,6 +98,8 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	abstract public JavaRDD<Rating> convertToMLlibRatings();
 
 	abstract public DistributedUserItemMatrix convertToDistUserItemMatrix();
+	
+	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
 
 	abstract public IndexedRowMatrix getContentMatrix(
 			FeatureExtractor<?, T> extractor);
@@ -147,9 +167,21 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 				.collect();
 	}
 
-	abstract public int getNumberOfUsers();
+	private int initNumberOfUsers(){
+		return (int)eventsData.map(tvEvent -> tvEvent.getUserID()).distinct().count();
+	}
 
-	abstract public int getNumberOfItems();
+	private int initNumberOfTVShows(){
+		return (int)eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().count();
+	}
+	
+	public int getNumberOfUsers(){
+		return numberOfUsers.get();
+	}
+	
+	public int getNumberOfTvShows(){
+		return numberOfTvShows.get();
+	}
 
 	abstract public List<Integer> getProgramIndexesSeenByUser(int userIndex);
 

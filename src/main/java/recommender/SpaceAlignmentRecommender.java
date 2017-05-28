@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import model.DistributedUserItemMatrix;
+import model.UserItemMatrix;
 
 import org.apache.spark.mllib.linalg.DenseMatrix;
 import org.apache.spark.mllib.linalg.Matrices;
@@ -56,7 +57,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	/**
 	 * The user item (or rating) matrix that represents the tv data set.
 	 */
-	public DistributedUserItemMatrix R;
+	UserItemMatrix R;
 
 	/**
 	 * The already seen item contents matrix. Suppose each item is represented
@@ -87,7 +88,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	/**
 	 * This matrix of size d x d represents the model to map a new item content
 	 * and an ancient item content to their similarity in the collaborative
-	 * filtering sense. It is calculated once the class is created.
+	 * filtering space.
 	 */
 	Matrix Mprime;
 
@@ -133,10 +134,51 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	public void train() {
-		this.R = trainingSet.convertToDistUserItemMatrix();
+		this.R = trainingSet.convertToLocalUserItemMatrix();
 		this.C = trainingSet.getContentMatrix(extractor);
 		this.localC = toDenseLocalVectors(C);
 		calculateMprime();
+	}
+	
+	/**
+	 * Method that returns the original (not the mapped one) tv show indexes in
+	 * decreasing order of recommendation score.
+	 * 
+	 * @param userId
+	 *            The user id to which the recommendation will be done.
+	 * @param targetWatchTime
+	 *            The ponctual time at which the recommendation should be done.
+	 *            It means that only the programs occurring at this time will be
+	 *            recommended.
+	 * @param numberOfResults
+	 *            The number of results that will be returned.
+	 * @return The indexes in decreasing order from best of the best tv show.
+	 */
+	public List<Integer> recommend(int userId, LocalDateTime targetWatchTime,
+			int numberOfResults) {
+		List<T> tvPrograms = epg.getListProgramsAtWatchTime(targetWatchTime);
+		return recommendPrograms(userId, numberOfResults, tvPrograms);
+	}
+
+	/**
+	 * Method that returns the original (not the mapped one) tv show indexes in
+	 * decreasing order of recommendation score.
+	 * 
+	 * @param userId
+	 *            The user id to which the recommendation will be done.
+	 * @param targetWatchTime
+	 *            The ponctual time at which the recommendation should be done.
+	 *            It means that only the programs occurring at this time will be
+	 *            recommended.
+	 * @param numberOfResults
+	 *            The number of results that will be returned.
+	 * @return The indexes in decreasing order from best of the best tv show.
+	 */
+	public List<Integer> recommend(int userId, LocalDateTime startTargetTime,
+			LocalDateTime endTargetTime, int numberOfResults) {
+		List<T> tvPrograms = epg.getListProgramsBetweenTimes(startTargetTime,
+				endTargetTime);
+		return recommendPrograms(userId, numberOfResults, tvPrograms);
 	}
 
 	/**
@@ -196,60 +238,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		Double[] similarities = predictAllItemSimilarities(coldStartItemContent);
 		return QuickSelect.selectTopN(similarities, n);
 	}
-
-	private double calculateNeighboursScore(
-			List<Tuple2<Integer, Double>> neighbours) {
-		double score = 0.0d;
-		for (Tuple2<Integer, Double> neighbour : neighbours) {
-			score += neighbour._2();
-		}
-		if (neighbours.size() == 0)
-			return score;
-		return score / (double) neighbours.size();
-	}
-
-	/**
-	 * Method that returns the original (not the mapped one) tv show indexes in
-	 * decreasing order of recommendation score.
-	 * 
-	 * @param userId
-	 *            The user id to which the recommendation will be done.
-	 * @param targetWatchTime
-	 *            The ponctual time at which the recommendation should be done.
-	 *            It means that only the programs occurring at this time will be
-	 *            recommended.
-	 * @param numberOfResults
-	 *            The number of results that will be returned.
-	 * @return The indexes in decreasing order from best of the best tv show.
-	 */
-	public List<Integer> recommend(int userId, LocalDateTime targetWatchTime,
-			int numberOfResults) {
-		epg.getEPG().foreach(program -> System.out.println(program));
-		List<T> tvPrograms = epg.getListProgramsAtWatchTime(targetWatchTime);
-		return recommendPrograms(userId, numberOfResults, tvPrograms);
-	}
-
-	/**
-	 * Method that returns the original (not the mapped one) tv show indexes in
-	 * decreasing order of recommendation score.
-	 * 
-	 * @param userId
-	 *            The user id to which the recommendation will be done.
-	 * @param targetWatchTime
-	 *            The ponctual time at which the recommendation should be done.
-	 *            It means that only the programs occurring at this time will be
-	 *            recommended.
-	 * @param numberOfResults
-	 *            The number of results that will be returned.
-	 * @return The indexes in decreasing order from best of the best tv show.
-	 */
-	public List<Integer> recommend(int userId, LocalDateTime startTargetTime,
-			LocalDateTime endTargetTime, int numberOfResults) {
-		List<T> tvPrograms = epg.getListProgramsBetweenTimes(startTargetTime,
-				endTargetTime);
-		return recommendPrograms(userId, numberOfResults, tvPrograms);
-	}
-
+	
 	private List<Integer> recommendPrograms(int userId, int numberOfResults,
 			List<T> tvProrams) {
 		List<Tuple2<Integer, Vector>> newTvShows = tvProrams
@@ -271,6 +260,18 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		return getFirstArgument(sortedIndexScore);
 	}
 
+
+	private double calculateNeighboursScore(
+			List<Tuple2<Integer, Double>> neighbours) {
+		double score = 0.0d;
+		for (Tuple2<Integer, Double> neighbour : neighbours) {
+			score += neighbour._2();
+		}
+		if (neighbours.size() == 0)
+			return score;
+		return score / (double) neighbours.size();
+	}
+	
 	private double[] predictAllItemSimilarities(Vector coldStartItemContent,
 			int[] itemIndexes) {
 		double[] similarities = new double[itemIndexes.length];
@@ -282,7 +283,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	private Double[] predictAllItemSimilarities(Vector coldStartItemContent) {
-		int numberOfItems = dataSet.getNumberOfItems();
+		int numberOfItems = (int) dataSet.getNumberOfTvShows();
 		Double[] similarities = new Double[numberOfItems];
 		for (int i = 0; i < numberOfItems; i++) {
 			similarities[i] = predictItemsSimilarity(coldStartItemContent, i);

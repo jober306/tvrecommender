@@ -3,11 +3,17 @@ package data.recsys;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -22,7 +28,13 @@ import data.recsys.feature.RecsysFeatureExtractor;
 
 public class RecsysTVDataSetTest {
 
-	final static double[][] expectedUserItemMatrixValues = { { 1, 0 }, { 1, 1 } };
+	final static Map<Integer, double[]> expectedUserItemMatrixValues;
+	static{
+		expectedUserItemMatrixValues = new HashMap<Integer, double[]>();
+		expectedUserItemMatrixValues.put(1, new double[]{1,0});
+		expectedUserItemMatrixValues.put(3, new double[]{1,1});
+		expectedUserItemMatrixValues.put(5, new double[]{0,1});
+	}
 
 	final RecsysTVEvent tvEvent1 = new RecsysTVEvent((short) 1, (short) 2,
 			(byte) 3, (byte) 4, (byte) 81, 1, 202344, 50880093, 5);
@@ -30,6 +42,8 @@ public class RecsysTVDataSetTest {
 			(byte) 1, (byte) 6, (byte) 11, 3, 202344, 51122125, 15);
 	final RecsysTVEvent tvEvent3 = new RecsysTVEvent((short) 6, (short) 33,
 			(byte) 1, (byte) 4, (byte) 30, 3, 5785, 51097405, 25);
+	final RecsysTVEvent tvEvent4 = new RecsysTVEvent((short) 6, (short) 33,
+			(byte) 1, (byte) 4, (byte) 30, 5, 5785, 51097405, 30);
 
 	RecsysTVDataSet dataSet;
 
@@ -39,6 +53,7 @@ public class RecsysTVDataSetTest {
 		events.add(tvEvent1);
 		events.add(tvEvent2);
 		events.add(tvEvent3);
+		events.add(tvEvent4);
 		JavaSparkContext defaultJavaSparkContext = SparkUtilities
 				.getADefaultSparkContext();
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
@@ -71,6 +86,7 @@ public class RecsysTVDataSetTest {
 		assertTrue(dataSet.contains(tvEvent1));
 		assertTrue(dataSet.contains(tvEvent2));
 		assertTrue(dataSet.contains(tvEvent3));
+		assertTrue(dataSet.contains(tvEvent4));
 	}
 
 	@Test
@@ -78,6 +94,7 @@ public class RecsysTVDataSetTest {
 		List<Integer> userIds = dataSet.getAllUserIds();
 		assertTrue(userIds.contains(tvEvent1.getUserID()));
 		assertTrue(userIds.contains(tvEvent2.getUserID()));
+		assertTrue(userIds.contains(tvEvent4.getUserID()));
 	}
 
 	@Test
@@ -97,11 +114,11 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void getNumberOfEntitiesTest() {
 		int numberOfUsers = dataSet.getNumberOfUsers();
-		int numberOfPrograms = dataSet.getNumberOfItems();
+		int numberOfPrograms = dataSet.getNumberOfTvShows();
 		int numberOfEvents = dataSet.getNumberOfEvents();
-		assertTrue(numberOfUsers == 2);
-		assertTrue(numberOfPrograms == 2);
-		assertTrue(numberOfEvents == 3);
+		assertThat(numberOfUsers, is(3));
+		assertThat(numberOfPrograms, is(2));
+		assertThat(numberOfEvents, is(4));
 	}
 
 	@Test
@@ -115,6 +132,8 @@ public class RecsysTVDataSetTest {
 		assertEquals(2, programsSeenByUser3.size());
 		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramId()));
 		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramId()));
+		List<Integer> programsSeenByUser4 = dataSet.getProgramIndexesSeenByUser(5);
+		assertTrue(programsSeenByUser4.contains(tvEvent4.getProgramId()));
 	}
 
 	@Test
@@ -185,7 +204,7 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void convertDataSetToMLlibRatingsTest() {
 		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
-		assertTrue(ratings.count() == 3);
+		assertTrue(ratings.count() == 4);
 		final List<Integer> expectedUserIds = dataSet.getAllUserIds();
 		final List<Integer> expectedProgramIds = dataSet.getAllProgramIds();
 		ratings.foreach(rating -> {
@@ -198,10 +217,24 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void convertToDistributedMatrixTest() {
 		DistributedUserItemMatrix R = dataSet.convertToDistUserItemMatrix();
-		for (int i = 0; i < expectedUserItemMatrixValues.length; i++) {
-			assertArrayEquals(expectedUserItemMatrixValues[i], R.getRow(i)
-					.vector().toArray(), 0.0d);
+		List<Integer> userIds = dataSet.getAllUserIds();
+		for (int userId : userIds) {
+			int mappedId = dataSet.getMappedUserID(userId);
+			assertArrayEquals(expectedUserItemMatrixValues.get(userId), R.getRow(mappedId)
+					.toArray(), 0.0d);
 		}
+	}
+	
+	@Test
+	public void convertToLocalMatrixTest(){
+		LocalUserItemMatrix R = dataSet.convertToLocalUserItemMatrix();
+		List<Integer> userIds = dataSet.getAllUserIds();
+		for (int userId : userIds) {
+			int mappedId = dataSet.getMappedUserID(userId);
+			assertArrayEquals(expectedUserItemMatrixValues.get(userId), R.getRow(mappedId)
+					.toArray(), 0.0d);
+		}
+
 	}
 
 	@Test

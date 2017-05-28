@@ -3,6 +3,7 @@ package data;
 import java.util.List;
 
 import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -64,7 +65,7 @@ public class TVDataSetMock extends TVDataSet<TVEventMock> {
 	}
 
 	@Override
-	public int getNumberOfItems() {
+	public int getNumberOfTvShows() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -83,6 +84,12 @@ public class TVDataSetMock extends TVDataSet<TVEventMock> {
 
 	@Override
 	public JavaRDD<TVEventMock>[] splitTVEventsRandomly(double[] ratios) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public LocalUserItemMatrix convertToLocalUserItemMatrix() {
 		// TODO Auto-generated method stub
 		return null;
 	}

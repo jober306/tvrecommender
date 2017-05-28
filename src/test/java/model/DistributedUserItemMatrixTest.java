@@ -53,8 +53,7 @@ public class DistributedUserItemMatrixTest {
 	@Test
 	public void getRowTest() {
 		for (int row = 0; row < matrixIndices.length; row++) {
-			IndexedRow indexedRow = R.getRow(row);
-			SparseVector sparseVec = indexedRow.vector().toSparse();
+			SparseVector sparseVec = R.getRow(row).toSparse();
 			assertArrayEquals(sparseVec.indices(), matrixIndices[row]);
 			assertArrayEquals(sparseVec.values(), matrixValues[row], 0.0d);
 		}

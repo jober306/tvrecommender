@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
@@ -16,8 +18,13 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
  * @author Jonathan Bergeron
  *
  */
-public class DistributedUserItemMatrix {
+public class DistributedUserItemMatrix extends UserItemMatrix implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -135750142194246162L;
+	
 	/**
 	 * The mllib distributed matrix.
 	 */
@@ -45,7 +52,7 @@ public class DistributedUserItemMatrix {
 	 * @return The value at the specified row index and column index.
 	 */
 	public double getValue(int rowIndex, int columnIndex) {
-		return getRow(rowIndex).vector().toArray()[columnIndex];
+		return getRow(rowIndex).toArray()[columnIndex];
 	}
 
 	/**
@@ -73,11 +80,11 @@ public class DistributedUserItemMatrix {
 	 *            The row index in the matrix from 0 to numRow-1.
 	 * @return The Indexed Row corresponding to rowIndex.
 	 */
-	public IndexedRow getRow(int rowIndex) {
+	public Vector getRow(int rowIndex) {
 		List<IndexedRow> rows = data.rows().toJavaRDD()
 				.filter(indexedRow -> indexedRow.index() == rowIndex).collect();
 		if (rows.size() == 1) {
-			return rows.get(0);
+			return rows.get(0).vector();
 		}
 		return null;
 	}
@@ -90,8 +97,7 @@ public class DistributedUserItemMatrix {
 	 * @return The array of item indexes seen by the user.
 	 */
 	public int[] getItemIndexesSeenByUser(int userIndex) {
-		IndexedRow row = getRow(userIndex);
-		return row.vector().toSparse().indices();
+		return getRow(userIndex).toSparse().indices();
 	}
 
 	/**

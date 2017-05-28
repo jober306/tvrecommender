@@ -7,6 +7,8 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import io.netty.handler.logging.LogLevel;
+
 /**
  * Class that offers some utility method to use spark.
  * @author Jonathan Bergeron
@@ -42,6 +44,8 @@ public class SparkUtilities {
 	 */
 	public static JavaSparkContext getADefaultSparkContext(){
 		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("App with default spark context");
-		return new JavaSparkContext(conf);
+		JavaSparkContext sc = new JavaSparkContext(conf);
+		sc.setLogLevel("WARN");
+		return sc;
 	}
 }

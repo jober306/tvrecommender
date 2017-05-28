@@ -3,6 +3,7 @@ package evaluator;
 import static util.TVDataSetUtilities.filterByDateTime;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,14 +98,15 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 		this.measures = measures;
 		this.evaluationResults = new HashMap<EvaluationMeasure, Double>();
 		this.recommender = recommender;
-		buildTestSet(testStartTime, testEndTime);
+		this.testStartTime = testStartTime;
+		this.testEndTime = testEndTime;
+		this.testSet = buildTestSet();
 	}
 
-	private void buildTestSet(LocalDateTime testStartTime,
-			LocalDateTime testEndTime) {
+	private TVDataSet<U> buildTestSet() {
 		JavaRDD<U> eventsOccuringDuringTestTime = filterByDateTime(
 				tvDataSet.getEventsData(), testStartTime, testEndTime);
-		this.testSet = tvDataSet.newInstance(eventsOccuringDuringTestTime,
+		return tvDataSet.newInstance(eventsOccuringDuringTestTime,
 				tvDataSet.getJavaSparkContext());
 	}
 
@@ -148,13 +150,19 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 	}
 
 	private double calculateMeanAveragePrecision(int numberOfResults) {
-		List<Integer> userdIds = recommender.getTrainingSet().getAllUserIds();
+		List<Integer> userIds = recommender.getTrainingSet().getAllUserIds();
 		IntHolder numberOfActiveUser = new IntHolder();
 		double meanAveragePrecision = 0.0d;
-		for (int userId : userdIds) {
+		System.out.println("Number of users to evaluate: " + userIds.size());
+		for (int userId : userIds) {
+			System.out.print("Evaluating user " + userId + "...");
+			Date currentDate = new Date();
 			meanAveragePrecision += calculateAveragePrecisionForUser(
 					numberOfResults, meanAveragePrecision, numberOfActiveUser,
 					userId);
+			Date doneDate = new Date();
+			System.out.println("Done!");
+			System.out.println("It took: " + (currentDate.getTime() - doneDate.getTime()));
 		}
 		return meanAveragePrecision /= numberOfActiveUser.value;
 	}
