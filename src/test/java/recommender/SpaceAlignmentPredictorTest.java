@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import recommender.SpaceAlignmentRecommender;
 import scala.Tuple2;
+import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -35,10 +36,9 @@ public class SpaceAlignmentPredictorTest {
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
+		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		RecsysBooleanFeatureExtractor featureExtractor = new RecsysBooleanFeatureExtractor(data._1());
-		predictor = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(
-				data._1(), data._2(), featureExtractor, r,
-				neighbourhoodSize);
+		predictor = new SpaceAlignmentRecommender<>(context, featureExtractor, r, neighbourhoodSize);
 		predictor.train();
 	}
 

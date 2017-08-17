@@ -1,5 +1,7 @@
 package data.recsys;
 
+import static util.MllibUtilities.sparseMatrixFormatToCSCMatrixFormat;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -20,9 +22,12 @@ import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.apache.spark.mllib.recommendation.Rating;
 
 import scala.Tuple2;
+import scala.Tuple3;
+import scala.Tuple5;
 import util.SparkUtilities;
 import data.TVDataSet;
 import data.feature.FeatureExtractor;
@@ -249,25 +254,9 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 	public LocalUserItemMatrix convertToLocalUserItemMatrix() {
 		final int numberOfUsers = (int)getNumberOfUsers();
 		final int numberOfTvShows = (int)getNumberOfTvShows();
-		List<Tuple2<Integer, Integer>> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new Tuple2<Integer, Integer>(broadcastedIdMap.getValue().getProgramIDtoIDMap().get(tvEvent.getProgramId()), broadcastedIdMap.getValue().getUserIDToIdMap().get(tvEvent.getUserID()))).distinct().collect();
-		Map<Integer, List<Integer>> userIdsByTvShows = tvShowIdUserIdEvent.stream().collect(Collectors.groupingBy(e -> e._1(), Collectors.mapping(e -> e._2(), Collectors.toList())));
-		int[] colPtrs = new int[numberOfTvShows+1];
-		int currentColPtrsValue = 0;
-		colPtrs[0] = currentColPtrsValue;
-		int[] rowIndices = new int[tvShowIdUserIdEvent.size()];
-		int currentRowIndex = 0;
-		for(int tvShowIndex = 0; tvShowIndex < numberOfTvShows; tvShowIndex++){
-			List<Integer> userIds = userIdsByTvShows.get(tvShowIndex);
-			colPtrs[tvShowIndex + 1] = currentColPtrsValue + userIds.size();
-			currentColPtrsValue += userIds.size();
-			for(Integer userId : userIds){
-				rowIndices[currentRowIndex] = userId;
-				currentRowIndex++;
-			}
-		}
-		double[] values = new double[tvShowIdUserIdEvent.size()];
-		Arrays.fill(values, 1.0d);
-		return new LocalUserItemMatrix(numberOfUsers, numberOfTvShows, colPtrs, rowIndices, values);
+		List<MatrixEntry> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new MatrixEntry(broadcastedIdMap.getValue().getUserIDToIdMap().get(tvEvent.getUserID()), broadcastedIdMap.getValue().getProgramIDtoIDMap().get(tvEvent.getProgramId()), 1.0d)).distinct().collect();
+		Tuple3<int[], int[], double[]> matrixData = sparseMatrixFormatToCSCMatrixFormat(numberOfTvShows, tvShowIdUserIdEvent);
+		return new LocalUserItemMatrix(numberOfUsers, numberOfTvShows, matrixData._1(), matrixData._2(), matrixData._3());
 	}
 
 	/**

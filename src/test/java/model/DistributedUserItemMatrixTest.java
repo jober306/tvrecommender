@@ -5,25 +5,22 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import model.DistributedUserItemMatrix;
+import model.similarity.NormalizedCosineSimilarity;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vectors;
-import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
-import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import scala.Tuple2;
 import util.SparkUtilities;
 
 public class DistributedUserItemMatrixTest {
@@ -32,22 +29,32 @@ public class DistributedUserItemMatrixTest {
 			{ 1, 2, 3 } };
 	private static final double[][] matrixValues = {
 			{ 1.0d, 2.0d, 5.0d, 2.0d, 1.0d }, {}, { 3.0d, 2.0d, 4.0d } };
+	private static final double[][] smallMatrixValues = {{1,1}, {0,2}, {2,1}};
+	private static final double expectedSim = (double)3 / (Math.sqrt(5) * Math.sqrt(6));
+	private static final double[][] expectedSimilarities = {{1,expectedSim},{expectedSim,1}};
 	private static final int matrixNumberOfColumn = 10;
 
 	static DistributedUserItemMatrix R;
+	static DistributedUserItemMatrix smallR;
 	static JavaRDD<IndexedRow> rows;
+	static JavaRDD<IndexedRow> smallRows;
 	static JavaSparkContext sc;
 
 	@BeforeClass
 	public static void setUp() {
 		sc = SparkUtilities.getADefaultSparkContext();
 		List<IndexedRow> rowList = new ArrayList<IndexedRow>();
+		List<IndexedRow> smallRowList = new ArrayList<IndexedRow>();
 		for (int i = 0; i < matrixIndices.length; i++) {
 			rowList.add(new IndexedRow(i, Vectors.sparse(matrixNumberOfColumn,
 					matrixIndices[i], matrixValues[i])));
+			smallRowList.add(new IndexedRow(i, Vectors.dense(smallMatrixValues[i])));
 		}
-		rows = SparkUtilities.<IndexedRow> elementsToJavaRDD(rowList, sc);
+		rows = SparkUtilities.elementsToJavaRDD(rowList, sc);
+		smallRows = SparkUtilities.elementsToJavaRDD(smallRowList, sc);
 		R = new DistributedUserItemMatrix(rows);
+		smallR = new DistributedUserItemMatrix(smallRows);
+		
 	}
 
 	@Test
@@ -86,13 +93,16 @@ public class DistributedUserItemMatrixTest {
 
 	@Test
 	public void getItemSimilaritiesTest() {
-		CoordinateMatrix S = R.getItemSimilarities();
-		List<MatrixEntry> entries = S.entries().toJavaRDD().collect();
-		Set<Tuple2<Long, Long>> entriesSet = new HashSet<Tuple2<Long, Long>>();
-		for (MatrixEntry entry : entries) {
-			entriesSet.add(new Tuple2<Long, Long>(entry.i(), entry.j()));
+		Matrix S = smallR.getItemSimilarities(NormalizedCosineSimilarity.getInstance());
+		int expectedNumRows = 2;
+		int expectedNumCols = 2;
+		assertEquals(expectedNumRows, S.numRows());
+		assertEquals(expectedNumCols, S.numCols());
+		for(int row = 0; row < expectedNumRows; row++){
+			for(int col = 0; col < expectedNumCols; col++){
+				assertEquals(expectedSimilarities[row][col], S.apply(row, col),0.001);
+			}
 		}
-		assertEquals(entriesSet.size(), entries.size());
 	}
 
 	@AfterClass

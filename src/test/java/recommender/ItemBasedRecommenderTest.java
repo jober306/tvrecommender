@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import recommender.ItemBasedRecommender;
 import scala.Tuple2;
+import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -26,8 +27,8 @@ public class ItemBasedRecommenderTest {
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
-		recommender = new ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent>(
-				data._1(), data._2());
+		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
+		recommender = new ItemBasedRecommender<>(context);
 		recommender.train();
 	}
 

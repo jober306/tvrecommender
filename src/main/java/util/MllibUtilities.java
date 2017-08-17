@@ -1,7 +1,9 @@
 package util;
 
 import static java.lang.Math.toIntExact;
-import static util.ListUtilities.getSecondArgument;
+import static util.ListUtilities.getSecondArgumentAsList;
+import static util.ListUtilities.getFirstArgumentAsArray;
+import static util.ListUtilities.getSecondArgumentAsArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,23 +11,31 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.mapreduce.lib.map.TokenCounterMapper;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.DenseMatrix;
+import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.mllib.linalg.SparseMatrix;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import scala.Tuple5;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix
@@ -35,7 +45,25 @@ import scala.Tuple3;
  *
  */
 public class MllibUtilities {
-
+	
+	/**
+	 * Method that returns the euclidean norm of the given vector.
+	 * @param v A vector in dense representation.
+	 * @return The eucledean norm of the vector v.
+	 */
+	public static double calculateL2Norm(DenseVector v){
+		return Math.sqrt(Arrays.stream(v.values()).map(value -> value * value).sum());
+	}
+	
+	/**
+	 * Method that returns the euclidean norm of the given vector.
+	 * @param v A vector in sparse representation.
+	 * @return The eucledean norm of the vector v.
+	 */
+	public static double calculateL2Norm(SparseVector v){
+		return Math.sqrt(Arrays.stream(v.values()).map(value -> value * value).sum());
+	}
+	
 	/**
 	 * Method that transposes the given matrix.
 	 * 
@@ -257,7 +285,7 @@ public class MllibUtilities {
 	 *            The matrix in distributed form.
 	 * @return The matrix in sparse local form.
 	 */
-	public static Matrix toSparseLocalMatrix(IndexedRowMatrix mat) {
+	public static SparseMatrix toSparseLocalMatrix(IndexedRowMatrix mat) {
 		ArrayList<Tuple3<Integer, Integer, Double>> triplets = new ArrayList<Tuple3<Integer, Integer, Double>>();
 		triplets.addAll(mat.rows().toJavaRDD()
 				.flatMap(row -> mapRowToSparseTriplets(row)).collect());
@@ -273,7 +301,7 @@ public class MllibUtilities {
 		int numRow = toIntExact(mat.numRows());
 		int numCol = toIntExact(mat.numCols());
 		int[] colPtrs = getColPtrsFromColIndices(colIndices, numCol);
-		return Matrices.sparse(numRow, numCol, colPtrs, rowIndices, values);
+		return (SparseMatrix) Matrices.sparse(numRow, numCol, colPtrs, rowIndices, values);
 	}
 
 	/**
@@ -283,7 +311,7 @@ public class MllibUtilities {
 	 *            The matrix in distributed form.
 	 * @return The matrix in dense local form.
 	 */
-	public static Matrix toDenseLocalMatrix(IndexedRowMatrix mat) {
+	public static DenseMatrix toDenseLocalMatrix(IndexedRowMatrix mat) {
 		int numRow = toIntExact(mat.numRows());
 		int numCol = toIntExact(mat.numCols());
 		double[] denseData = new double[numRow * numCol];
@@ -294,7 +322,7 @@ public class MllibUtilities {
 			double[] colValues = col.vector().toArray();
 			System.arraycopy(colValues, 0, denseData, destPos, colValues.length);
 		}
-		return Matrices.dense(numRow, numCol, denseData);
+		return (DenseMatrix)Matrices.dense(numRow, numCol, denseData);
 	}
 
 	/**
@@ -308,7 +336,7 @@ public class MllibUtilities {
 	 *         list.
 	 */
 	public static List<Vector> toDenseLocalVectors(IndexedRowMatrix mat) {
-		return getSecondArgument(mat
+		return getSecondArgumentAsList(mat
 				.rows()
 				.toJavaRDD()
 				.mapToPair(
@@ -452,6 +480,41 @@ public class MllibUtilities {
 		}
 		return contain;
 	}
+	
+	/**
+	 * Method that converts the data of a sparse matrix (i.e. the non-zero entries) into the Compressed Sparse Column (CSC) Format.
+	 * @param numRows The number of row of the matrix.
+	 * @param numCols The number of column of the matrix.
+	 * @param entries The non-zero entries of the matrix.
+	 * @return The information needed to create a matrix in CSC representation.
+	 */
+	public static Tuple3<int[], int[], double[]> sparseMatrixFormatToCSCMatrixFormat(int numCols, List<MatrixEntry> entries){
+		//Transform the entries into a map containing the tv show id as key and the list of user ids that watched the tv show (and their associated value) as values. 
+		Map<Integer, List<Tuple2<Integer, Double>>> userIdsByTvShows = entries.stream().collect(Collectors.groupingBy(entry -> (int)entry.j(), Collectors.mapping(entry -> new Tuple2<Integer, Double>((int)entry.i(), entry.value()), Collectors.toList())));
+		int[] colPtrs = initColPtrs(numCols);
+		int[] rowIndices = new int[entries.size()];
+		double[] values = new double[entries.size()];
+		int currentColPtrsValue = 0;
+		int currentIndex = 0;
+		for(int tvShowIndex = 0; tvShowIndex < numCols; tvShowIndex++){
+			List<Tuple2<Integer, Double>> userIdsValues = userIdsByTvShows.get(tvShowIndex);
+			userIdsValues.sort((tuple1, tuple2) -> tuple1._1() - tuple2._1());
+			colPtrs[tvShowIndex + 1] = currentColPtrsValue + userIdsValues.size();
+			currentColPtrsValue += userIdsValues.size();
+			for(Tuple2<Integer, Double> userIdValue : userIdsValues){
+				rowIndices[currentIndex] = userIdValue._1();
+				values[currentIndex] = userIdValue._2();
+				currentIndex++;
+			}
+		}
+		return new Tuple3<int[], int[], double[]>(colPtrs, rowIndices, values);
+	}
+	
+	private static int[] initColPtrs(int numCols){
+		int[] colPtrs = new int[numCols+1];
+		colPtrs[0] = 0;
+		return colPtrs;
+	}
 
 	public static void printIndexedRowMatrix(IndexedRowMatrix mat) {
 		mat.rows()
@@ -460,6 +523,19 @@ public class MllibUtilities {
 						row -> System.out.println("( " + row.index() + ", "
 								+ Arrays.toString(row.vector().toArray())
 								+ " )"));
+	}
+	
+	public static void printCoordinateMatrix(CoordinateMatrix mat){
+		printIndexedRowMatrix(mat.toIndexedRowMatrix());
+	}
+	
+	public static void printMatrix(Matrix mat){
+		for(int row = 0; row < mat.numRows(); row++){
+			for(int col = 0; col < mat.numCols(); col++){
+				System.out.print(mat.apply(row, col) + " ");
+			}
+			System.out.println();
+		}
 	}
 
 	private static void sortTripletsByColumn(

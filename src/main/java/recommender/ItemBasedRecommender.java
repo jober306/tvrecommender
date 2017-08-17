@@ -1,25 +1,18 @@
 package recommender;
 
-import static java.lang.Math.toIntExact;
-import static util.ListUtilities.getFirstArgument;
-import static util.ListUtilities.getSecondArgument;
-
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import model.DistributedUserItemMatrix;
+import model.UserItemMatrix;
+import model.similarity.NormalizedCosineSimilarity;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
+import org.apache.spark.mllib.linalg.Matrix;
 
 import scala.Tuple2;
 import algorithm.QuickSelect;
-
-import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Ints;
-
+import data.Context;
 import data.EPG;
 import data.TVDataSet;
 import data.TVEvent;
@@ -48,13 +41,13 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	/**
 	 * The user item matrix.
 	 */
-	public DistributedUserItemMatrix R;
+	UserItemMatrix R;
 
 	/**
 	 * The item similarities matrix. It is a symetric matrix represented only by
 	 * an upper triangular matrix.
 	 */
-	CoordinateMatrix S;
+	Matrix S;
 
 	/**
 	 * Constructor of the class that need a rating matrix to create the item
@@ -63,20 +56,8 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(EPG<T> epg, TVDataSet<U> dataSet) {
-		super(epg, dataSet);
-	}
-
-	/**
-	 * Constructor of the class that need a rating matrix to create the item
-	 * similarities matrix.
-	 * 
-	 * @param R
-	 *            The user item matrix.
-	 */
-	public ItemBasedRecommender(EPG<T> epg, TVDataSet<U> dataSet,
-			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime) {
-		super(epg, dataSet, trainingStartTime, trainingEndTime);
+	public ItemBasedRecommender(Context<T, U> context) {
+		super(context);
 	}
 
 	/**
@@ -84,8 +65,8 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	 * set.
 	 */
 	public void train() {
-		this.R = trainingSet.convertToDistUserItemMatrix();
-		this.S = R.getItemSimilarities();
+		this.R = context.getTrainingSet().convertToDistUserItemMatrix();
+		this.S = R.getItemSimilarities(NormalizedCosineSimilarity.getInstance());
 	}
 
 	/**
@@ -101,25 +82,11 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	 */
 	public List<Tuple2<Integer, Double>> predictItemNeighbourhood(
 			int itemIndex, int n) {
-		List<Tuple2<Integer, Double>> indicesAndSimilarities = S
-				.entries()
-				.toJavaRDD()
-				.filter(matrixEntry -> {
-					long rowIndex = matrixEntry.i();
-					long colIndex = matrixEntry.j();
-					if (rowIndex != colIndex && rowIndex == itemIndex) {
-						return true;
-					} else {
-						return false;
-					}
-				})
-				.map(matrixEntry -> new Tuple2<Integer, Double>(
-						toIntExact(matrixEntry.j()), matrixEntry.value()))
-				.collect();
-		int[] indices = Ints.toArray(getFirstArgument(indicesAndSimilarities));
-		double[] values = Doubles
-				.toArray(getSecondArgument(indicesAndSimilarities));
-		return QuickSelect.selectTopN(indices, values, n);
+		Double[] values = new Double[S.numRows()];
+		for(int row = 0; row < S.numRows(); row++){
+			values[row] = S.apply(row, itemIndex);
+		}
+		return QuickSelect.selectTopN(values, n);
 	}
 
 	/**
@@ -149,21 +116,15 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 				Math.min(itemsNeighbourhoodForUser.size(), n));
 	}
 
-	/**
-	 * TODO: to be implemented
-	 */
 	@Override
-	public List<Integer> recommend(int userId, LocalDateTime time,
-			int numberOfResults) {
+	protected List<Integer> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/**
-	 * TODO: to be implemented
-	 */
 	@Override
-	public List<Integer> recommend(int userId, LocalDateTime startTargetTime,
-			LocalDateTime endTargetTime, int numberOfResults) {
+	protected List<Integer> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

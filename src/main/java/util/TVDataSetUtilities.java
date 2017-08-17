@@ -1,5 +1,6 @@
 package util;
 
+import static util.TVDataSetUtilities.filterByDateTime;
 import static util.TimeUtilities.isDateTimeBetween;
 import static util.TimeUtilities.isTimeBetween;
 
@@ -8,6 +9,7 @@ import java.time.LocalTime;
 
 import org.apache.spark.api.java.JavaRDD;
 
+import data.TVDataSet;
 import data.TVEvent;
 
 /**
@@ -68,5 +70,16 @@ public class TVDataSetUtilities {
 			JavaRDD<T> events, LocalTime startTime, LocalTime endTime) {
 		return events.filter(tvEvent -> isTimeBetween(startTime, endTime,
 				tvEvent.getWatchTime().toLocalTime()));
+	}
+	
+	/**
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 */
+	public static <T extends TVEvent> TVDataSet<T> createSubDataSet(TVDataSet<T> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
+		return dataSet.newInstance(
+				filterByDateTime(dataSet.getEventsData(), startTime, endTime),
+				dataSet.getJavaSparkContext());
 	}
 }

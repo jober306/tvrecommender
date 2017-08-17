@@ -23,6 +23,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import scala.Tuple3;
+import scala.Tuple5;
+
 public class MllibUtilitiesTest {
 
 	private static final double[][] matrixValues = {
@@ -182,6 +185,29 @@ public class MllibUtilitiesTest {
 							assertArrayEquals(expectedValues[rowIndex], row
 									.vector().toArray(), 0.0d);
 						});
+	}
+	
+	@Test
+	public void sparseMatrixFormatToCSCMatrixFormatTest(){
+		Integer numRows = 4;
+		Integer numCols = 3;
+		List<MatrixEntry> entries = createMatrixEntries();
+		int[] expectedColPtrs = new int[]{0,1,2,4};
+		int[] expectedRowIndices = new int[]{1,0,1,2};
+		double[] expectedValues = new double[]{3.0d, 2.0d, 4.0d, 1.0d};
+		Tuple3<int[], int[], double[]> result = MllibUtilities.sparseMatrixFormatToCSCMatrixFormat(numCols, entries);
+		assertArrayEquals(expectedColPtrs, result._1());
+		assertArrayEquals(expectedRowIndices, result._2());
+		assertArrayEquals(expectedValues, result._3(), 0.0d);
+	}
+	
+	private List<MatrixEntry> createMatrixEntries(){
+		List<MatrixEntry> entries = new ArrayList<MatrixEntry>();
+		entries.add(new MatrixEntry(0, 1, 2.0d));
+		entries.add(new MatrixEntry(1, 0, 3.0d));
+		entries.add(new MatrixEntry(1, 2, 4.0d));
+		entries.add(new MatrixEntry(2, 2, 1.0d));
+		return entries;
 	}
 
 	@Test

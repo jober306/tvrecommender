@@ -1,8 +1,7 @@
 package recommender;
 
 import static java.lang.Math.toIntExact;
-import static util.ListUtilities.getFirstArgument;
-import static util.MllibUtilities.getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix;
+import static util.ListUtilities.getFirstArgumentAsList;
 import static util.MllibUtilities.multiplicateByLeftDiagonalMatrix;
 import static util.MllibUtilities.multiplicateByRightDiagonalMatrix;
 import static util.MllibUtilities.multiplyMatrixByRightDiagonalMatrix;
@@ -11,12 +10,11 @@ import static util.MllibUtilities.toDenseLocalMatrix;
 import static util.MllibUtilities.toDenseLocalVectors;
 import static util.MllibUtilities.transpose;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import model.DistributedUserItemMatrix;
 import model.UserItemMatrix;
+import model.similarity.NormalizedCosineSimilarity;
 
 import org.apache.spark.mllib.linalg.DenseMatrix;
 import org.apache.spark.mllib.linalg.Matrices;
@@ -28,8 +26,7 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import scala.Tuple2;
 import algorithm.QuickSelect;
-import data.EPG;
-import data.TVDataSet;
+import data.Context;
 import data.TVEvent;
 import data.TVProgram;
 import data.feature.FeatureExtractor;
@@ -43,7 +40,7 @@ import data.feature.FeatureExtractor;
  * recommendation.
  * 
  * @author Jonathan Bergeron
- *
+ *ofgjgfjok
  */
 public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		extends TVRecommender<T, U> {
@@ -104,81 +101,19 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentRecommender(EPG<T> epg, TVDataSet<U> tvDataSet,
+	public SpaceAlignmentRecommender(Context<T, U> context,
 			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize) {
-		super(epg, tvDataSet);
-		this.extractor = extractor;
-		this.r = r;
-		this.neighbourhoodSize = neighbourhoddSize;
-	}
-
-	/**
-	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates
-	 * the matrix Mprime with the ratings matrix and the corresponding content
-	 * matrix and also takes into account the parameter r.
-	 * 
-	 * @param R
-	 *            The rating matrix.
-	 * @param r
-	 *            The maximum rank the matrix Mprime can have.
-	 * @param C
-	 *            The content matrix of all the items.
-	 */
-	public SpaceAlignmentRecommender(EPG<T> epg, TVDataSet<U> tvDataSet,
-			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime,
-			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize) {
-		super(epg, tvDataSet, trainingStartTime, trainingEndTime);
+		super(context);
 		this.extractor = extractor;
 		this.r = r;
 		this.neighbourhoodSize = neighbourhoddSize;
 	}
 
 	public void train() {
-		this.R = trainingSet.convertToLocalUserItemMatrix();
-		this.C = trainingSet.getContentMatrix(extractor);
+		this.R = context.getTrainingSet().convertToLocalUserItemMatrix();
+		this.C = context.getTrainingSet().getContentMatrix(extractor);
 		this.localC = toDenseLocalVectors(C);
 		calculateMprime();
-	}
-	
-	/**
-	 * Method that returns the original (not the mapped one) tv show indexes in
-	 * decreasing order of recommendation score.
-	 * 
-	 * @param userId
-	 *            The user id to which the recommendation will be done.
-	 * @param targetWatchTime
-	 *            The ponctual time at which the recommendation should be done.
-	 *            It means that only the programs occurring at this time will be
-	 *            recommended.
-	 * @param numberOfResults
-	 *            The number of results that will be returned.
-	 * @return The indexes in decreasing order from best of the best tv show.
-	 */
-	public List<Integer> recommend(int userId, LocalDateTime targetWatchTime,
-			int numberOfResults) {
-		List<T> tvPrograms = epg.getListProgramsAtWatchTime(targetWatchTime);
-		return recommendPrograms(userId, numberOfResults, tvPrograms);
-	}
-
-	/**
-	 * Method that returns the original (not the mapped one) tv show indexes in
-	 * decreasing order of recommendation score.
-	 * 
-	 * @param userId
-	 *            The user id to which the recommendation will be done.
-	 * @param targetWatchTime
-	 *            The ponctual time at which the recommendation should be done.
-	 *            It means that only the programs occurring at this time will be
-	 *            recommended.
-	 * @param numberOfResults
-	 *            The number of results that will be returned.
-	 * @return The indexes in decreasing order from best of the best tv show.
-	 */
-	public List<Integer> recommend(int userId, LocalDateTime startTargetTime,
-			LocalDateTime endTargetTime, int numberOfResults) {
-		List<T> tvPrograms = epg.getListProgramsBetweenTimes(startTargetTime,
-				endTargetTime);
-		return recommendPrograms(userId, numberOfResults, tvPrograms);
 	}
 
 	/**
@@ -239,25 +174,40 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		return QuickSelect.selectTopN(similarities, n);
 	}
 	
-	private List<Integer> recommendPrograms(int userId, int numberOfResults,
+	@Override
+	protected List<Integer> recommendNormally(int userId, int numberOfResults,
 			List<T> tvProrams) {
+		System.out.println("Extracting features from program...");
 		List<Tuple2<Integer, Vector>> newTvShows = tvProrams
 				.stream()
 				.map(program -> new Tuple2<Integer, Vector>(program
 						.getProgramId(), extractor
 						.extractFeaturesFromProgram(program)))
 				.collect(Collectors.toList());
+		System.out.print("Done");
 		double[] neighboursScores = new double[newTvShows.size()];
 		int[] tvShowIndexes = new int[newTvShows.size()];
 		for (int i = 0; i < newTvShows.size(); i++) {
+			System.out.println("Finding neighbourhood for item " + i + "...");
 			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(
 					newTvShows.get(i)._2(), userId, neighbourhoodSize);
+			System.out.print("Done");
+			System.out.println("Calculating neigbourhood score for item " + i + "...");
 			neighboursScores[i] = calculateNeighboursScore(neighbours);
 			tvShowIndexes[i] = newTvShows.get(i)._1();
+			System.out.print("Done");
 		}
+		System.out.println("Sorting results...");
 		List<Tuple2<Integer, Double>> sortedIndexScore = QuickSelect
 				.selectTopN(tvShowIndexes, neighboursScores, numberOfResults);
-		return getFirstArgument(sortedIndexScore);
+		System.out.print("Done");
+		return getFirstArgumentAsList(sortedIndexScore);
+	}
+	
+	@Override
+	protected List<Integer> recommendForTesting(int userId, int numberOfResults,
+			List<T> tvProrams) {
+		return recommendNormally(userId, numberOfResults, tvProrams);
 	}
 
 
@@ -283,7 +233,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	private Double[] predictAllItemSimilarities(Vector coldStartItemContent) {
-		int numberOfItems = (int) dataSet.getNumberOfTvShows();
+		int numberOfItems = (int) context.getEvents().getNumberOfTvShows();
 		Double[] similarities = new Double[numberOfItems];
 		for (int i = 0; i < numberOfItems; i++) {
 			similarities[i] = predictItemsSimilarity(coldStartItemContent, i);
@@ -296,8 +246,6 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 				.computeSVD(toIntExact(C.numCols()), true, 0.0d);
 		IndexedRowMatrix U = Csvd.U();
 		Matrix V = Csvd.V();
-		IndexedRowMatrix S = getFullySpecifiedSparseIndexRowMatrixFromCoordinateMatrix(
-				R.getItemSimilarities(), dataSet.getJavaSparkContext());
 		Vector sigma = Csvd.s();
 		Vector invertedSigma = invertVector(sigma);
 		IndexedRowMatrix Ut = transpose(U);
@@ -307,8 +255,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 				invertedSigma, Ut);
 		IndexedRowMatrix rightMat = multiplicateByRightDiagonalMatrix(U,
 				Csvd.s());
-		Matrix localRightMat = toDenseLocalMatrix(S
-				.multiply(toDenseLocalMatrix(rightMat)));
+		Matrix localRightMat = R.getItemSimilarities(NormalizedCosineSimilarity.getInstance()).multiply(toDenseLocalMatrix(rightMat));
 		IndexedRowMatrix intermediateMat = leftMat.multiply(localRightMat);
 		// ***************************************************************************************************
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat

@@ -1,11 +1,17 @@
 package model;
 
 import static org.junit.Assert.*;
+
+import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.sql.catalyst.expressions.EqualTo;
+
 import static org.hamcrest.CoreMatchers.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import model.similarity.NormalizedCosineSimilarity;
 
 public class LocalUserItemMatrixTest {
 	
@@ -71,6 +77,20 @@ public class LocalUserItemMatrixTest {
 		int[] actualDenseValues = denseMatrix.getItemIndexesSeenByUser(2);
 		int[] actualSparseValues = sparseMatrix.getItemIndexesSeenByUser(2);
 		assertThat(expectedValues, both(equalTo(actualDenseValues)).and(equalTo(actualSparseValues)));
+	}
+	
+	@Test
+	public void getItemSimilaritiesTest(){
+		LocalUserItemMatrix M = new LocalUserItemMatrix(3, 2, new double[]{1,2,0,0,1,2});
+		double[][] expectedSimilarities = new double[][] {{1, 0.4}, {0.4, 1}};
+		Matrix S = M.getItemSimilarities(NormalizedCosineSimilarity.getInstance());
+		assertThat(2, equalTo(S.numRows()));
+		assertThat(2, equalTo(S.numCols()));
+		for(int row = 0; row < S.numRows(); row++){
+			for(int col = 0; col < S.numCols(); col++){
+				assertEquals(expectedSimilarities[row][col], S.apply(row, col), 0.01);
+			}
+		}
 	}
 	
 	@After

@@ -3,9 +3,19 @@ package model;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
+
+import model.similarity.SimilarityMeasure;
+import scala.Tuple3;
 import scala.collection.Iterator;
+import util.MllibUtilities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.spark.mllib.linalg.Matrices;
 
@@ -72,7 +82,7 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 * @return The number of cols.
 	 */
 	public long getNumCols() {
-		return R.numCols();
+		return (int)R.numCols();
 	}
 	
 	/**
@@ -120,9 +130,49 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 * Wrapper method that return cosine similarity between columns. TODO: It
 	 * may be not necessary to complete the symmetric matrix.
 	 * 
-	 * @return A coordinate matrix containing similarities between columns.
+	 * @param simMeasure The similarity measure used to calculate similarity between items (tv shows).
+	 * 
+	 * @return A sparse matrix containing the similarity between each item.
 	 */
-	public CoordinateMatrix getItemSimilarities() {
-		return null;
+	public Matrix getItemSimilarities(SimilarityMeasure simMeasure) {
+		Map<Integer, Vector> vectors = createColumnVectorMap();
+		List<MatrixEntry> similarities = new ArrayList<MatrixEntry>();
+		for(int row = 0; row < R.numRows()-1; row++){
+			for(int col = row+1; col < R.numCols(); col++){
+				double sim = simMeasure.calculateSimilarity(vectors.get(row), vectors.get(col));
+				if(sim != 0){
+					similarities.add(new MatrixEntry(row, col, sim));
+				}
+			}
+		}
+		/*Adding all the missing values*/
+		List<MatrixEntry> allEntries = similarities.stream().flatMap(
+						entry -> {
+							List<MatrixEntry> entries = new ArrayList<MatrixEntry>();
+							entries.add(entry);
+							if (entry.i() != entry.j()) {
+								entries.add(new MatrixEntry(entry.j(), entry
+										.i(), entry.value()));
+							}
+							return entries.stream();
+						}).collect(Collectors.toList());
+		List<MatrixEntry> diagonalEntries = new ArrayList<MatrixEntry>();
+		for(int col = 0; col < getNumCols(); col++){
+			diagonalEntries.add(new MatrixEntry(col, col, 1.0d));
+		}
+		allEntries.addAll(diagonalEntries);
+		Tuple3<int[], int[], double[]> matrixData = MllibUtilities.sparseMatrixFormatToCSCMatrixFormat((int) getNumCols(), allEntries);
+		return Matrices.sparse((int)getNumCols(), (int)getNumCols(), matrixData._1(), matrixData._2(), matrixData._3());
+	}
+	
+	private Map<Integer, Vector> createColumnVectorMap(){
+		Map<Integer, Vector> vectors = new HashMap<Integer, Vector>();
+		Iterator<Vector> it = R.colIter();
+		int index = 0;
+		while(it.hasNext()){
+			vectors.put(index, it.next());
+			index++;
+		}
+		return vectors;
 	}
 }

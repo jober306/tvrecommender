@@ -1,8 +1,10 @@
 package util;
 
 import static org.junit.Assert.assertTrue;
-import static util.ListUtilities.getFirstArgument;
-import static util.ListUtilities.getSecondArgument;
+import static util.ListUtilities.getFirstArgumentAsList;
+import static util.ListUtilities.getFirstArgumentAsArray;
+import static util.ListUtilities.getSecondArgumentAsList;
+import static util.ListUtilities.getSecondArgumentAsArray;
 import static util.ListUtilities.intersection;
 import static util.ListUtilities.substract;
 import static util.ListUtilities.union;
@@ -39,20 +41,36 @@ public class ListUtilitiesTest {
 
 	@Test
 	public void getFirstArgumentTest() {
-		List<Integer> firstArgs = (List<Integer>) getFirstArgument(tupleList);
+		List<Integer> firstArgs = (List<Integer>) getFirstArgumentAsList(tupleList);
 		for (int i = 0; i < 10; i++) {
 			assertTrue(firstArgs.contains(i));
+		}
+	}
+	
+	@Test
+	public void getFirstArgumentAsArrayTest() {
+		Integer[] firstArgs = getFirstArgumentAsArray(Integer.class, tupleList);
+		for(int i = 0; i < 10; i++){
+			assertTrue(firstArgs[i] == i);
 		}
 	}
 
 	@Test
 	public void getSecondArgumentTest() {
-		List<String> secondArgs = (List<String>) getSecondArgument(tupleList);
+		List<String> secondArgs = (List<String>) getSecondArgumentAsList(tupleList);
 		for (int i = 0; i < 10; i++) {
 			assertTrue(secondArgs.contains(Integer.toString(i)));
 		}
 	}
-
+	
+	@Test
+	public void getSecondArgumentAsArrayTest() {
+		String[] secondArgs = getSecondArgumentAsArray(String.class, tupleList);
+		for(int i = 0; i < 10; i++){
+			assertTrue(secondArgs[i].equals(Integer.toString(i)));
+		}
+	}
+	
 	@Test
 	public void intersectionTest() {
 		List<Integer> intersection = intersection(l1, l2);

@@ -5,11 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.mllib.linalg.Matrices;
+import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
+
+import model.similarity.SimilarityMeasure;
+import scala.Tuple3;
+import scala.Tuple5;
+import util.MllibUtilities;
 
 /**
  * Class that represents an user item matrix (or rating matrix) in a mllib
@@ -31,12 +38,8 @@ public class DistributedUserItemMatrix extends UserItemMatrix implements Seriali
 	IndexedRowMatrix data;
 
 	/**
-	 * Constructor of the class. Matrix is initialized with zeros.
+	 * Constructor of the class.
 	 * 
-	 * @param numberOfUsers
-	 *            The number of distinct users.
-	 * @param numberOfItems
-	 *            The number of distinct items.
 	 */
 	public DistributedUserItemMatrix(JavaRDD<IndexedRow> rows) {
 		data = new IndexedRowMatrix(rows.rdd());
@@ -101,17 +104,20 @@ public class DistributedUserItemMatrix extends UserItemMatrix implements Seriali
 	}
 
 	/**
-	 * Wrapper method that return cosine similarity between columns. TODO: It
-	 * may be not necessary to complete the symmetric matrix.
+	 * Wrapper method that return cosine similarity between columns.
+	 * 
+	 * @param simMeasure TODO: use the similarity measure if one is given. Only use column similarities from mllib
+	 * if instance of <Class>NormallizedCosineSimilarity</class> is given.
 	 * 
 	 * @return A coordinate matrix containing similarities between columns.
 	 */
-	public CoordinateMatrix getItemSimilarities() {
-		JavaRDD<MatrixEntry> simMat = data
-				.columnSimilarities()
-				.entries()
-				.toJavaRDD()
-				.flatMap(
+	public Matrix getItemSimilarities(SimilarityMeasure simMeasure) {
+		int numCols = (int) getNumCols();
+		/*The upper triangular item similarity matrix calculated by mllib*/
+		CoordinateMatrix simMat = data.columnSimilarities();
+		/*Adding all the missing values*/
+		List<MatrixEntry> allEntries = new ArrayList<MatrixEntry>();
+		List<MatrixEntry> upperAndLowerMat = simMat.entries().toJavaRDD().flatMap(
 						entry -> {
 							List<MatrixEntry> entries = new ArrayList<MatrixEntry>();
 							entries.add(entry);
@@ -120,9 +126,14 @@ public class DistributedUserItemMatrix extends UserItemMatrix implements Seriali
 										.i(), entry.value()));
 							}
 							return entries.iterator();
-						});
-		CoordinateMatrix fullSpecifiedItemSim = new CoordinateMatrix(
-				simMat.rdd(), data.numCols(), data.numCols());
-		return fullSpecifiedItemSim;
+						}).collect();
+		List<MatrixEntry> diagonalEntries = new ArrayList<MatrixEntry>();
+		for(int col = 0; col < numCols; col++){
+			diagonalEntries.add(new MatrixEntry(col, col, 1.0d));
+		}
+		allEntries.addAll(upperAndLowerMat);
+		allEntries.addAll(diagonalEntries);
+		Tuple3<int[], int[], double[]> matrixData = MllibUtilities.sparseMatrixFormatToCSCMatrixFormat(numCols, allEntries);
+		return Matrices.sparse(numCols, numCols, matrixData._1(), matrixData._2(), matrixData._3());
 	}
 }
