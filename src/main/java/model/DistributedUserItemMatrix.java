@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.similarity.SimilarityMeasure;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
@@ -13,10 +15,10 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
-import model.similarity.SimilarityMeasure;
 import scala.Tuple3;
-import scala.Tuple5;
 import util.MllibUtilities;
+
+import com.google.common.primitives.Ints;
 
 /**
  * Class that represents an user item matrix (or rating matrix) in a mllib
@@ -99,8 +101,8 @@ public class DistributedUserItemMatrix extends UserItemMatrix implements Seriali
 	 *            The index of the user in the user item matrix.
 	 * @return The array of item indexes seen by the user.
 	 */
-	public int[] getItemIndexesSeenByUser(int userIndex) {
-		return getRow(userIndex).toSparse().indices();
+	public List<Integer> getItemIndexesSeenByUser(int userIndex) {
+		return Ints.asList(getRow(userIndex).toSparse().indices());
 	}
 
 	/**

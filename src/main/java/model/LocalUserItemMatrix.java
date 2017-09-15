@@ -1,15 +1,5 @@
 package model;
 
-import org.apache.spark.mllib.linalg.Matrix;
-import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
-import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
-
-import model.similarity.SimilarityMeasure;
-import scala.Tuple3;
-import scala.collection.Iterator;
-import util.MllibUtilities;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import model.similarity.SimilarityMeasure;
+
 import org.apache.spark.mllib.linalg.Matrices;
+import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.mllib.linalg.Vector;
+import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
+
+import scala.Tuple3;
+import scala.collection.Iterator;
+import util.MllibUtilities;
+
+import com.google.common.primitives.Ints;
 
 /**
  * Class that wraps the local matrix of mllib to represent an user-item matrix.
@@ -105,8 +106,8 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 *            The index of the user in the user item matrix.
 	 * @return The array of item indexes seen by the user.
 	 */
-	public int[] getItemIndexesSeenByUser(int userIndex) {
-		return getRow(userIndex).toSparse().indices();
+	public List<Integer> getItemIndexesSeenByUser(int userIndex) {
+		return Ints.asList(getRow(userIndex).toSparse().indices());
 	}
 	
 	/**

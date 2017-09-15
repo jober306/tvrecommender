@@ -4,10 +4,11 @@ import static model.tensor.UserPreferenceTensorCollection.ANY;
 
 import java.util.Comparator;
 
+import model.ScoredRecommendation;
+import model.tensor.UserPreferenceTensorCollection;
+
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
-
-import model.tensor.UserPreferenceTensorCollection;
 
 public class Comparators {
 	
@@ -22,6 +23,16 @@ public class Comparators {
 			}
 			private Vector getChannelAsVector(int channelId) {
 				return Vectors.dense(new double[] { channelId });
+			}
+		};
+	}
+	
+	public static Comparator<ScoredRecommendation> scoredRecommendationComparator(){
+		return new Comparator<ScoredRecommendation>(){
+
+			@Override
+			public int compare(ScoredRecommendation program1, ScoredRecommendation program2) {
+				return Double.compare(program2.getScore(), program1.getScore());
 			}
 		};
 	}

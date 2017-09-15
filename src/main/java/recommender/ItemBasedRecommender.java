@@ -1,13 +1,12 @@
 package recommender;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import model.Recommendation;
 import model.UserItemMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.spark.mllib.linalg.Matrix;
 
 import scala.Tuple2;
@@ -26,7 +25,7 @@ import data.TVProgram;
  *
  */
 public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
-		extends TVRecommender<T, U> {
+		extends AbstractTVRecommender<T, U> {
 
 	/**
 	 * The electronic programming guide used by this recommender.
@@ -105,25 +104,20 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	 */
 	public List<Tuple2<Integer, Double>> predictItemNeighbourhoodForUser(
 			int userIndex, int itemIndex, int n) {
-		List<Integer> itemsSeenByUser = Arrays.asList(ArrayUtils.toObject(R
-				.getItemIndexesSeenByUser(userIndex)));
-		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(
-				itemIndex, n);
-		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood
-				.stream().filter(pair -> itemsSeenByUser.contains(pair._1()))
-				.collect(Collectors.toList());
-		return itemsNeighbourhood.subList(0,
-				Math.min(itemsNeighbourhoodForUser.size(), n));
+		List<Integer> itemsSeenByUser = R.getItemIndexesSeenByUser(userIndex);
+		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(itemIndex, n);
+		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood.stream().filter(pair -> itemsSeenByUser.contains(pair._1())).collect(Collectors.toList());
+		return itemsNeighbourhood.subList(0, Math.min(itemsNeighbourhoodForUser.size(), n));
 	}
 
 	@Override
-	protected List<Integer> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected List<Recommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected List<Integer> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected List<Recommendation> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -5,11 +5,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import model.Recommendation;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import recommender.TopChannelRecommender;
 import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
@@ -23,7 +24,7 @@ public class TopChannelRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	static TopChannelRecommender<RecsysTVProgram, RecsysTVEvent> predictor;
+	static AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent> predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {
@@ -38,13 +39,13 @@ public class TopChannelRecommenderTest {
 	public void recommendTest() {
 		int expectedRecommendation = 254329;
 		int recommendation = predictor
-				.recommend(0, START_TIME.plusHours(19), 1).get(0);
+				.recommend(0, START_TIME.plusHours(19), 1).get(0).getProgram().getProgramId();
 		assertEquals(expectedRecommendation, recommendation);
 	}
 	
 	@Test
 	public void recommendMultipleTest(){
-		List<Integer> recommendations = predictor
+		List<Recommendation> recommendations = (List<Recommendation>) predictor
 				.recommend(0, START_TIME, START_TIME.plusHours(19), 100);
 		recommendations.stream().forEach(System.out::println);
 	}

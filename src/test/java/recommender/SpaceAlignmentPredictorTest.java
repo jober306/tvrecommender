@@ -2,17 +2,15 @@ package recommender;
 
 import static data.recsys.RecsysTVDataSet.START_TIME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
+import model.Recommendation;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import recommender.SpaceAlignmentRecommender;
 import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
@@ -43,69 +41,11 @@ public class SpaceAlignmentPredictorTest {
 	}
 
 	@Test
-	public void predictItemSimilarityTest() {
-		for (int i = 0; i < 5; i++) {
-			double[] entries = new double[132];
-			entries[2] = 1.0d;
-			entries[13] = 1.0d;
-			entries[123] = 1.0d;
-			double similarity = predictor.predictItemsSimilarity(
-					Vectors.dense(entries), i);
-			assertTrue(similarity >= 0);
-		}
-	}
-
-	@Test
-	public void predictNewItemNeighborhoodForUserTest() {
-		double[] entries = new double[132];
-		entries[2] = 1.0d;
-		entries[13] = 1.0d;
-		entries[123] = 1.0d;
-		Vector newItem = Vectors.dense(entries);
-		int userIndex = 2;
-		int n = 1;
-		List<Tuple2<Integer, Double>> neighborhood = predictor
-				.predictNewItemNeighborhoodForUser(newItem, userIndex, n);
-		assertEquals(n, neighborhood.size());
-		int[] itemIndexesSeenByUser = predictor.R
-				.getItemIndexesSeenByUser(userIndex);
-		for (int i = 0; i < n; i++) {
-			Tuple2<Integer, Double> posValue = neighborhood.get(i);
-			int pos = posValue._1();
-			assertTrue(arrayContains(itemIndexesSeenByUser, pos));
-		}
-	}
-
-	@Test
-	public void predictNewItemNeighbourhoodTest() {
-		double[] entries = new double[132];
-		entries[2] = 1.0d;
-		entries[13] = 1.0d;
-		entries[123] = 1.0d;
-		Vector newItem = Vectors.dense(entries);
-		int n = 6;
-		List<Tuple2<Integer, Double>> neighborhood = predictor
-				.predictNewItemNeighbourhood(newItem, n);
-		assertEquals(n, neighborhood.size());
-	}
-
-	@Test
 	public void recommendTest() {
 		int userId = 2;
-		List<Integer> prediction = predictor.recommend(userId,
+		List<? extends Recommendation> prediction = predictor.recommend(userId,
 				START_TIME.plusHours(19), numberOfResults);
 		assertEquals(numberOfResults, prediction.size());
-	}
-
-	private boolean arrayContains(int[] array, int value) {
-		boolean contain = false;
-		for (int arrayValue : array) {
-			if (arrayValue == value) {
-				contain = true;
-				break;
-			}
-		}
-		return contain;
 	}
 
 	@AfterClass

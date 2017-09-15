@@ -1,11 +1,12 @@
 package model;
 
 import java.io.Serializable;
+import java.util.List;
+
+import model.similarity.SimilarityMeasure;
 
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
-
-import model.similarity.SimilarityMeasure;
 
 /**
  * Abstract class that represents an user item matrix. 
@@ -31,6 +32,6 @@ public abstract class UserItemMatrix implements Serializable{
 	 * Utility Methods
 	 */
 	abstract public Vector getRow(int rowIndex);
-	abstract public int[] getItemIndexesSeenByUser(int userIndex);
+	abstract public List<Integer> getItemIndexesSeenByUser(int userIndex);
 	abstract public Matrix getItemSimilarities(SimilarityMeasure similairty);
 }

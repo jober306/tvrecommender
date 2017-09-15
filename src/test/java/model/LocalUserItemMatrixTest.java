@@ -1,17 +1,20 @@
 package model;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
+import java.util.Arrays;
+import java.util.List;
+
+import model.similarity.NormalizedCosineSimilarity;
 
 import org.apache.spark.mllib.linalg.Matrix;
-import org.apache.spark.sql.catalyst.expressions.EqualTo;
-
-import static org.hamcrest.CoreMatchers.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import model.similarity.NormalizedCosineSimilarity;
 
 public class LocalUserItemMatrixTest {
 	
@@ -73,9 +76,9 @@ public class LocalUserItemMatrixTest {
 	
 	@Test
 	public void getIndexesSeenByUserTest(){
-		int[] expectedValues = {0,1};
-		int[] actualDenseValues = denseMatrix.getItemIndexesSeenByUser(2);
-		int[] actualSparseValues = sparseMatrix.getItemIndexesSeenByUser(2);
+		List<Integer> expectedValues = Arrays.asList(0,1);
+		List<Integer> actualDenseValues = denseMatrix.getItemIndexesSeenByUser(2);
+		List<Integer> actualSparseValues = sparseMatrix.getItemIndexesSeenByUser(2);
 		assertThat(expectedValues, both(equalTo(actualDenseValues)).and(equalTo(actualSparseValues)));
 	}
 	

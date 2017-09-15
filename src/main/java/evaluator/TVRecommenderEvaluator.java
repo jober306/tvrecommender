@@ -1,11 +1,13 @@
 package evaluator;
 
+import static java.util.stream.Collectors.toList;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import recommender.TVRecommender;
+import recommender.AbstractTVRecommender;
 import recommender.TopChannelRecommender;
 import scala.Tuple2;
 import data.EvaluationContext;
@@ -41,7 +43,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 	/**
 	 * The tv recommender to evaluate.
 	 */
-	TVRecommender<T, U> recommender;
+	AbstractTVRecommender<T, U> recommender;
 
 	/**
 	 * The array of measures on which evaluation will be based.
@@ -71,7 +73,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 	 * @param testEndTime
 	 *            The end time of the test period.
 	 */
-	public TVRecommenderEvaluator(EvaluationContext<T, U> context, TVRecommender<T, U> recommender, EvaluationMeasure[] measures) {
+	public TVRecommenderEvaluator(EvaluationContext<T, U> context, AbstractTVRecommender<T, U> recommender, EvaluationMeasure[] measures) {
 		this.context = context;
 		this.measures = measures;
 		this.recommender = recommender;
@@ -129,7 +131,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 	private double calculateAveragePrecisionForUser(int userId, int numberOfResults) {
 		List<Integer> groundTruth = context.getGroundTruth().get(userId);
 		double averagePrecision = 0.0d;
-		List<Integer> recommendedTVShowIndexes = recommender.recommend(userId, numberOfResults, context.getTestPrograms());
+		List<Integer> recommendedTVShowIndexes = recommender.recommend(userId, numberOfResults, context.getTestPrograms()).stream().map(rec -> rec.getProgram().getProgramId()).collect(toList());
 		averagePrecision = calculateAveragePrecision(numberOfResults, recommendedTVShowIndexes, groundTruth);
 		return averagePrecision;
 	}

@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import model.Recommendation;
 import model.tensor.UserPreferenceTensorCalculator;
 import model.tensor.UserPreferenceTensorCollection;
-
 import util.Comparators;
 import data.Context;
 import data.EvaluationContext;
@@ -26,18 +26,18 @@ import data.feature.ChannelFeatureExtractor;
  *
  */
 public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
-		extends TVRecommender<T, U> {
+		extends AbstractTVRecommender<T, U> {
 
 	/**
 	 * The user preference tensor calculator used to create the tensors.
 	 */
 	UserPreferenceTensorCalculator<T, U> tensorCalculator;
-	
+
 	/**
-	 * The top programs array per top channel. This is used by the recommender for testing because
-	 * it caches all the top programs.
+	 * The top programs array per top channel. This is used by the recommender
+	 * for testing because it caches all the top programs.
 	 */
-	Map<Integer, List<Integer>> programIdsPerTopChannelIds;
+	Map<Integer, List<Recommendation>> recommendationsPerTopChannelIds;
 
 	/**
 	 * The top channel id for this data set. I.e. the channel with most watching
@@ -45,69 +45,78 @@ public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
 	 */
 	int[] topChannelIds;
 
-	public TopChannelRecommender(Context<T, U> context, UserPreferenceTensorCalculator<T, U> tensorCalculator) {
+	public TopChannelRecommender(Context<T, U> context,
+			UserPreferenceTensorCalculator<T, U> tensorCalculator) {
 		super(context);
 		this.tensorCalculator = tensorCalculator;
 	}
-	
-	public void train(){
+
+	public void train() {
 		calculateTopChannels();
-		if(context instanceof EvaluationContext<?, ?>){
+		if (context instanceof EvaluationContext) {
 			createTopProgramsPerChannelIds();
 		}
 	}
 
 	@Override
-	protected List<Integer> recommendNormally(int userId, int numberOfResults, List<T> tvProrams) {
-		//The linked hash set is used to here to preserve order and to have only distinct programs ids.
-		Set<Integer> topChannelsPrograms = new LinkedHashSet<Integer>();
+	protected List<Recommendation> recommendNormally(int userId, int numberOfResults,
+			List<T> tvProrams) {
+		// The linked hash set is used to here to preserve order and to have
+		// only distinct programs ids.
+		Set<Recommendation> recommendations = new LinkedHashSet<Recommendation>();
 		int currentChannelIndex = 0;
-		while(topChannelsPrograms.size() < numberOfResults && currentChannelIndex <  topChannelIds.length){
+		while (recommendations.size() < numberOfResults && currentChannelIndex < topChannelIds.length) {
 			int channelIndex = topChannelIds[currentChannelIndex];
-			List<Integer> currentChannelPrograms = tvProrams.stream()
-					.filter(program -> program.getChannelId() == channelIndex)
-					.map(program -> program.getProgramId()).collect(Collectors.toList());
-			topChannelsPrograms.addAll(currentChannelPrograms);
+			List<Recommendation> recommendationsForChannel = tvProrams.stream().filter(program -> program.getChannelId() == channelIndex).map(Recommendation::new).collect(Collectors.toList());
+			recommendations.addAll(recommendationsForChannel);
 			currentChannelIndex++;
 		}
-		return new ArrayList<Integer>(topChannelsPrograms).subList(0, Math.min(topChannelsPrograms.size(),numberOfResults));
+		return new ArrayList<Recommendation>(recommendations).subList(0,Math.min(recommendations.size(), numberOfResults));
 	}
-	
+
 	@Override
-	protected List<Integer> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms){
-		Set<Integer> recommendations = new LinkedHashSet<Integer>();
+	protected List<Recommendation> recommendForTesting(int userId,
+			int numberOfResults, List<T> tvPrograms) {
+		Set<Recommendation> recommendations = new LinkedHashSet<Recommendation>();
 		int currentChannelIndex = 0;
-		while(recommendations.size() < numberOfResults && currentChannelIndex < topChannelIds.length){
+		while (recommendations.size() < numberOfResults && currentChannelIndex < topChannelIds.length) {
 			int topChannelId = topChannelIds[currentChannelIndex];
-			recommendations.addAll(programIdsPerTopChannelIds.get(topChannelId));
+			recommendations.addAll(recommendationsPerTopChannelIds.get(topChannelId));
 			currentChannelIndex++;
 		}
-		return new ArrayList<Integer>(recommendations).subList(0, Math.min(recommendations.size(),numberOfResults));
+		return new ArrayList<Recommendation>(recommendations).subList(0, Math.min(recommendations.size(), numberOfResults));
 	}
 
 	private void calculateTopChannels() {
-		UserPreferenceTensorCollection tensorCollection = tensorCalculator.calculateUserPreferenceTensorForDataSet(context.getTrainingSet(), new ChannelFeatureExtractor<T, U>());
-		List<Integer> unsortedChannelIds = context.getTrainingSet().getAllChannelIds();
-		topChannelIds = unsortedChannelIds.stream().sorted(Comparators.ChannelTensorComparator(tensorCollection)).mapToInt(Integer::intValue).toArray();
+		UserPreferenceTensorCollection tensorCollection = tensorCalculator
+				.calculateUserPreferenceTensorForDataSet(
+						context.getTrainingSet(),
+						new ChannelFeatureExtractor<T, U>());
+		List<Integer> unsortedChannelIds = context.getTrainingSet()
+				.getAllChannelIds();
+		topChannelIds = unsortedChannelIds.stream()
+				.sorted(Comparators.ChannelTensorComparator(tensorCollection))
+				.mapToInt(Integer::intValue).toArray();
 	}
-	
-	private void createTopProgramsPerChannelIds(){
+
+	private void createTopProgramsPerChannelIds() {
 		initializeProgramIdsPerTopChannelIds();
 		EvaluationContext<T, U> evalContext = (EvaluationContext<T, U>) context;
 		List<T> programsDuringTest = evalContext.getTestPrograms();
-		programsDuringTest.stream().forEach(this::addProgram);
+		programsDuringTest.stream().map(Recommendation::new).forEach(this::addRecommendation);;
 	}
-	
-	private void initializeProgramIdsPerTopChannelIds(){
-		this.programIdsPerTopChannelIds = new HashMap<Integer, List<Integer>>();
-		for(int i = 0; i < topChannelIds.length; i++){
-			programIdsPerTopChannelIds.put(topChannelIds[i], new ArrayList<Integer>());
+
+	private void initializeProgramIdsPerTopChannelIds() {
+		this.recommendationsPerTopChannelIds = new HashMap<Integer, List<Recommendation>>();
+		for (int i = 0; i < topChannelIds.length; i++) {
+			recommendationsPerTopChannelIds.put(topChannelIds[i],
+					new ArrayList<Recommendation>());
 		}
 	}
-	
-	private void addProgram(T program){
-		if(programIdsPerTopChannelIds.containsKey(program.getChannelId())){
-			programIdsPerTopChannelIds.get(program.getChannelId()).add(program.getProgramId());
+
+	private void addRecommendation(Recommendation recommendation) {
+		if (recommendationsPerTopChannelIds.containsKey(recommendation.getProgram().getChannelId())) {
+			recommendationsPerTopChannelIds.get(recommendation.getProgram().getChannelId()).add(recommendation);
 		}
 	}
 }

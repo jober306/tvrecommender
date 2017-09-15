@@ -2,8 +2,6 @@ package util;
 
 import static java.lang.Math.toIntExact;
 import static util.ListUtilities.getSecondArgumentAsList;
-import static util.ListUtilities.getFirstArgumentAsArray;
-import static util.ListUtilities.getSecondArgumentAsArray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,11 +10,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.hadoop.mapreduce.lib.map.TokenCounterMapper;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -35,7 +31,6 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import scala.Tuple2;
 import scala.Tuple3;
-import scala.Tuple5;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix
@@ -91,6 +86,19 @@ public class MllibUtilities {
 				.map(data -> mapDataToRow(data));
 		return new IndexedRowMatrix(transposedMatrix.rdd(), M.numCols(),
 				toIntExact(M.numRows()));
+	}
+	
+	/**
+	 * Method create a new vector with its values inverted (in the multiplication sense).
+	 * @param v The original vector.
+	 * @return A vector containing all the values inverted.
+	 */
+	public static Vector invertVector(Vector v) {
+		double[] values = v.copy().toArray();
+		for (int i = 0; i < values.length; i++) {
+			values[i] = 1.0d / values[i];
+		}
+		return Vectors.dense(values);
 	}
 
 	/**

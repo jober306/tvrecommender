@@ -8,7 +8,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import recommender.ItemBasedRecommender;
 import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
@@ -37,29 +36,16 @@ public class ItemBasedRecommenderTest {
 		int userIndex = 2;
 		int itemIndex = 4;
 		int n = 16;
-		List<Tuple2<Integer, Double>> neighborhood = recommender
-				.predictItemNeighbourhoodForUser(userIndex, itemIndex, n);
-		int[] itemIndexesSeenByUser = recommender.R
-				.getItemIndexesSeenByUser(userIndex);
+		List<Tuple2<Integer, Double>> neighborhood = recommender.predictItemNeighbourhoodForUser(userIndex, itemIndex, n);
+		List<Integer> itemIndexesSeenByUser = recommender.R.getItemIndexesSeenByUser(userIndex);
 		for (int i = 0; i < neighborhood.size(); i++) {
 			Tuple2<Integer, Double> posValue = neighborhood.get(i);
 			int pos = posValue._1();
 			double value = posValue._2();
-			assertTrue(arrayContains(itemIndexesSeenByUser, pos));
+			assertTrue(itemIndexesSeenByUser.contains(pos));
 			assertTrue(value >= 0);
 			assertTrue(value <= 1);
 		}
-	}
-
-	private boolean arrayContains(int[] array, int value) {
-		boolean contain = false;
-		for (int arrayValue : array) {
-			if (arrayValue == value) {
-				contain = true;
-				break;
-			}
-		}
-		return contain;
 	}
 
 	@AfterClass

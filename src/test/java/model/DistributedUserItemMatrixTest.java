@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import model.DistributedUserItemMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,6 +21,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import util.SparkUtilities;
+
+import com.google.common.primitives.Ints;
 
 public class DistributedUserItemMatrixTest {
 
@@ -86,7 +87,7 @@ public class DistributedUserItemMatrixTest {
 	@Test
 	public void getItemIndexesSeenByUserTest() {
 		for (int userIndex = 0; userIndex < matrixIndices.length; userIndex++) {
-			assertArrayEquals(matrixIndices[userIndex],
+			assertEquals(Ints.asList(matrixIndices[userIndex]),
 					R.getItemIndexesSeenByUser(userIndex));
 		}
 	}

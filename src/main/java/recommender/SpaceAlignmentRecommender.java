@@ -1,7 +1,10 @@
 package recommender;
 
 import static java.lang.Math.toIntExact;
-import static util.ListUtilities.getFirstArgumentAsList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static util.Comparators.scoredRecommendationComparator;
+import static util.MllibUtilities.invertVector;
 import static util.MllibUtilities.multiplicateByLeftDiagonalMatrix;
 import static util.MllibUtilities.multiplicateByRightDiagonalMatrix;
 import static util.MllibUtilities.multiplyMatrixByRightDiagonalMatrix;
@@ -10,9 +13,15 @@ import static util.MllibUtilities.toDenseLocalMatrix;
 import static util.MllibUtilities.toDenseLocalVectors;
 import static util.MllibUtilities.transpose;
 
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import model.ScoredRecommendation;
 import model.UserItemMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 
@@ -21,12 +30,10 @@ import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
-import scala.Tuple2;
-import algorithm.QuickSelect;
 import data.Context;
+import data.EvaluationContext;
 import data.TVEvent;
 import data.TVProgram;
 import data.feature.FeatureExtractor;
@@ -40,10 +47,9 @@ import data.feature.FeatureExtractor;
  * recommendation.
  * 
  * @author Jonathan Bergeron
- *ofgjgfjok
  */
 public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
-		extends TVRecommender<T, U> {
+		extends AbstractTVRecommender<T, U> {
 
 	/**
 	 * The feature extractor that will be used to extract features when training
@@ -88,6 +94,13 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	 * filtering space.
 	 */
 	Matrix Mprime;
+	
+	/**
+	 * Map used when evaluation context is used. It stores for each new program their similarities
+	 * with respect to the space alignment algorithm with each old tv shows.
+	 */
+	Map<T, List<Double>> newTVShowsSimilarities;
+	
 
 	/**
 	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates
@@ -114,131 +127,90 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		this.C = context.getTrainingSet().getContentMatrix(extractor);
 		this.localC = toDenseLocalVectors(C);
 		calculateMprime();
+		if (context instanceof EvaluationContext) {
+			EvaluationContext<T,U> evalContext = (EvaluationContext<T,U>) context;
+			this.newTVShowsSimilarities = initializeNewTVShowSimilarities(evalContext.getTestPrograms());
+		}
+	}
+	
+	private Map<T, List<Double>> initializeNewTVShowSimilarities(List<T> tvPrograms){
+		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
+		return newTvShows.entrySet().stream().collect(toMap(Entry::getKey, entry -> calculateNewTVShowSimilarities(entry.getValue())));
+	}
+	
+	private List<Double> calculateNewTVShowSimilarities(Vector coldStartItemContent) {
+		int numberOfItems = (int) context.getEvents().getNumberOfTvShows();
+		return IntStream.range(0, numberOfItems).mapToDouble(index -> calculateItemsSimilarity(coldStartItemContent, index)).boxed().collect(toList());
 	}
 
-	/**
-	 * Method that predicts the similarity between two items with the Mprime
-	 * that was calculated.
-	 * 
-	 * @param coldStartItemContent
-	 *            The content vector of the cold start item.
-	 * @param oldItemIndex
-	 *            The old item index in the content matrix C.
-	 * @return The approximated similarity in a collaborative filtering sense
-	 *         between the new item and the old item.
-	 */
-	public double predictItemsSimilarity(Vector coldStartItemContent,
+	@Override
+	protected List<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+		System.out.print("Extracting features from program...");
+		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
+		System.out.println("Done");
+		System.out.print("Finding neighbourhood for all items...");
+		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream().map(entry -> scoreTVProgram(userId, entry)).collect(toList());
+		System.out.println("Done");
+		System.out.print("Sorting results...");
+		recommendations.sort(scoredRecommendationComparator());
+		System.out.println("Done");
+		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
+	}
+	
+	@Override
+	protected List<ScoredRecommendation> recommendForTesting(int userId,
+			int numberOfResults, List<T> tvProrams) {
+		System.out.println("Getting neighbourhood for all items...");
+		List<ScoredRecommendation> recommendations = tvProrams.stream().map(program -> scoreTVProgram(userId, program)).collect(toList());
+		System.out.print("Done");
+		System.out.println("Sorting results...");
+		recommendations.sort(scoredRecommendationComparator());
+		System.out.print("Done");
+		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
+	}
+	
+	private ScoredRecommendation scoreTVProgram(int userId, Entry<T, Vector> programWithFeatures) {
+		T program = programWithFeatures.getKey();
+		Vector programFeatures = programWithFeatures.getValue();
+		return new ScoredRecommendation(program, calculateScore(userId, programFeatures));
+	}
+	
+	private ScoredRecommendation scoreTVProgram(int userId, T tvProgram){
+		return new ScoredRecommendation(tvProgram, getScore(userId, tvProgram));
+	}
+
+	private double calculateScore(int userId, Vector vector) {
+		return calculateNeighboursScore(calculateNewItemNeighborhoodSimilaritiesForUser(vector, userId));
+	}
+	
+	private double getScore(int userId, T program){
+		return calculateNeighboursScore(getNewItemNeighborhoodSimilaritiesForUser(userId, program));
+	}
+	
+	private double calculateNeighboursScore(List<Double> neighbours) {
+		return neighbours.stream().reduce(0.0d, Double::sum) / (double) neighbours.size();
+	}
+	
+	private List<Double> calculateNewItemNeighborhoodSimilaritiesForUser(Vector coldStartItemContent, int userIndex) {
+		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
+		Stream<Double> filteredSimilarities = itemIndexesSeenByUser.stream().map(i -> calculateItemsSimilarity(coldStartItemContent, i));
+		List<Double> sortedFilteredSimilarities = filteredSimilarities.sorted(Comparator.<Double>naturalOrder().reversed()).collect(toList());
+		return sortedFilteredSimilarities.subList(0, Math.min(neighbourhoodSize, sortedFilteredSimilarities.size()));
+	}
+	
+	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(int userId, T tvShow){
+		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
+		//TODO:CHECK IF TVPROGRAM HAS HASH METHOD AND EQUALS.
+		List<Double> similarities = newTVShowsSimilarities.get(tvShow);
+		Stream<Double> filteredSimilarities = itemIndexesSeenByUser.stream().map(similarities::get);
+		List<Double> sorteredFilteredSimilarities = filteredSimilarities.sorted(Comparator.<Double>naturalOrder().reversed()).collect(toList());
+		return sorteredFilteredSimilarities.subList(0, Math.min(neighbourhoodSize, sorteredFilteredSimilarities.size()));
+	}
+	
+	private double calculateItemsSimilarity(Vector coldStartItemContent,
 			int oldItemIndex) {
 		Vector targetItem = localC.get(oldItemIndex);
 		return scalarProduct(Mprime.multiply(coldStartItemContent), targetItem);
-	}
-
-	/**
-	 * Method that returns the neighborhood of a new item for a specific user.
-	 * It returns the top n item indices and values in decreasing order.
-	 * 
-	 * @param coldStartItemContent
-	 *            The content of the new item.
-	 * @param userIndex
-	 *            The index of the user (the neighborhood returned will only
-	 *            contains items seen by this user).
-	 * @param n
-	 *            The size of the neighborhoods set.
-	 * @return A list of pair containing respectively the item index in the user
-	 *         item matrix and the similarity value.
-	 */
-	public List<Tuple2<Integer, Double>> predictNewItemNeighborhoodForUser(
-			Vector coldStartItemContent, int userIndex, int n) {
-		int[] itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userIndex);
-		double[] itemSeenByUserSimilarities = predictAllItemSimilarities(
-				coldStartItemContent, itemIndexesSeenByUser);
-		return QuickSelect.selectTopN(itemIndexesSeenByUser,
-				itemSeenByUserSimilarities,
-				Math.min(n, itemSeenByUserSimilarities.length));
-	}
-
-	/**
-	 * Method that returns the neighborhood of a new item. It returns the top n
-	 * item indices and values in decreasing order.
-	 * 
-	 * @param coldStartItemContent
-	 *            The content of the new item.
-	 * @param n
-	 *            The size of the neighborhoods set.
-	 * @return A list of pair containing respectively the item index and the
-	 *         item similarity value.
-	 */
-	public List<Tuple2<Integer, Double>> predictNewItemNeighbourhood(
-			Vector coldStartItemContent, int n) {
-		Double[] similarities = predictAllItemSimilarities(coldStartItemContent);
-		return QuickSelect.selectTopN(similarities, n);
-	}
-	
-	@Override
-	protected List<Integer> recommendNormally(int userId, int numberOfResults,
-			List<T> tvProrams) {
-		System.out.println("Extracting features from program...");
-		List<Tuple2<Integer, Vector>> newTvShows = tvProrams
-				.stream()
-				.map(program -> new Tuple2<Integer, Vector>(program
-						.getProgramId(), extractor
-						.extractFeaturesFromProgram(program)))
-				.collect(Collectors.toList());
-		System.out.print("Done");
-		double[] neighboursScores = new double[newTvShows.size()];
-		int[] tvShowIndexes = new int[newTvShows.size()];
-		for (int i = 0; i < newTvShows.size(); i++) {
-			System.out.println("Finding neighbourhood for item " + i + "...");
-			List<Tuple2<Integer, Double>> neighbours = predictNewItemNeighborhoodForUser(
-					newTvShows.get(i)._2(), userId, neighbourhoodSize);
-			System.out.print("Done");
-			System.out.println("Calculating neigbourhood score for item " + i + "...");
-			neighboursScores[i] = calculateNeighboursScore(neighbours);
-			tvShowIndexes[i] = newTvShows.get(i)._1();
-			System.out.print("Done");
-		}
-		System.out.println("Sorting results...");
-		List<Tuple2<Integer, Double>> sortedIndexScore = QuickSelect
-				.selectTopN(tvShowIndexes, neighboursScores, numberOfResults);
-		System.out.print("Done");
-		return getFirstArgumentAsList(sortedIndexScore);
-	}
-	
-	@Override
-	protected List<Integer> recommendForTesting(int userId, int numberOfResults,
-			List<T> tvProrams) {
-		return recommendNormally(userId, numberOfResults, tvProrams);
-	}
-
-
-	private double calculateNeighboursScore(
-			List<Tuple2<Integer, Double>> neighbours) {
-		double score = 0.0d;
-		for (Tuple2<Integer, Double> neighbour : neighbours) {
-			score += neighbour._2();
-		}
-		if (neighbours.size() == 0)
-			return score;
-		return score / (double) neighbours.size();
-	}
-	
-	private double[] predictAllItemSimilarities(Vector coldStartItemContent,
-			int[] itemIndexes) {
-		double[] similarities = new double[itemIndexes.length];
-		for (int i = 0; i < itemIndexes.length; i++) {
-			similarities[i] = predictItemsSimilarity(coldStartItemContent,
-					itemIndexes[i]);
-		}
-		return similarities;
-	}
-
-	private Double[] predictAllItemSimilarities(Vector coldStartItemContent) {
-		int numberOfItems = (int) context.getEvents().getNumberOfTvShows();
-		Double[] similarities = new Double[numberOfItems];
-		for (int i = 0; i < numberOfItems; i++) {
-			similarities[i] = predictItemsSimilarity(coldStartItemContent, i);
-		}
-		return similarities;
 	}
 
 	private void calculateMprime() {
@@ -255,7 +227,9 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 				invertedSigma, Ut);
 		IndexedRowMatrix rightMat = multiplicateByRightDiagonalMatrix(U,
 				Csvd.s());
-		Matrix localRightMat = R.getItemSimilarities(NormalizedCosineSimilarity.getInstance()).multiply(toDenseLocalMatrix(rightMat));
+		Matrix localRightMat = R.getItemSimilarities(
+				NormalizedCosineSimilarity.getInstance()).multiply(
+				toDenseLocalMatrix(rightMat));
 		IndexedRowMatrix intermediateMat = leftMat.multiply(localRightMat);
 		// ***************************************************************************************************
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat
@@ -267,13 +241,5 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		Vector hardTrhesholdedLambda = intMatsvd.s();
 		Mprime = multiplyMatrixByRightDiagonalMatrix(VQ, hardTrhesholdedLambda)
 				.multiply(QtVt);
-	}
-
-	private Vector invertVector(Vector v) {
-		double[] values = v.copy().toArray();
-		for (int i = 0; i < values.length; i++) {
-			values[i] = 1.0d / values[i];
-		}
-		return Vectors.dense(values);
 	}
 }
