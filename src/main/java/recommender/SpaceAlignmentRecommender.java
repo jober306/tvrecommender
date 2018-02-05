@@ -4,32 +4,44 @@ import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static util.Comparators.scoredRecommendationComparator;
+import static util.MllibUtilities.vectorToCoordinateMatrix;
 import static util.MllibUtilities.invertVector;
-import static util.MllibUtilities.multiplicateByLeftDiagonalMatrix;
-import static util.MllibUtilities.multiplicateByRightDiagonalMatrix;
-import static util.MllibUtilities.multiplyMatrixByRightDiagonalMatrix;
 import static util.MllibUtilities.scalarProduct;
 import static util.MllibUtilities.toDenseLocalMatrix;
 import static util.MllibUtilities.toDenseLocalVectors;
-import static util.MllibUtilities.transpose;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.print.attribute.standard.JobOriginatingUserName;
+
 import model.ScoredRecommendation;
 import model.UserItemMatrix;
-import model.similarity.NormalizedCosineSimilarity;
+import util.MllibUtilities;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.DenseMatrix;
-import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.SingularValueDecomposition;
 import org.apache.spark.mllib.linalg.Vector;
+import org.apache.spark.mllib.linalg.distributed.BlockMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
 import data.Context;
@@ -39,7 +51,7 @@ import data.TVProgram;
 import data.feature.FeatureExtractor;
 
 /**
- * Class that finds the optimal mapping between item content and the item
+ * Class that finds the optimal bilinear mapping between item content and the item
  * similarities matrix as proposed by the following article:
  * http://www.ijcai.org/Proceedings/15/Papers/475.pdf It can then predicts the
  * similarity between already seen items and new items by using this mapping.
@@ -50,10 +62,15 @@ import data.feature.FeatureExtractor;
  */
 public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		extends AbstractTVRecommender<T, U> {
-
+	
+	/**
+	 * The spark context.
+	 */
+	JavaSparkContext sc;
+	
 	/**
 	 * The feature extractor that will be used to extract features when training
-	 * the model and whne predicting.
+	 * the model and when predicting.
 	 */
 	FeatureExtractor<T, U> extractor;
 
@@ -103,9 +120,6 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	
 
 	/**
-	 * Constructor of the <class>SpaceAlignmentPredictor</class>, it calculates
-	 * the matrix Mprime with the ratings matrix and the corresponding content
-	 * matrix and also takes into account the parameter r.
 	 * 
 	 * @param R
 	 *            The rating matrix.
@@ -115,11 +129,12 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	 *            The content matrix of all the items.
 	 */
 	public SpaceAlignmentRecommender(Context<T, U> context,
-			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize) {
+			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
 		super(context);
 		this.extractor = extractor;
 		this.r = r;
 		this.neighbourhoodSize = neighbourhoddSize;
+		this.sc = sc;
 	}
 
 	public void train() {
@@ -133,39 +148,34 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		}
 	}
 	
+	public void printMPrime(){
+		System.out.println(Mprime.toString());
+	}
+	
 	private Map<T, List<Double>> initializeNewTVShowSimilarities(List<T> tvPrograms){
 		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
 		return newTvShows.entrySet().stream().collect(toMap(Entry::getKey, entry -> calculateNewTVShowSimilarities(entry.getValue())));
 	}
 	
 	private List<Double> calculateNewTVShowSimilarities(Vector coldStartItemContent) {
-		int numberOfItems = (int) context.getEvents().getNumberOfTvShows();
+		int numberOfItems = (int) context.getTrainingSet().getNumberOfTvShows();
 		return IntStream.range(0, numberOfItems).mapToDouble(index -> calculateItemsSimilarity(coldStartItemContent, index)).boxed().collect(toList());
 	}
 
 	@Override
 	protected List<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
-		System.out.print("Extracting features from program...");
 		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
-		System.out.println("Done");
-		System.out.print("Finding neighbourhood for all items...");
 		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream().map(entry -> scoreTVProgram(userId, entry)).collect(toList());
-		System.out.println("Done");
-		System.out.print("Sorting results...");
 		recommendations.sort(scoredRecommendationComparator());
-		System.out.println("Done");
 		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
 	}
 	
 	@Override
 	protected List<ScoredRecommendation> recommendForTesting(int userId,
-			int numberOfResults, List<T> tvProrams) {
-		System.out.println("Getting neighbourhood for all items...");
-		List<ScoredRecommendation> recommendations = tvProrams.stream().map(program -> scoreTVProgram(userId, program)).collect(toList());
-		System.out.print("Done");
-		System.out.println("Sorting results...");
+			int numberOfResults, List<T> tvPrograms) {
+		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
+		List<ScoredRecommendation> recommendations = tvPrograms.stream().map(program -> scoreTVProgram(itemIndexesSeenByUser, program)).collect(toList());
 		recommendations.sort(scoredRecommendationComparator());
-		System.out.print("Done");
 		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
 	}
 	
@@ -175,19 +185,22 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		return new ScoredRecommendation(program, calculateScore(userId, programFeatures));
 	}
 	
-	private ScoredRecommendation scoreTVProgram(int userId, T tvProgram){
-		return new ScoredRecommendation(tvProgram, getScore(userId, tvProgram));
+	private ScoredRecommendation scoreTVProgram(List<Integer> itemIndexesSeenByUser, T tvProgram){
+		return new ScoredRecommendation(tvProgram, getScore(itemIndexesSeenByUser, tvProgram));
 	}
 
 	private double calculateScore(int userId, Vector vector) {
 		return calculateNeighboursScore(calculateNewItemNeighborhoodSimilaritiesForUser(vector, userId));
 	}
 	
-	private double getScore(int userId, T program){
-		return calculateNeighboursScore(getNewItemNeighborhoodSimilaritiesForUser(userId, program));
+	private double getScore(List<Integer> itemIndexesSeenByUser, T program){
+		return calculateNeighboursScore(getNewItemNeighborhoodSimilaritiesForUser(itemIndexesSeenByUser, program));
 	}
 	
 	private double calculateNeighboursScore(List<Double> neighbours) {
+		if(neighbours.size() == 0){
+			return 0.0d;
+		}
 		return neighbours.stream().reduce(0.0d, Double::sum) / (double) neighbours.size();
 	}
 	
@@ -198,9 +211,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		return sortedFilteredSimilarities.subList(0, Math.min(neighbourhoodSize, sortedFilteredSimilarities.size()));
 	}
 	
-	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(int userId, T tvShow){
-		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
-		//TODO:CHECK IF TVPROGRAM HAS HASH METHOD AND EQUALS.
+	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(List<Integer> itemIndexesSeenByUser, T tvShow){
 		List<Double> similarities = newTVShowsSimilarities.get(tvShow);
 		Stream<Double> filteredSimilarities = itemIndexesSeenByUser.stream().map(similarities::get);
 		List<Double> sorteredFilteredSimilarities = filteredSimilarities.sorted(Comparator.<Double>naturalOrder().reversed()).collect(toList());
@@ -214,32 +225,23 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	private void calculateMprime() {
-		SingularValueDecomposition<IndexedRowMatrix, Matrix> Csvd = C
-				.computeSVD(toIntExact(C.numCols()), true, 0.0d);
-		IndexedRowMatrix U = Csvd.U();
-		Matrix V = Csvd.V();
-		Vector sigma = Csvd.s();
-		Vector invertedSigma = invertVector(sigma);
-		IndexedRowMatrix Ut = transpose(U);
-		// *********************************Intermediate//
-		// operations*********************************************
-		IndexedRowMatrix leftMat = multiplicateByLeftDiagonalMatrix(
-				invertedSigma, Ut);
-		IndexedRowMatrix rightMat = multiplicateByRightDiagonalMatrix(U,
-				Csvd.s());
-		Matrix localRightMat = R.getItemSimilarities(
-				NormalizedCosineSimilarity.getInstance()).multiply(
-				toDenseLocalMatrix(rightMat));
-		IndexedRowMatrix intermediateMat = leftMat.multiply(localRightMat);
+		SingularValueDecomposition<IndexedRowMatrix, Matrix> Csvd = C.computeSVD(toIntExact(C.numCols()), true, 0.0d);
+		BlockMatrix U = Csvd.U().toBlockMatrix();
+		DenseMatrix V = (DenseMatrix)Csvd.V();
+		BlockMatrix invertedSigma = vectorToCoordinateMatrix(invertVector(Csvd.s()), sc).toBlockMatrix();
+		BlockMatrix Ut = U.transpose();
+		// *********************************Intermediate operations*********************************************
+		BlockMatrix leftMat = invertedSigma.multiply(Ut);
+		BlockMatrix rightMat = U.multiply(invertedSigma);
+		BlockMatrix S = context.getTrainingSet().convertToDistUserItemMatrix().getItemSimilarities(sc).toBlockMatrix();
+		IndexedRowMatrix intermediateMat = leftMat.multiply(S).multiply(rightMat).toIndexedRowMatrix();
 		// ***************************************************************************************************
-		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat
-				.computeSVD(r, true, 0.0d);
-		Matrix Q = intMatsvd.V();
-		DenseMatrix VQ = V.multiply((DenseMatrix) Matrices.dense(Q.numRows(),
-				Q.numCols(), Q.toArray()));
-		DenseMatrix QtVt = VQ.transpose();
-		Vector hardTrhesholdedLambda = intMatsvd.s();
-		Mprime = multiplyMatrixByRightDiagonalMatrix(VQ, hardTrhesholdedLambda)
-				.multiply(QtVt);
+		
+		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat.computeSVD(r, false, 0.0d);
+		//Casting the V matrix of svd to dense matrix because Spark 2.2.0 always return a dense matrix and it is needed to multiply.
+		DenseMatrix Q = (DenseMatrix) intMatsvd.V();
+		Matrix lambda = MllibUtilities.vectorToDenseMatrix(intMatsvd.s());
+		DenseMatrix hardThresholdedIntMat = Q.multiply(lambda.multiply(Q.transpose()));
+		Mprime = V.multiply(hardThresholdedIntMat.multiply(V.transpose()));
 	}
 }

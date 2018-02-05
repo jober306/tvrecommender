@@ -7,6 +7,7 @@ import data.TVDataSet;
 import data.feature.FeatureExtractor;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensor;
 import model.tensor.UserPreferenceTensorCalculator;
 import model.tensor.UserPreferenceTensorCollection;
@@ -30,7 +31,8 @@ public class RecsysUserPreferenceTensorCalculator extends UserPreferenceTensorCa
 		UserPreferenceTensorCollectionAccumulator acc = new UserPreferenceTensorCollectionAccumulator();
 		JavaSparkContext.toSparkContext(dataSet.getJavaSparkContext()).register(acc);
 		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.getEventsData().map(event -> {
-			UserPreferenceTensor tensor = new UserPreferenceTensor(event.getUserID(), extractor.extractFeaturesFromEvent(event), event.getSlot());
+			UserPreference userPref = new UserPreference(event.getUserID(), extractor.extractFeaturesFromEvent(event), event.getSlot());
+			UserPreferenceTensor tensor = new UserPreferenceTensor(userPref);
 			tensor.incrementValue(event.getDuration());
 			return tensor;
 		});

@@ -105,6 +105,21 @@ public class DistributedUserItemMatrixTest {
 			}
 		}
 	}
+	
+	@Test
+	public void getItemSimilaritiesDefaultSimilarityTest() {
+		Matrix S = smallR.getItemSimilarities(sc).toBlockMatrix().toLocalMatrix();
+		System.out.println(S.toString());
+		int expectedNumRows = 2;
+		int expectedNumCols = 2;
+		assertEquals(expectedNumRows, S.numRows());
+		assertEquals(expectedNumCols, S.numCols());
+		for(int row = 0; row < expectedNumRows; row++){
+			for(int col = 0; col < expectedNumCols; col++){
+				assertEquals(expectedSimilarities[row][col], S.apply(row, col),0.001);
+			}
+		}
+	}
 
 	@AfterClass
 	public static void tearDownOnce() {

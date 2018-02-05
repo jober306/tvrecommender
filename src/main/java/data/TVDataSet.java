@@ -68,6 +68,10 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 		initialize();
 	}
 	
+	public void cache(){
+		eventsData = eventsData.cache();
+	}
+	
 	abstract protected void initialize();
 
 	/**

@@ -1,29 +1,23 @@
 package util;
 
-import static model.tensor.UserPreferenceTensorCollection.ANY;
-
 import java.util.Comparator;
 
 import model.ScoredRecommendation;
+import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCollection;
-
-import org.apache.spark.mllib.linalg.Vector;
-import org.apache.spark.mllib.linalg.Vectors;
 
 public class Comparators {
 	
-	
-	public static Comparator<Integer> ChannelTensorComparator(UserPreferenceTensorCollection tensors) {
-		return new Comparator<Integer>(){
+	public static Comparator<UserPreference> UserPreferenceTensorComparator(UserPreferenceTensorCollection tensors){
+		return new Comparator<UserPreference>(){
+
 			@Override
-			public int compare(Integer channelId1, Integer channelId2) {
-				int tensor1 = tensors.getUserPreferenceTensorsWatchTime(ANY, getChannelAsVector(channelId1), ANY);
-				int tensor2 = tensors.getUserPreferenceTensorsWatchTime(ANY, getChannelAsVector(channelId2), ANY);
-				return Integer.compare(tensor1, tensor2);
+			public int compare(UserPreference userPref1, UserPreference userPref2) {
+				int watchTime1 = tensors.getUserPreferenceTensorsWatchTime(userPref1);
+				int watchTime2 = tensors.getUserPreferenceTensorsWatchTime(userPref2);
+				return Integer.compare(watchTime1, watchTime2);
 			}
-			private Vector getChannelAsVector(int channelId) {
-				return Vectors.dense(new double[] { channelId });
-			}
+			
 		};
 	}
 	

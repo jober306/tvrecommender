@@ -2,11 +2,13 @@ package model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import model.similarity.SimilarityMeasure;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
@@ -17,8 +19,10 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import scala.Tuple3;
 import util.MllibUtilities;
+import util.SparkUtilities;
 
 import com.google.common.primitives.Ints;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 /**
  * Class that represents an user item matrix (or rating matrix) in a mllib
@@ -102,9 +106,32 @@ public class DistributedUserItemMatrix extends UserItemMatrix implements Seriali
 	 * @return The array of item indexes seen by the user.
 	 */
 	public List<Integer> getItemIndexesSeenByUser(int userIndex) {
+		if(userIndex > data.numRows()){
+			return new ArrayList<Integer>();
+		}
 		return Ints.asList(getRow(userIndex).toSparse().indices());
 	}
-
+	
+	public CoordinateMatrix getItemSimilarities(JavaSparkContext sc){
+		JavaRDD<MatrixEntry> upperTriangEntries =  data.columnSimilarities().entries().toJavaRDD();
+		JavaRDD<MatrixEntry> simMatrixEntries = upperTriangEntries.flatMap(entry -> {
+			long i = entry.i();
+			long j = entry.j();
+			if(i != j){
+				MatrixEntry symetricEntry = new MatrixEntry(j, i, entry.value());
+				return Arrays.asList(entry, symetricEntry).iterator();
+			}else{
+				return Arrays.asList(entry).iterator();
+			}
+		});
+		List<MatrixEntry> diagonalEntries = new ArrayList<MatrixEntry>();
+		for(int col = 0; col < getNumCols(); col++){
+			diagonalEntries.add(new MatrixEntry(col, col, 1.0d));
+		}
+		simMatrixEntries = SparkUtilities.elementsToJavaRDD(diagonalEntries, sc).union(simMatrixEntries);
+		return new CoordinateMatrix(simMatrixEntries.rdd());
+	}
+	
 	/**
 	 * Wrapper method that return cosine similarity between columns.
 	 * 

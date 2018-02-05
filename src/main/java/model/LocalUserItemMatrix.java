@@ -107,7 +107,7 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 * @return The array of item indexes seen by the user.
 	 */
 	public List<Integer> getItemIndexesSeenByUser(int userIndex) {
-		return Ints.asList(getRow(userIndex).toSparse().indices());
+		return userIndex >= R.numRows() ? new ArrayList<Integer>() : Ints.asList(getRow(userIndex).toSparse().indices());
 	}
 	
 	/**

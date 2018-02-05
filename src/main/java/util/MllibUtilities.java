@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -240,6 +241,16 @@ public class MllibUtilities {
 					return new IndexedRow(row.index(), Vectors.dense(rowValues));
 				});
 		return new IndexedRowMatrix(result.rdd());
+	}
+	
+	public static CoordinateMatrix vectorToCoordinateMatrix(Vector vec, JavaSparkContext sc){
+		double[] values = vec.toArray();
+		List<MatrixEntry> entries = IntStream.range(0, values.length).mapToObj(index -> new MatrixEntry(index, index, values[index])).collect(Collectors.toList());
+		return new CoordinateMatrix(SparkUtilities.elementsToJavaRDD(entries, sc).rdd(), values.length, values.length);
+	}
+	
+	public static DenseMatrix vectorToDenseMatrix(Vector vec){
+		return (DenseMatrix)Matrices.diag(vec);
 	}
 
 	/**

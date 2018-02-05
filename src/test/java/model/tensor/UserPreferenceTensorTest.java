@@ -17,27 +17,28 @@ public class UserPreferenceTensorTest {
 	static final double[] programFeatureValues = new double[]{1,2,3,4};
 	static final Vector programFeature = Vectors.dense(programFeatureValues);
 	static final short slot = 2;
+	static final UserPreference userPref = new UserPreference(userId, programFeature, slot);
 	
 	UserPreferenceTensor tensor;
 	
 	@Before
 	public void setUp(){
-		tensor = new UserPreferenceTensor(userId, programFeature, slot);
+		tensor = new UserPreferenceTensor(userPref);
 	}
 	
 	@Test
 	public void getUserIdTest(){
-		assertEquals(userId, tensor.getUserId());
+		assertEquals(userId, tensor.userId());
 	}
 	
 	@Test
 	public void getProgramFeatureTest(){
-		assertArrayEquals(programFeatureValues, tensor.getProgramFeatureVector().toArray(), 0.0d);
+		assertArrayEquals(programFeatureValues, tensor.programFeatureVector().toArray(), 0.0d);
 	}
 	
 	@Test
 	public void getSlotTest(){
-		assertEquals(slot, tensor.getSlot());
+		assertEquals(slot, tensor.slot());
 	}
 	
 	@Test
@@ -54,14 +55,14 @@ public class UserPreferenceTensorTest {
 	
 	@Test
 	public void equalsTest(){
-		UserPreferenceTensor copyTensor = new UserPreferenceTensor(tensor.getUserId(), tensor.getProgramFeatureVector(), tensor.getSlot());
+		UserPreferenceTensor copyTensor = new UserPreferenceTensor(new UserPreference(tensor.userId(), tensor.programFeatureVector(), tensor.slot()));
 		assertTrue(copyTensor.equals(tensor));
 		assertTrue(tensor.equals(copyTensor));
 	}
 	
 	@Test
 	public void hashTest(){
-		UserPreferenceTensor copyTensor = new UserPreferenceTensor(tensor.getUserId(), tensor.getProgramFeatureVector(), tensor.getSlot());
+		UserPreferenceTensor copyTensor = new UserPreferenceTensor(userPref);
 		assertEquals(tensor.hashCode(), copyTensor.hashCode());
 	}
 	

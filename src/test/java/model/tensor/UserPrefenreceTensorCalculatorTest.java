@@ -36,13 +36,15 @@ public class UserPrefenreceTensorCalculatorTest {
 	public void calculateUserPreferenceTensorForDataSetTest(){
 		RecsysUserPreferenceTensorCalculator calculator = new RecsysUserPreferenceTensorCalculator();
 		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(dataSet, RecsysFeatureExtractor.getInstance());
-		List<UserPreferenceTensor> user1Tensors = tensors.getUserPreferenceTensors(1, getAnyFeatureVector(4), ANY);
+		UserPreference user1Pref = new UserPreference(1, getAnyFeatureVector(4), ANY);
+		List<UserPreferenceTensor> user1Tensors = tensors.getUserPreferenceTensors(user1Pref);
 		assertEquals(3, user1Tensors.size());
 		int expectedWatchTime = 61;
 		int actualTotalWatchTime = user1Tensors.stream().mapToInt(tensor -> tensor.getTotalWatchTime()).sum();
 		assertEquals(expectedWatchTime, actualTotalWatchTime);
 		int expectedTotalWatchTimeUser2 = 6;
-		int actualTotalWatchTimeUser2 = tensors.getUserPreferenceTensors(2, Vectors.dense(new double[]{46,19,5,81}), 19).get(0).getTotalWatchTime();
+		UserPreference user2Pref = new UserPreference(2, Vectors.dense(new double[]{46,19,5,81}), 19);
+		int actualTotalWatchTimeUser2 = tensors.getUserPreferenceTensors(user2Pref).get(0).getTotalWatchTime();
 		assertEquals(expectedTotalWatchTimeUser2, actualTotalWatchTimeUser2);
 	}
 	

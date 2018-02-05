@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import scala.Tuple2;
+import util.SparkUtilities;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
@@ -36,7 +37,7 @@ public class SpaceAlignmentPredictorTest {
 		data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		RecsysBooleanFeatureExtractor featureExtractor = new RecsysBooleanFeatureExtractor(data._1());
-		predictor = new SpaceAlignmentRecommender<>(context, featureExtractor, r, neighbourhoodSize);
+		predictor = new SpaceAlignmentRecommender<>(context, featureExtractor, r, neighbourhoodSize, loader.getJavaSparkContext());
 		predictor.train();
 	}
 

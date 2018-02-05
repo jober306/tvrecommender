@@ -41,6 +41,10 @@ public abstract class EPG<T extends TVProgram> implements Serializable {
 		this.electronicProgrammingGuide = electronicProgrammingGuide;
 		this.sc = sc;
 	}
+	
+	public void cache(){
+		electronicProgrammingGuide = electronicProgrammingGuide.cache();
+	}
 
 	/**
 	 * Getter method that returns the java rdd containing tv program

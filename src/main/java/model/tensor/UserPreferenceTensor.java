@@ -16,20 +16,7 @@ public class UserPreferenceTensor implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * The user of this tensor.
-	 */
-	final int userId;
-	
-	/**
-	 * The program feature vector representing the program of this tensor.
-	 */
-	final Vector programFeatureVector;
-	
-	/**
-	 * The time slot of this tensor.
-	 */
-	final int slot;
+	final UserPreference userPreference;
 	
 	/**
 	 * Total watch time for this particular user, program feature vector and slot.
@@ -42,10 +29,8 @@ public class UserPreferenceTensor implements Serializable{
 	 * @param programFeatureVector The program feature vector representing the program of this tensor.
 	 * @param slot The time slot of this tensor.
 	 */
-	public UserPreferenceTensor(int userId, Vector programFeatureVector, int slot){
-		this.userId = userId;
-		this.programFeatureVector = programFeatureVector;
-		this.slot = slot;
+	public UserPreferenceTensor(UserPreference userPreference){
+		this.userPreference = userPreference;
 		this.totalWatchTime = 0;
 	}
 	
@@ -61,24 +46,24 @@ public class UserPreferenceTensor implements Serializable{
 	 * Getter method that returns the user id of this tensor.
 	 * @return The user id of this tensor.
 	 */
-	public int getUserId(){
-		return userId;
+	public int userId(){
+		return this.userPreference.userId();
 	}
 	
 	/**
 	 * Getter method that returns the program feature vector of this tensor.
 	 * @return The program feature vector of this tensor.
 	 */
-	public Vector getProgramFeatureVector(){
-		return programFeatureVector;
+	public Vector programFeatureVector(){
+		return this.userPreference.programFeatureVector();
 	}
 	
 	/**
 	 * Getter method that returns the slot of this tensor.
 	 * @return The slot of this tensor.
 	 */
-	public int getSlot(){
-		return slot;
+	public int slot(){
+		return this.userPreference.slot();
 	}
 	
 	/**
@@ -105,14 +90,14 @@ public class UserPreferenceTensor implements Serializable{
 
         UserPreferenceTensor rhs = (UserPreferenceTensor) obj;
         return new EqualsBuilder().
-            append(userId, rhs.getUserId()).
-            append(programFeatureVector.toArray(), rhs.getProgramFeatureVector().toArray()).
-            append(slot, rhs.getSlot()).
+            append(userId(), rhs.userId()).
+            append(programFeatureVector().toArray(), rhs.programFeatureVector().toArray()).
+            append(slot(), rhs.slot()).
             isEquals();
 	}
 	
 	@Override
     public int hashCode() {
-		return new HashCodeBuilder(17,31).append(userId).append(programFeatureVector.toArray()).append(slot).hashCode();
+		return new HashCodeBuilder(17,31).append(userId()).append(programFeatureVector().toArray()).append(slot()).hashCode();
 	}
 }

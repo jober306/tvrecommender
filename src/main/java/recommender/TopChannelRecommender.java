@@ -1,5 +1,8 @@
 package recommender;
 
+import static model.tensor.UserPreferenceTensorCollection.ANY;
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -8,7 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.spark.mllib.linalg.Vectors;
+
 import model.Recommendation;
+import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCalculator;
 import model.tensor.UserPreferenceTensorCollection;
 import util.Comparators;
@@ -94,16 +100,16 @@ public class TopChannelRecommender<T extends TVProgram, U extends TVEvent>
 						new ChannelFeatureExtractor<T, U>());
 		List<Integer> unsortedChannelIds = context.getTrainingSet()
 				.getAllChannelIds();
-		topChannelIds = unsortedChannelIds.stream()
-				.sorted(Comparators.ChannelTensorComparator(tensorCollection))
-				.mapToInt(Integer::intValue).toArray();
+		topChannelIds = unsortedChannelIds.stream().map(channelId -> new UserPreference(ANY, Vectors.dense(new double[]{channelId}), ANY))
+				.sorted(Comparators.UserPreferenceTensorComparator(tensorCollection))
+				.mapToInt(userPref -> (int) userPref.programFeatureVector().apply(0)).toArray();
 	}
 
 	private void createTopProgramsPerChannelIds() {
 		initializeProgramIdsPerTopChannelIds();
 		EvaluationContext<T, U> evalContext = (EvaluationContext<T, U>) context;
 		List<T> programsDuringTest = evalContext.getTestPrograms();
-		programsDuringTest.stream().map(Recommendation::new).forEach(this::addRecommendation);;
+		programsDuringTest.stream().map(Recommendation::new).forEach(this::addRecommendation);
 	}
 
 	private void initializeProgramIdsPerTopChannelIds() {

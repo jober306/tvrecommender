@@ -16,14 +16,14 @@ import org.junit.Test;
 
 public class UserPreferenceTensorCollectionTest {
 	
-	UserPreferenceTensor tensor1 = new UserPreferenceTensor(1, Vectors.dense(new double[]{0,1}), (short)5);
-	UserPreferenceTensor tensor2 = new UserPreferenceTensor(2, Vectors.dense(new double[]{1,2}), (short)4);
-	UserPreferenceTensor tensor3 = new UserPreferenceTensor(3, Vectors.dense(new double[]{2,3}), (short)3);
-	UserPreferenceTensor tensor4 = new UserPreferenceTensor(4, Vectors.dense(new double[]{3,2}), (short)2);
-	UserPreferenceTensor tensor5 = new UserPreferenceTensor(1, Vectors.dense(new double[]{2,1}), (short)1);
-	UserPreferenceTensor tensor6 = new UserPreferenceTensor(2, Vectors.dense(new double[]{1,0}), (short)2);
-	UserPreferenceTensor tensor7 = new UserPreferenceTensor(3, Vectors.dense(new double[]{4,4}), (short)3);
-	UserPreferenceTensor tensorToAdd = new UserPreferenceTensor(1, Vectors.dense(new double[]{0,1}), (short)5);
+	UserPreferenceTensor tensor1 = new UserPreferenceTensor(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5));
+	UserPreferenceTensor tensor2 = new UserPreferenceTensor(new UserPreference(2, Vectors.dense(new double[]{1,2}), (short)4));
+	UserPreferenceTensor tensor3 = new UserPreferenceTensor(new UserPreference(3, Vectors.dense(new double[]{2,3}), (short)3));
+	UserPreferenceTensor tensor4 = new UserPreferenceTensor(new UserPreference(4, Vectors.dense(new double[]{3,2}), (short)2));
+	UserPreferenceTensor tensor5 = new UserPreferenceTensor(new UserPreference(1, Vectors.dense(new double[]{2,1}), (short)1));
+	UserPreferenceTensor tensor6 = new UserPreferenceTensor(new UserPreference(2, Vectors.dense(new double[]{1,0}), (short)2));
+	UserPreferenceTensor tensor7 = new UserPreferenceTensor(new UserPreference(3, Vectors.dense(new double[]{4,4}), (short)3));
+	UserPreferenceTensor tensorToAdd = new UserPreferenceTensor(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5));
 	
 	UserPreferenceTensorCollection collection;
 	
@@ -62,7 +62,7 @@ public class UserPreferenceTensorCollectionTest {
 	
 	@Test
 	public void getUser1Test(){
-		List<UserPreferenceTensor> user1tensors = collection.getUserPreferenceTensors(1, getAnyFeatureVector(2), ANY);
+		List<UserPreferenceTensor> user1tensors = collection.getUserPreferenceTensors(new UserPreference(1, getAnyFeatureVector(2), ANY));
 		assertEquals(2, user1tensors.size());
 		assertTrue(user1tensors.contains(tensor1));
 		assertTrue(user1tensors.contains(tensor5));
@@ -70,7 +70,7 @@ public class UserPreferenceTensorCollectionTest {
 	
 	@Test
 	public void getUser1Slot1Test(){
-		List<UserPreferenceTensor> user1slot1tensor = collection.getUserPreferenceTensors(1, getAnyFeatureVector(2), 1);
+		List<UserPreferenceTensor> user1slot1tensor = collection.getUserPreferenceTensors(new UserPreference(1, getAnyFeatureVector(2), 1));
 		assertEquals(1, user1slot1tensor.size());
 		assertTrue(user1slot1tensor.contains(tensor5));
 	}
@@ -78,14 +78,14 @@ public class UserPreferenceTensorCollectionTest {
 	@Test
 	public void getFeature44Test(){
 		double[] features44 = new double[]{4,4};
-		List<UserPreferenceTensor> feature44Tensor = collection.getUserPreferenceTensors(ANY, Vectors.dense(features44), ANY);
+		List<UserPreferenceTensor> feature44Tensor = collection.getUserPreferenceTensors(new UserPreference(ANY, Vectors.dense(features44), ANY));
 		assertEquals(1, feature44Tensor.size());
 		assertTrue(feature44Tensor.contains(tensor7));
 	}
 	
 	@Test
 	public void getAllWithAnyTest(){
-		List<UserPreferenceTensor> tensors = collection.getUserPreferenceTensors(ANY, getAnyFeatureVector(2), ANY);
+		List<UserPreferenceTensor> tensors = collection.getUserPreferenceTensors(new UserPreference(ANY, getAnyFeatureVector(2), ANY));
 		assertEquals(7, tensors.size());
 	}
 	
@@ -96,13 +96,13 @@ public class UserPreferenceTensorCollectionTest {
 		collection.add(tensorToAdd);
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		assertEquals(7, tensors.size());
-		UserPreferenceTensor addedTensor = collection.getUserPreferenceTensors(1, Vectors.dense(new double[]{0,1}), (short)5).get(0);
+		UserPreferenceTensor addedTensor = collection.getUserPreferenceTensors(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5)).get(0);
 		assertEquals(watchTime, addedTensor.getTotalWatchTime());
 	}
 	
 	@Test
 	public void addNewTensorTest(){
-		UserPreferenceTensor newTensor = new UserPreferenceTensor(12, Vectors.dense(new double[]{0,0}), (short)10);
+		UserPreferenceTensor newTensor = new UserPreferenceTensor(new UserPreference(12, Vectors.dense(new double[]{0,0}), (short)10));
 		collection.add(newTensor);
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		assertEquals(8, tensors.size());

@@ -315,6 +315,28 @@ public class MllibUtilitiesTest {
 					0.0d);
 		}
 	}
+	
+	@Test
+	public void testInverVector(){
+		double[] values = new double[]{1.0d, 2.0d, 3.0d};
+		double[] expectedValues = new double[values.length];
+		for(int i = 0; i < values.length; i++){
+			expectedValues[i] = 1.0d / values[i];
+		}
+		Vector vector = Vectors.dense(values);
+		Vector invertedVector = MllibUtilities.invertVector(vector);
+		double[] actualValues = invertedVector.toArray();
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
+	}
+	
+	@Test
+	public void testInvertVectorDeepCopy(){
+		double[] actualValues = new double[]{1.0d, 2.0d, 3.0d};
+		double[] expectedValues = new double[]{1.0d, 2.0d, 3.0d};
+		Vector vector = Vectors.dense(actualValues);
+		MllibUtilities.invertVector(vector);
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
+	}
 
 	@After
 	public void verifyMatrixRInvariant() {

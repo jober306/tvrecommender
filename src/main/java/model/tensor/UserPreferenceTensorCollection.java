@@ -83,18 +83,19 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 * @return A list containing all the user preference tensors corresponding
 	 *         to the given attributes.
 	 */
-	public List<UserPreferenceTensor> getUserPreferenceTensors(int userId,
-			Vector programFeatures, int slot) {
-		final double[] wantedProgramFeatures = programFeatures.toArray();
+	public List<UserPreferenceTensor> getUserPreferenceTensors(UserPreference userPreference) {
+		final int userId = userPreference.userId();
+		final double[] wantedProgramFeatures = userPreference.programFeatureVector().toArray();
+		final int slot = userPreference.slot();
 		return syncMap
 				.entrySet()
 				.stream()
 				.filter(entry -> {
 					UserPreferenceTensor tensor = entry.getValue();
-					if (userId != ANY && userId != tensor.getUserId()) {
+					if (userId != ANY && userId != tensor.userId()) {
 						return false;
 					}
-					double[] tensorFeatures = tensor.getProgramFeatureVector()
+					double[] tensorFeatures = tensor.programFeatureVector()
 							.toArray();
 					for (int i = 0; i < tensorFeatures.length; i++) {
 						double feature = tensorFeatures[i];
@@ -103,7 +104,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 							return false;
 						}
 					}
-					if (slot != ANY && slot != tensor.getSlot()) {
+					if (slot != ANY && slot != tensor.slot()) {
 						return false;
 					}
 					return true;
@@ -117,9 +118,8 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 * @param slot
 	 * @return
 	 */
-	public int getUserPreferenceTensorsWatchTime(int userId,
-			Vector programFeatures, int slot) {
-		return getUserPreferenceTensors(userId, programFeatures, slot).stream()
+	public int getUserPreferenceTensorsWatchTime(UserPreference userPreference) {
+		return getUserPreferenceTensors(userPreference).stream()
 				.mapToInt(tensor -> tensor.getTotalWatchTime()).sum();
 	}
 
