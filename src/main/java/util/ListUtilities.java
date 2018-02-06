@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import scala.Tuple2;
+import scala.Tuple3;
 
 /**
  * Class that encapsulates utility methods on collections using the java 8
@@ -108,5 +109,27 @@ public class ListUtilities {
 	public static <U> List<U> union(List<U> l1, List<U> l2) {
 		l1.addAll(l2);
 		return l1;
+	}
+	
+	/**
+	 * Method that computes the cartesian product between two lists.
+	 * @param listA The first list
+	 * @param listB The second list
+	 * @return The list containing all pair of elements from listA and listB respectively.
+	 */
+	public static <A, B> List<Tuple2<A, B>> cartesianProduct(List<A> listA, List<B> listB){
+		return listA.stream().<Tuple2<A, B>>flatMap(a -> listB.stream().map(b -> new Tuple2<A,B>(a, b))).collect(Collectors.toList());
+	}
+	
+	/**
+	 * Method that computes the cartesian product between three lists.
+	 * @param listA The first list
+	 * @param listB The second list
+	 * @param listC The third list
+	 * @return The list containing all triplets of elements from listA, listB and listC respectively.
+	 */
+	public static <A, B, C> List<Tuple3<A, B, C>> cartesianProduct(List<A> listA, List<B> listB, List<C> listC){
+		List<Tuple2<Tuple2<A, B>, C>> rawProduct = cartesianProduct(cartesianProduct(listA, listB), listC);
+		return rawProduct.stream().map(tuple -> new Tuple3<A,B,C>(tuple._1()._1(), tuple._1()._2(), tuple._2())).collect(Collectors.toList());
 	}
 }
