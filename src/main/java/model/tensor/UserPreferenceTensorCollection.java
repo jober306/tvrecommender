@@ -120,7 +120,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 */
 	public int getUserPreferenceTensorsWatchTime(UserPreference userPreference) {
 		return getUserPreferenceTensors(userPreference).stream()
-				.mapToInt(tensor -> tensor.getTotalWatchTime()).sum();
+				.mapToInt(tensor -> tensor.totalWatchTime()).sum();
 	}
 
 	/**
@@ -133,7 +133,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 */
 	public void add(UserPreferenceTensor tensor) {
 		if (syncMap.containsKey(tensor)) {
-			syncMap.get(tensor).incrementValue(tensor.getTotalWatchTime());
+			syncMap.get(tensor).incrementValue(tensor.totalWatchTime());
 		} else {
 			syncMap.put(tensor, tensor);
 		}

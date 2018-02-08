@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.apache.spark.mllib.linalg.Vector;
 
+import scala.Tuple3;
+
 /**
  * Class holding information about the user preference id.
  * @author Jonathan Bergeron
@@ -32,6 +34,12 @@ public class UserPreference implements Serializable{
 		this.userId = userId;
 		this.programFeatureVector = programFeatureVector;
 		this.slot = slot;
+	}
+	
+	public UserPreference(Tuple3<Integer, Vector, Integer> userPref){
+		this.userId = userPref._1();
+		this.programFeatureVector = userPref._2();
+		this.slot = userPref._3();
 	}
 	
 	/**

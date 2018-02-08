@@ -2,7 +2,6 @@ package evaluator;
 
 import static java.util.stream.Collectors.toList;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,11 +18,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
-import org.apache.spark.mllib.linalg.distributed.RowMatrix;
 
 import recommender.AbstractTVRecommender;
-import recommender.SpaceAlignmentRecommender;
+import recommender.channelpreference.TopChannelRecommender;
 import scala.Tuple2;
 import util.SparkUtilities;
 import data.EvaluationContext;
@@ -33,7 +30,6 @@ import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
-import data.recsys.feature.RecsysBooleanFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
 
 /**
@@ -205,7 +201,8 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 		epg.cache(); events.cache();
 		EvaluationContext<RecsysTVProgram, RecsysTVEvent> context = new EvaluationContext<RecsysTVProgram, RecsysTVEvent>(epg, events, trainingStartTime, trainingEndTime, testStartTime, testEndTime);
 		for(int k = 1; k < 100; k+=5){
-			SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(context, new RecsysBooleanFeatureExtractor(epg), k, 50, sc);
+			//SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(context, new RecsysBooleanFeatureExtractor(epg), k, 50, sc);
+			TopChannelRecommender recommender = new TopChannelRecommender(context);
 			recommender.train();
 			EvaluationMeasure[] measures = { EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10 };
 			TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent>(context, recommender, measures);

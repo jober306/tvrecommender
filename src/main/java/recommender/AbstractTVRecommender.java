@@ -3,6 +3,7 @@ package recommender;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import model.RecommendFunction;
 import model.Recommendation;
 import data.Context;
 import data.EvaluationContext;
@@ -81,9 +82,9 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 				tvProrams);
 	}
 
-	abstract List<? extends Recommendation> recommendNormally(int userId,
+	abstract protected List<? extends Recommendation> recommendNormally(int userId,
 			int numberOfResults, List<T> tvPrograms);
 
-	abstract List<? extends Recommendation> recommendForTesting(int userId,
+	abstract protected List<? extends Recommendation> recommendForTesting(int userId,
 			int numberOfResults, List<T> tvPrograms);
 }

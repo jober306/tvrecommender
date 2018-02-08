@@ -7,13 +7,13 @@ import java.util.function.Supplier;
 
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
-import util.Lazy;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
+import util.Lazy;
 import data.feature.FeatureExtractor;
 
 /**
@@ -106,7 +106,7 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
 
 	abstract public IndexedRowMatrix getContentMatrix(
-			FeatureExtractor<?, T> extractor);
+			FeatureExtractor<? extends TVProgram, T> extractor);
 
 	// --------General Utilities methods--------------------
 	/**

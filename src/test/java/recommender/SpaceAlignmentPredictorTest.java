@@ -12,7 +12,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import scala.Tuple2;
-import util.SparkUtilities;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;

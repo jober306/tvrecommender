@@ -56,7 +56,7 @@ public class UserPreferenceTensorCollectionTest {
 	public void allWatchTimeZeros(){
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		for(UserPreferenceTensor tensor : tensors){
-			assertEquals(0, tensor.getTotalWatchTime());
+			assertEquals(0, tensor.totalWatchTime());
 		}
 	}
 	
@@ -97,7 +97,7 @@ public class UserPreferenceTensorCollectionTest {
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		assertEquals(7, tensors.size());
 		UserPreferenceTensor addedTensor = collection.getUserPreferenceTensors(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5)).get(0);
-		assertEquals(watchTime, addedTensor.getTotalWatchTime());
+		assertEquals(watchTime, addedTensor.totalWatchTime());
 	}
 	
 	@Test

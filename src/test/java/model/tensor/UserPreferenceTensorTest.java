@@ -43,14 +43,14 @@ public class UserPreferenceTensorTest {
 	
 	@Test
 	public void getTotalWatchTime(){
-		assertEquals(0, tensor.getTotalWatchTime());
+		assertEquals(0, tensor.totalWatchTime());
 	}
 	
 	@Test
 	public void incrementValueTest(){
 		int watchTime = 10;
 		tensor.incrementValue(watchTime);
-		assertEquals(watchTime, tensor.getTotalWatchTime());
+		assertEquals(watchTime, tensor.totalWatchTime());
 	}
 	
 	@Test

@@ -5,12 +5,8 @@ import static util.MllibUtilities.sparseMatrixFormatToCSCMatrixFormat;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
@@ -27,9 +23,9 @@ import org.apache.spark.mllib.recommendation.Rating;
 
 import scala.Tuple2;
 import scala.Tuple3;
-import scala.Tuple5;
 import util.SparkUtilities;
 import data.TVDataSet;
+import data.TVProgram;
 import data.feature.FeatureExtractor;
 import data.recsys.mapper.MapID;
 import data.recsys.mapper.RecSysMapCreator;
@@ -262,8 +258,9 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 	/**
 	 * Method that returns the content matrix of each tv show.
 	 */
+	@Override
 	public IndexedRowMatrix getContentMatrix(
-			FeatureExtractor<?, RecsysTVEvent> extractor) {
+			FeatureExtractor<? extends TVProgram, RecsysTVEvent> extractor) {
 		JavaRDD<IndexedRow> contentMatrix = eventsData
 				.mapToPair(
 						tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent

@@ -70,7 +70,7 @@ public class UserPreferenceTensor implements Serializable{
 	 * Getter method that returns the total watch time of this tensor.
 	 * @return The total watch time of this tensor.
 	 */
-	public int getTotalWatchTime() {
+	public int totalWatchTime() {
 		return totalWatchTime;
 	}
 	

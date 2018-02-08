@@ -1,5 +1,11 @@
 package data.recsys.tensor;
 
+import model.tensor.UserPreference;
+import model.tensor.UserPreferenceTensor;
+import model.tensor.UserPreferenceTensorCalculator;
+import model.tensor.UserPreferenceTensorCollection;
+import model.tensor.UserPreferenceTensorCollectionAccumulator;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -7,11 +13,6 @@ import data.TVDataSet;
 import data.feature.FeatureExtractor;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
-import model.tensor.UserPreference;
-import model.tensor.UserPreferenceTensor;
-import model.tensor.UserPreferenceTensorCalculator;
-import model.tensor.UserPreferenceTensorCollection;
-import model.tensor.UserPreferenceTensorCollectionAccumulator;
 
 /**
  * Class that calculates the user preference tensor on a given data set. See the
@@ -37,6 +38,7 @@ public class RecsysUserPreferenceTensorCalculator extends UserPreferenceTensorCa
 			return tensor;
 		});
 		userPrefTensors.foreach(tensor -> acc.add(tensor));
+		
 		return acc.value();
 	}
 }

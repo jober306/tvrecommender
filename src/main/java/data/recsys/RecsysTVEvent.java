@@ -3,6 +3,8 @@ package data.recsys;
 import static data.recsys.utility.RecsysUtilities.getStartTimeFromWeekAndSlot;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -24,6 +26,18 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 * 24*7 = 168.
 	 */
 	protected short slot;
+	
+	/**
+	 * Method that return all the possible values that the slot field can take.
+	 * @return A list containing all the possible values.
+	 */
+	public static List<Integer> getAllPossibleSlots(){
+		List<Integer> allPossibleSlots = new ArrayList<Integer>(168);
+		for(int i = 1; i <= 168; i++){
+			allPossibleSlots.add(i);
+		}
+		return allPossibleSlots;
+	}
 
 	/**
 	 * week: week from 1 to 19. Weeks 14 and 19 should not be used because they
