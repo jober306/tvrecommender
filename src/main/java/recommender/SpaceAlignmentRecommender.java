@@ -4,37 +4,22 @@ import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static util.Comparators.scoredRecommendationComparator;
-import static util.MllibUtilities.vectorToCoordinateMatrix;
 import static util.MllibUtilities.invertVector;
 import static util.MllibUtilities.scalarProduct;
-import static util.MllibUtilities.toDenseLocalMatrix;
 import static util.MllibUtilities.toDenseLocalVectors;
+import static util.MllibUtilities.vectorToCoordinateMatrix;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.print.attribute.standard.JobOriginatingUserName;
-
+import model.IRecommendation;
 import model.ScoredRecommendation;
 import model.UserItemMatrix;
-import util.MllibUtilities;
 
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.DenseMatrix;
@@ -44,6 +29,7 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.BlockMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
+import util.MllibUtilities;
 import data.Context;
 import data.EvaluationContext;
 import data.TVEvent;
@@ -163,7 +149,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected List<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
 		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
 		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream().map(entry -> scoreTVProgram(userId, entry)).collect(toList());
 		recommendations.sort(scoredRecommendationComparator());
@@ -171,7 +157,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 	
 	@Override
-	protected List<ScoredRecommendation> recommendForTesting(int userId,
+	protected List<? extends IRecommendation> recommendForTesting(int userId,
 			int numberOfResults, List<T> tvPrograms) {
 		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
 		List<ScoredRecommendation> recommendations = tvPrograms.stream().map(program -> scoreTVProgram(itemIndexesSeenByUser, program)).collect(toList());

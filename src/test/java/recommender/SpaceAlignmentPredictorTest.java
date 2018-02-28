@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import model.Recommendation;
+import model.ScoredRecommendation;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -43,7 +43,7 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		List<? extends Recommendation> prediction = predictor.recommend(userId,
+		List<ScoredRecommendation> prediction = (List<ScoredRecommendation>) predictor.recommend(userId,
 				START_TIME.plusHours(19), numberOfResults);
 		assertEquals(numberOfResults, prediction.size());
 	}

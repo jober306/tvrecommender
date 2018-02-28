@@ -1,13 +1,8 @@
 package model.tensor;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
 import static model.tensor.UserPreferenceTensorCollection.ANY;
 import static model.tensor.UserPreferenceTensorCollection.getAnyFeatureVector;
-import model.tensor.UserPreferenceTensor;
-import model.tensor.UserPreferenceTensorCollection;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.spark.mllib.linalg.Vectors;
 import org.junit.AfterClass;
@@ -33,18 +28,23 @@ public class UserPrefenreceTensorCalculatorTest {
 	}
 	
 	@Test
-	public void calculateUserPreferenceTensorForDataSetTest(){
+	public void calculateUserPreferenceTensorWithAnyProgramAndSlot(){
 		RecsysUserPreferenceTensorCalculator calculator = new RecsysUserPreferenceTensorCalculator();
-		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(dataSet, RecsysFeatureExtractor.getInstance());
-		UserPreference user1Pref = new UserPreference(1, getAnyFeatureVector(4), ANY);
-		List<UserPreferenceTensor> user1Tensors = tensors.getUserPreferenceTensors(user1Pref);
-		assertEquals(3, user1Tensors.size());
+		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(dataSet, RecsysFeatureExtractor.getInstance(), false, true, true);
+		UserPreference user1Pref = new UserPreference(1, getAnyFeatureVector(4), (short) ANY);
+		UserPreferenceTensor user1Tensors = tensors.getUserPreferenceTensor(user1Pref);
 		int expectedWatchTime = 61;
-		int actualTotalWatchTime = user1Tensors.stream().mapToInt(tensor -> tensor.totalWatchTime()).sum();
+		int actualTotalWatchTime = user1Tensors.totalWatchTime();
 		assertEquals(expectedWatchTime, actualTotalWatchTime);
+	}
+	
+	@Test 
+	public void calculateUserPreferenceTensorWithAnySlot(){
+		RecsysUserPreferenceTensorCalculator calculator = new RecsysUserPreferenceTensorCalculator();
+		UserPreferenceTensorCollection tensors = calculator.calculateUserPreferenceTensorForDataSet(dataSet, RecsysFeatureExtractor.getInstance(), false, false, true);
 		int expectedTotalWatchTimeUser2 = 6;
-		UserPreference user2Pref = new UserPreference(2, Vectors.dense(new double[]{46,19,5,81}), 19);
-		int actualTotalWatchTimeUser2 = tensors.getUserPreferenceTensors(user2Pref).get(0).totalWatchTime();
+		UserPreference user2Pref = new UserPreference(2, Vectors.dense(new double[]{46,19,5,81}), (short) ANY);
+		int actualTotalWatchTimeUser2 = tensors.getUserPreferenceTensor(user2Pref).totalWatchTime();
 		assertEquals(expectedTotalWatchTimeUser2, actualTotalWatchTimeUser2);
 	}
 	

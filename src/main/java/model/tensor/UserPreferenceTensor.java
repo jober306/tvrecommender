@@ -62,7 +62,7 @@ public class UserPreferenceTensor implements Serializable{
 	 * Getter method that returns the slot of this tensor.
 	 * @return The slot of this tensor.
 	 */
-	public int slot(){
+	public short slot(){
 		return this.userPreference.slot();
 	}
 	

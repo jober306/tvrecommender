@@ -27,6 +27,11 @@ public class UserPreferenceTensorCollection implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final int ANY = -1;
+	
+	final boolean anyUser;
+	final boolean anyProgram;
+	final boolean anySlot;
+	final int vectorSize;
 
 	public static Vector getAnyFeatureVector(int size) {
 		double[] features = new double[size];
@@ -38,15 +43,35 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 * The synchronised map containing the user preference tensor. The total
 	 * watch time of a specific tensor is held in the value of the map.
 	 */
-	Map<UserPreferenceTensor, UserPreferenceTensor> syncMap;
+	Map<UserPreference, UserPreferenceTensor> syncMap;
 
 	/**
 	 * Default constructor that build an empty synchronized HashMap of
 	 * UserPreferenceTensor.
 	 */
-	public UserPreferenceTensorCollection() {
+	public UserPreferenceTensorCollection(boolean anyUser, boolean anyProgram, int vectorSize, boolean anySlot) {
+		this.anyUser = anyUser;
+		this.anyProgram = anyProgram;
+		this.vectorSize = vectorSize;
+		this.anySlot = anySlot;
 		syncMap = Collections
-				.synchronizedMap(new HashMap<UserPreferenceTensor, UserPreferenceTensor>());
+				.synchronizedMap(new HashMap<UserPreference, UserPreferenceTensor>());
+	}
+	
+	public boolean anyUser(){
+		return this.anyUser;
+	}
+	
+	public boolean anyProgram(){
+		return this.anyProgram;
+	}
+	
+	public int vectorSize(){
+		return this.vectorSize;
+	}
+	
+	public boolean anySlot(){
+		return this.anySlot;
 	}
 
 	/**
@@ -58,6 +83,10 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 */
 	public UserPreferenceTensorCollection(UserPreferenceTensorCollection c) {
 		syncMap = Collections.synchronizedMap(c.getSyncMap());
+		this.anyUser = c.anyUser();
+		this.anyProgram = c.anyProgram();
+		this.vectorSize = c.vectorSize();
+		this.anySlot = c.anySlot();
 	}
 
 	public List<UserPreferenceTensor> getAllUserPreferenceTensors() {
@@ -83,44 +112,17 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 * @return A list containing all the user preference tensors corresponding
 	 *         to the given attributes.
 	 */
-	public List<UserPreferenceTensor> getUserPreferenceTensors(UserPreference userPreference) {
-		final int userId = userPreference.userId();
-		final double[] wantedProgramFeatures = userPreference.programFeatureVector().toArray();
-		final int slot = userPreference.slot();
-		return syncMap
-				.entrySet()
-				.stream()
-				.filter(entry -> {
-					UserPreferenceTensor tensor = entry.getValue();
-					if (userId != ANY && userId != tensor.userId()) {
-						return false;
-					}
-					double[] tensorFeatures = tensor.programFeatureVector()
-							.toArray();
-					for (int i = 0; i < tensorFeatures.length; i++) {
-						double feature = tensorFeatures[i];
-						double wantedFeature = wantedProgramFeatures[i];
-						if (wantedFeature != ANY && wantedFeature != feature) {
-							return false;
-						}
-					}
-					if (slot != ANY && slot != tensor.slot()) {
-						return false;
-					}
-					return true;
-				}).map(Entry::getValue).collect(Collectors.toList());
+	public UserPreferenceTensor getUserPreferenceTensor(UserPreference userPreference) {
+		return syncMap.getOrDefault(userPreference, new UserPreferenceTensor(userPreference));
 	}
 
 	/**
 	 * 
-	 * @param userId
-	 * @param programFeatures
-	 * @param slot
+	 * @param userPreference
 	 * @return
 	 */
-	public int getUserPreferenceTensorsWatchTime(UserPreference userPreference) {
-		return getUserPreferenceTensors(userPreference).stream()
-				.mapToInt(tensor -> tensor.totalWatchTime()).sum();
+	public int getUserPreferenceTensorWatchTime(UserPreference userPreference) {
+		return getUserPreferenceTensor(userPreference).totalWatchTime();
 	}
 
 	/**
@@ -132,10 +134,16 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 *            The tensor to add to the collection.
 	 */
 	public void add(UserPreferenceTensor tensor) {
-		if (syncMap.containsKey(tensor)) {
-			syncMap.get(tensor).incrementValue(tensor.totalWatchTime());
+		int userId = anyUser ? ANY : tensor.userId();
+		Vector programFeatureVector = anyProgram ? getAnyFeatureVector(vectorSize()) : tensor.programFeatureVector();
+		short slot = anySlot ? ANY : tensor.slot();
+		UserPreference actualPreference = new UserPreference(userId, programFeatureVector, slot);
+		UserPreferenceTensor actualTensor = new UserPreferenceTensor(actualPreference);
+		actualTensor.incrementValue(tensor.totalWatchTime());
+		if (syncMap.containsKey(actualPreference)) {
+			syncMap.get(actualPreference).incrementValue(actualTensor.totalWatchTime());
 		} else {
-			syncMap.put(tensor, tensor);
+			syncMap.put(actualPreference, actualTensor);
 		}
 	}
 
@@ -147,7 +155,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 *            The user preference tensors to add to this collection.
 	 */
 	public void addAll(UserPreferenceTensorCollection collection) {
-		for (Entry<UserPreferenceTensor, UserPreferenceTensor> entry : collection
+		for (Entry<UserPreference, UserPreferenceTensor> entry : collection
 				.getSyncMap().entrySet()) {
 			add(entry.getValue());
 		}
@@ -162,7 +170,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 		return syncMap.isEmpty();
 	}
 
-	private Map<UserPreferenceTensor, UserPreferenceTensor> getSyncMap() {
+	private Map<UserPreference, UserPreferenceTensor> getSyncMap() {
 		return syncMap;
 	}
 

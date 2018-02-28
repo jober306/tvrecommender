@@ -26,4 +26,6 @@ public abstract class FeatureExtractor<T extends TVProgram, U extends TVEvent>
 	abstract public Vector extractFeaturesFromProgram(T tvProgram);
 
 	abstract public Vector extractFeaturesFromEvent(U tvEvent);
+	
+	abstract public int extractedVectorSize();
 }

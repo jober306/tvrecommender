@@ -3,6 +3,7 @@ package util;
 import java.lang.reflect.Array;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import scala.Tuple2;
 import scala.Tuple3;
@@ -121,6 +122,10 @@ public class ListUtilities {
 		return listA.stream().<Tuple2<A, B>>flatMap(a -> listB.stream().map(b -> new Tuple2<A,B>(a, b))).collect(Collectors.toList());
 	}
 	
+	public static <A, B> Stream<Tuple2<A, B>> cartesianProductStream(List<A> listA, List<B> listB){
+		return listA.stream().flatMap(a -> listB.stream().map(b -> new Tuple2<A,B>(a, b)));
+	}
+	
 	/**
 	 * Method that computes the cartesian product between three lists.
 	 * @param listA The first list
@@ -131,5 +136,9 @@ public class ListUtilities {
 	public static <A, B, C> List<Tuple3<A, B, C>> cartesianProduct(List<A> listA, List<B> listB, List<C> listC){
 		List<Tuple2<Tuple2<A, B>, C>> rawProduct = cartesianProduct(cartesianProduct(listA, listB), listC);
 		return rawProduct.stream().map(tuple -> new Tuple3<A,B,C>(tuple._1()._1(), tuple._1()._2(), tuple._2())).collect(Collectors.toList());
+	}
+	
+	public static <A, B, C> Stream<Tuple3<A, B, C>> cartesianProductStream(List<A> listA, List<B> listB, List<C> listC){
+		return listA.stream().flatMap(a -> listB.stream().flatMap(b -> listC.stream().map(c -> new Tuple3<A,B,C>(a,b,c))));
 	}
 }

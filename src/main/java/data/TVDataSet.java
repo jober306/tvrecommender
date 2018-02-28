@@ -5,16 +5,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.function.Supplier;
 
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
-
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
-import util.Lazy;
 import data.feature.FeatureExtractor;
+import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
+import util.Lazy;
 
 /**
  * Abstract class that represents a tv data set. It contains the tv events rdd
@@ -54,6 +53,11 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 */
 	transient Supplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
 	transient Supplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
+	transient Supplier<List<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
+	transient Supplier<List<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
+	transient Supplier<List<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
+	transient Supplier<List<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
+	
 	
 	/**
 	 * Abstract constructor that initialize the tv events data and the spark
@@ -137,6 +141,10 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * @return A list of integer representing all the distinct user Ids.
 	 */
 	public List<Integer> getAllUserIds() {
+		return allUserIds.get();
+	}
+	
+	private List<Integer> initAllUserIds(){
 		return eventsData.map(tvEvent -> tvEvent.getUserID()).distinct()
 				.collect();
 	}
@@ -150,6 +158,11 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 		return eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct()
 				.collect();
 	}
+	
+	private List<Integer> initAllProgramIds(){
+		return eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct()
+				.collect();
+	}
 
 	/**
 	 * Method that return the list of all distinct event Ids in the data set.
@@ -157,6 +170,10 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * @return A list of integer representing all the distinct event Ids.
 	 */
 	public List<Integer> getAllEventIds() {
+		return allEventIds.get();
+	}
+	
+	public List<Integer> initAllEventIds(){
 		return eventsData.map(tvEvent -> tvEvent.getEventID()).distinct()
 				.collect();
 	}
@@ -167,6 +184,10 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * @return A list of integer representing all the distinct channel ids.
 	 */
 	public List<Integer> getAllChannelIds() {
+		return allChannelIds.get();
+	}
+	
+	public List<Integer> initAllChannelIds(){
 		return eventsData.map(tvEvent -> tvEvent.getChannelId()).distinct()
 				.collect();
 	}

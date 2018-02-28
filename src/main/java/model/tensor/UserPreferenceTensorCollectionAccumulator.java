@@ -15,12 +15,20 @@ public class UserPreferenceTensorCollectionAccumulator extends AccumulatorV2<Use
 	private static final long serialVersionUID = 1L;
 	
 	UserPreferenceTensorCollection collection;
+	final boolean anyUser;
+	final boolean anySlot;
+	final int vectorSize;
+	final boolean anyProgram;
 	
 	/**
 	 * Default constructor of this class. It creates an empty collection.
 	 */
-	public UserPreferenceTensorCollectionAccumulator(){
-		collection = new UserPreferenceTensorCollection();
+	public UserPreferenceTensorCollectionAccumulator(boolean anyUser, boolean anyProgram, int vectorSize, boolean anySlot){
+		collection = new UserPreferenceTensorCollection(anyUser, anyProgram, vectorSize, anySlot);
+		this.anyUser = anyUser;
+		this.anyProgram = anyProgram;
+		this.vectorSize = vectorSize;
+		this.anySlot = anySlot;
 	}
 	
 	/**
@@ -28,7 +36,11 @@ public class UserPreferenceTensorCollectionAccumulator extends AccumulatorV2<Use
 	 * @param collection The user preference tensor collection to copy.
 	 */
 	public UserPreferenceTensorCollectionAccumulator(UserPreferenceTensorCollection collection){
-		this.collection = new UserPreferenceTensorCollection(collection); 
+		this.collection = new UserPreferenceTensorCollection(collection);
+		this.anyUser = collection.anyUser();
+		this.anyProgram = collection.anyProgram();
+		this.vectorSize = collection.vectorSize();
+		this.anySlot = collection.anySlot();
 	}
 	
 	@Override
@@ -53,7 +65,7 @@ public class UserPreferenceTensorCollectionAccumulator extends AccumulatorV2<Use
 
 	@Override
 	public void reset() {
-		collection = new UserPreferenceTensorCollection();
+		collection = new UserPreferenceTensorCollection(collection.anyUser(), collection.anyProgram(), collection.vectorSize(), collection.anySlot());
 	}
 
 	@Override

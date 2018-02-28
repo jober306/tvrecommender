@@ -5,11 +5,11 @@ import static model.tensor.UserPreferenceTensorCollection.ANY;
 import java.util.List;
 import java.util.TreeSet;
 
-import model.Recommendation;
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.IRecommendation;
+import scala.Tuple2;
 
 public class TopChannelRecommender extends ChannelPreferenceRecommender{
 
@@ -19,13 +19,13 @@ public class TopChannelRecommender extends ChannelPreferenceRecommender{
 	}
 	
 	@Override
-	protected List<? extends Recommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
-		TreeSet<Tuple2<Integer, Integer>> topChannelsWatchTime = topChannelsWatchTimePerSlotPerUser.get(ANY).get(ANY);
+	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
+		TreeSet<Tuple2<Integer, Integer>> topChannelsWatchTime = topChannelsWatchTimePerSlotPerUser.get(ANY).get((short) ANY);
 		return recommendTopChannelsWithRespectToWatchTime(topChannelsWatchTime, numberOfResults, tvPrograms);
 	}
 
 	@Override
-	protected List<? extends Recommendation> recommendForTesting(int userId,
+	protected List<? extends IRecommendation> recommendForTesting(int userId,
 			int numberOfResults, List<RecsysTVProgram> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;

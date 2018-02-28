@@ -2,15 +2,15 @@ package model;
 
 import data.TVProgram;
 
-public class Recommendation {
+public class Recommendation implements IRecommendation{
 	
-	TVProgram program;
+	TVProgram tvProgram;
 	
-	public Recommendation(TVProgram program){
-		this.program = program;
+	public Recommendation(TVProgram tvProgram){
+		this.tvProgram = tvProgram;
 	}
 	
-	public TVProgram getProgram(){
-		return program;
+	public TVProgram tvProgram(){
+		return tvProgram;
 	}
 }

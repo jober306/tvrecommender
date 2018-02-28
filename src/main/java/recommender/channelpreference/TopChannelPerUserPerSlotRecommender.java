@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import model.Recommendation;
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.IRecommendation;
+import model.Recommendation;
+import scala.Tuple2;
 
 public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecommender{
 
@@ -21,7 +22,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 	}
 	
 	@Override
-	protected List<? extends Recommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
+	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
 		return tvPrograms.stream()
 		.map(curry1(this::calculateTVProgramWatchTime, userId))
 		.sorted(comparing(Tuple2<RecsysTVProgram, Integer>::_2).reversed())
@@ -32,20 +33,19 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 	}
 	
 	private Tuple2<RecsysTVProgram, Integer> calculateTVProgramWatchTime(int userId, RecsysTVProgram tvProgram){
-		TreeSet<Tuple2<Integer, Integer>> currentTopChannelsWatchTime = topChannelsWatchTimePerSlotPerUser.get(userId).get(tvProgram.getSlot());
+		TreeSet<Tuple2<Integer, Integer>> currentTopChannelsWatchTime = topChannelsWatchTimePerSlotPerUser.get(userId).getOrDefault(tvProgram.slot(), new TreeSet<Tuple2<Integer, Integer>>());
 		int watchTime = 0;
 		for(Tuple2<Integer, Integer> topChannelWatchTime : currentTopChannelsWatchTime){
-			int sameChannelIndicator = topChannelWatchTime._1() == tvProgram.getChannelId() ? 1 : 0;
+			int sameChannelIndicator = topChannelWatchTime._1() == tvProgram.channelId() ? 1 : 0;
 			watchTime = sameChannelIndicator * topChannelWatchTime._2();
 		}
 		return new Tuple2<RecsysTVProgram, Integer>(tvProgram, watchTime);
 	}
 
 	@Override
-	protected List<? extends Recommendation> recommendForTesting(int userId,
+	protected List<? extends IRecommendation> recommendForTesting(int userId,
 			int numberOfResults, List<RecsysTVProgram> tvPrograms) {
-		// TODO Auto-generated method stub
-		return null;
+		return recommendNormally(userId, numberOfResults, tvPrograms);
 	}
 	
 }

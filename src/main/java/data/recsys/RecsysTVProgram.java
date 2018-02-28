@@ -62,21 +62,21 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	/**
 	 * @return the genreId
 	 */
-	public byte getGenreId() {
+	public byte genreId() {
 		return genreId;
 	}
 
 	/**
 	 * @return the subGenreId
 	 */
-	public byte getSubGenreId() {
+	public byte subGenreId() {
 		return subGenreId;
 	}
 
 	/**
 	 * @return the slot
 	 */
-	public short getSlot() {
+	public short slot() {
 		return slot;
 	}
 

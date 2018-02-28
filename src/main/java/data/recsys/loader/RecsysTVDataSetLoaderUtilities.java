@@ -19,9 +19,8 @@ public class RecsysTVDataSetLoaderUtilities implements Serializable {
 	 *            event in csv format.
 	 * @return A JavaRDD of <class>RecsysTVEvent</class>.
 	 */
-	public static JavaRDD<RecsysTVEvent> mapLinesToTVEvent(JavaRDD<String> lines) {
-		return lines.map(line -> RecsysTVDataSetLoaderUtilities
-				.mapLineToTVEvent(line));
+	public static JavaRDD<RecsysTVEvent> linesToTVEvent(JavaRDD<String> lines) {
+		return lines.map(RecsysTVDataSetLoaderUtilities::lineToTVEvent);
 	}
 
 	/**
@@ -31,7 +30,7 @@ public class RecsysTVDataSetLoaderUtilities implements Serializable {
 	 *            The String representing the Recsys tv event in csv format.
 	 * @return The <class> RecsysTVEvent<\class> object representing the line.
 	 */
-	public static RecsysTVEvent mapLineToTVEvent(String line) {
+	public static RecsysTVEvent lineToTVEvent(String line) {
 		String[] row = line.split(",");
 		return new RecsysTVEvent(Short.parseShort(row[0]),
 				Short.parseShort(row[1]), Byte.parseByte(row[2]),

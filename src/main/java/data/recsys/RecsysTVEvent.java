@@ -31,10 +31,10 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 * Method that return all the possible values that the slot field can take.
 	 * @return A list containing all the possible values.
 	 */
-	public static List<Integer> getAllPossibleSlots(){
-		List<Integer> allPossibleSlots = new ArrayList<Integer>(168);
+	public static List<Short> getAllPossibleSlots(){
+		List<Short> allPossibleSlots = new ArrayList<Short>(168);
 		for(int i = 1; i <= 168; i++){
-			allPossibleSlots.add(i);
+			allPossibleSlots.add((short) i);
 		}
 		return allPossibleSlots;
 	}

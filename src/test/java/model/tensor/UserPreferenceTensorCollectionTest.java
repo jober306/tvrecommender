@@ -1,14 +1,14 @@
 package model.tensor;
 
-import static org.junit.Assert.*;
+import static model.tensor.UserPreferenceTensorCollection.ANY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static model.tensor.UserPreferenceTensorCollection.ANY;
-import static model.tensor.UserPreferenceTensorCollection.getAnyFeatureVector;
-import model.tensor.UserPreferenceTensor;
-import model.tensor.UserPreferenceTensorCollection;
-
+import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.junit.After;
 import org.junit.Before;
@@ -25,35 +25,34 @@ public class UserPreferenceTensorCollectionTest {
 	UserPreferenceTensor tensor7 = new UserPreferenceTensor(new UserPreference(3, Vectors.dense(new double[]{4,4}), (short)3));
 	UserPreferenceTensor tensorToAdd = new UserPreferenceTensor(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5));
 	
-	UserPreferenceTensorCollection collection;
+	List<UserPreferenceTensor> tensors;
 	
 	@Before
-	public void setUpOnce(){
-		collection = new UserPreferenceTensorCollection();
-		collection.add(tensor1);
-		collection.add(tensor2);
-		collection.add(tensor3);
-		collection.add(tensor4);
-		collection.add(tensor5);
-		collection.add(tensor6);
-		collection.add(tensor7);
+	public void setUp(){
+		tensors = Arrays.asList(tensor1, tensor2, tensor3, tensor4, tensor5, tensor6, tensor7);
 	}
 	
 	@Test
 	public void emptyTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, false, 2, false);
+		tensors.stream().forEach(collection::add);
 		assertTrue(!collection.isEmpty());
-		UserPreferenceTensorCollection emptyCollection = new UserPreferenceTensorCollection();
+		UserPreferenceTensorCollection emptyCollection = new UserPreferenceTensorCollection(false, false, 0, false);
 		assertTrue(emptyCollection.isEmpty());
 	}
 	
 	@Test
 	public void getAllTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, false, 2, false);
+		tensors.stream().forEach(collection::add);
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		assertEquals(7, tensors.size());
 	}
 	
 	@Test
 	public void allWatchTimeZeros(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, false, 2, false);
+		tensors.stream().forEach(collection::add);
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		for(UserPreferenceTensor tensor : tensors){
 			assertEquals(0, tensor.totalWatchTime());
@@ -61,47 +60,71 @@ public class UserPreferenceTensorCollectionTest {
 	}
 	
 	@Test
-	public void getUser1Test(){
-		List<UserPreferenceTensor> user1tensors = collection.getUserPreferenceTensors(new UserPreference(1, getAnyFeatureVector(2), ANY));
-		assertEquals(2, user1tensors.size());
-		assertTrue(user1tensors.contains(tensor1));
-		assertTrue(user1tensors.contains(tensor5));
+	public void getAnyProgramTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, true, 2, false);
+		tensors.stream().forEach(collection::add);
+		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
+		int expectedSize = 6;
+		int actualSize = tensors.size();
+		assertEquals(expectedSize, actualSize);
 	}
 	
 	@Test
-	public void getUser1Slot1Test(){
-		List<UserPreferenceTensor> user1slot1tensor = collection.getUserPreferenceTensors(new UserPreference(1, getAnyFeatureVector(2), 1));
-		assertEquals(1, user1slot1tensor.size());
-		assertTrue(user1slot1tensor.contains(tensor5));
+	public void getAnyProgramAnySlotTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, true, 2, false);
+		tensors.stream().forEach(collection::add);
+		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
+		int expectedSize = 6;
+		int actualSize = tensors.size();
+		assertEquals(expectedSize, actualSize);
 	}
 	
 	@Test
-	public void getFeature44Test(){
-		double[] features44 = new double[]{4,4};
-		List<UserPreferenceTensor> feature44Tensor = collection.getUserPreferenceTensors(new UserPreference(ANY, Vectors.dense(features44), ANY));
-		assertEquals(1, feature44Tensor.size());
-		assertTrue(feature44Tensor.contains(tensor7));
+	public void getAnyUserAnySlotTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(true, false, 2, true);
+		tensors.stream().forEach(collection::add);
+		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
+		int expectedSize = 7;
+		int actualSize = tensors.size();
+		assertEquals(expectedSize, actualSize);
 	}
 	
 	@Test
-	public void getAllWithAnyTest(){
-		List<UserPreferenceTensor> tensors = collection.getUserPreferenceTensors(new UserPreference(ANY, getAnyFeatureVector(2), ANY));
-		assertEquals(7, tensors.size());
+	public void getProramFeature44ExistsTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(true, false, 2, true);
+		tensors.stream().forEach(collection::add);
+		Vector program44 = Vectors.dense(new double[]{4.0d,4.0d});
+		UserPreferenceTensor tensor = collection.getUserPreferenceTensor(new UserPreference(ANY, program44, (short) ANY));
+		assertNotNull(tensor);
+	}
+	
+	@Test
+	public void getAllNoAnyTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, false, 2, false);
+		tensors.stream().forEach(collection::add);
+		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
+		int expectedSize = 7;
+		int actualSize = tensors.size();
+		assertEquals(expectedSize, actualSize);
 	}
 	
 	@Test
 	public void addTensorWatchTimeIncreasedTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, false, 2, false);
+		tensors.stream().forEach(collection::add);
 		int watchTime = 10;
 		tensorToAdd.incrementValue(watchTime);
 		collection.add(tensorToAdd);
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
 		assertEquals(7, tensors.size());
-		UserPreferenceTensor addedTensor = collection.getUserPreferenceTensors(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5)).get(0);
+		UserPreferenceTensor addedTensor = collection.getUserPreferenceTensor(new UserPreference(1, Vectors.dense(new double[]{0,1}), (short)5));
 		assertEquals(watchTime, addedTensor.totalWatchTime());
 	}
 	
 	@Test
 	public void addNewTensorTest(){
+		UserPreferenceTensorCollection collection = new UserPreferenceTensorCollection(false, false, 2, false);
+		tensors.stream().forEach(collection::add);
 		UserPreferenceTensor newTensor = new UserPreferenceTensor(new UserPreference(12, Vectors.dense(new double[]{0,0}), (short)10));
 		collection.add(newTensor);
 		List<UserPreferenceTensor> tensors = collection.getAllUserPreferenceTensors();
@@ -111,6 +134,6 @@ public class UserPreferenceTensorCollectionTest {
 	
 	@After
 	public void tearDown(){
-		collection = null;
+		tensors = null;
 	}
 }

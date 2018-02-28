@@ -46,10 +46,10 @@ public class RecsysFeatureExtractor extends
 	@Override
 	public Vector extractFeaturesFromProgram(RecsysTVProgram program) {
 		double[] features = new double[4];
-		features[0] = program.getChannelId();
-		features[1] = program.getSlot();
-		features[2] = program.getGenreId();
-		features[3] = program.getSubGenreId();
+		features[0] = program.channelId();
+		features[1] = program.slot();
+		features[2] = program.genreId();
+		features[3] = program.subGenreId();
 		return Vectors.dense(features);
 	}
 
@@ -69,5 +69,10 @@ public class RecsysFeatureExtractor extends
 		features[2] = event.getGenreID();
 		features[3] = event.getSubgenreID();
 		return Vectors.dense(features);
+	}
+	
+	@Override
+	public int extractedVectorSize(){
+		return 4;
 	}
 }

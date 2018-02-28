@@ -70,35 +70,35 @@ public abstract class TVProgram implements Serializable {
 	/**
 	 * @return the startTime
 	 */
-	public LocalDateTime getStartTime() {
+	public LocalDateTime startTime() {
 		return startTime;
 	}
 
 	/**
 	 * @return the endTime
 	 */
-	public LocalDateTime getEndTime() {
+	public LocalDateTime endTime() {
 		return endTime;
 	}
 
 	/**
 	 * @return the duration
 	 */
-	public Duration getDuration() {
+	public Duration duration() {
 		return duration;
 	}
 
 	/**
 	 * @return the channelId
 	 */
-	public int getChannelId() {
+	public int channelId() {
 		return channelId;
 	}
 
 	/**
 	 * @return the programId
 	 */
-	public int getProgramId() {
+	public int programId() {
 		return programId;
 	}
 

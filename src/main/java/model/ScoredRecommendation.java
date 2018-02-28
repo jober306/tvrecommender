@@ -7,12 +7,12 @@ public class ScoredRecommendation extends Recommendation{
 	
 	double score;
 	
-	public ScoredRecommendation(TVProgram program, double score) {
-		super(program);
+	public ScoredRecommendation(TVProgram tvProgram, double score) {
+		super(tvProgram);
 		this.score = score;
 	}
 	
-	public double getScore(){
+	public double score(){
 		return score;
 	}
 }

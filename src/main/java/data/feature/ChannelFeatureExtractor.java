@@ -28,7 +28,7 @@ public class ChannelFeatureExtractor<T extends TVProgram, U extends TVEvent> ext
 	 */
 	@Override
 	public Vector extractFeaturesFromProgram(TVProgram program) {
-		return Vectors.dense(new double[]{program.getChannelId()});
+		return Vectors.dense(new double[]{program.channelId()});
 	}
 	
 	/**
@@ -39,6 +39,11 @@ public class ChannelFeatureExtractor<T extends TVProgram, U extends TVEvent> ext
 	@Override
 	public Vector extractFeaturesFromEvent(TVEvent event) {
 		return Vectors.dense(new double[]{event.getChannelId()});
+	}
+	
+	@Override
+	public int extractedVectorSize(){
+		return 1;
 	}
 	
 }

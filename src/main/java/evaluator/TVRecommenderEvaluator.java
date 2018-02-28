@@ -10,19 +10,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaSparkContext;
 
-import recommender.AbstractTVRecommender;
-import recommender.channelpreference.TopChannelRecommender;
-import scala.Tuple2;
-import util.SparkUtilities;
 import data.EvaluationContext;
 import data.TVEvent;
 import data.TVProgram;
@@ -31,6 +25,11 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import recommender.AbstractTVRecommender;
+import recommender.channelpreference.TopChannelPerUserPerSlotRecommender;
+import scala.Tuple2;
+import util.ProgressPrinter;
+import util.SparkUtilities;
 
 /**
  * Class that evaluate a tv recommender on a given data set.
@@ -156,7 +155,8 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 		for (int userId : userIds) {
 			current++;
 			meanAveragePrecision += calculateAveragePrecisionForUser(userId, numberOfResults);
-			printProgress(startTime, total, current, meanAveragePrecision / current);
+			ProgressPrinter.printProgress(startTime, total, current);
+			System.out.print("| " + meanAveragePrecision / current);
 		}
 		return meanAveragePrecision /= userIds.size();
 	}
@@ -164,7 +164,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 	private double calculateAveragePrecisionForUser(int userId, int numberOfResults) {
 		List<Integer> groundTruth = context.getGroundTruth().get(userId);
 		double averagePrecision = 0.0d;
-		List<Integer> recommendedTVShowIndexes = recommender.recommend(userId, numberOfResults, context.getTestPrograms()).stream().map(rec -> rec.getProgram().getProgramId()).collect(toList());
+		List<Integer> recommendedTVShowIndexes = recommender.recommend(userId, numberOfResults, context.getTestPrograms()).stream().map(rec -> rec.tvProgram().programId()).collect(toList());
 		averagePrecision = calculateAveragePrecision(numberOfResults, recommendedTVShowIndexes, groundTruth);
 		return averagePrecision;
 	}
@@ -194,46 +194,15 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 		JavaSparkContext sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		int minDuration = 5;
-		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader
-				.loadDataSet(minDuration);
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet(minDuration);
 		RecsysEPG epg = data._1;
 		RecsysTVDataSet events = data._2;
-		epg.cache(); events.cache();
+		//epg.cache(); events.cache();
 		EvaluationContext<RecsysTVProgram, RecsysTVEvent> context = new EvaluationContext<RecsysTVProgram, RecsysTVEvent>(epg, events, trainingStartTime, trainingEndTime, testStartTime, testEndTime);
-		for(int k = 1; k < 100; k+=5){
-			//SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent>(context, new RecsysBooleanFeatureExtractor(epg), k, 50, sc);
-			TopChannelRecommender recommender = new TopChannelRecommender(context);
-			recommender.train();
-			EvaluationMeasure[] measures = { EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10 };
-			TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent>(context, recommender, measures);
-			evaluator.evaluate();
-			//evaluator.outputResults("resultx.txt", "Space Alignment Recommender (rank@" + k + ")");
-		}
-	}
-	
-	private static void printProgress(long startTime, long total, long current, double currentMetricScore) {
-	    long eta = current == 0 ? 0 : 
-	        (total - current) * (System.currentTimeMillis() - startTime) / current;
-
-	    String etaHms = current == 0 ? "N/A" : 
-	            String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(eta),
-	                    TimeUnit.MILLISECONDS.toMinutes(eta) % TimeUnit.HOURS.toMinutes(1),
-	                    TimeUnit.MILLISECONDS.toSeconds(eta) % TimeUnit.MINUTES.toSeconds(1));
-
-	    StringBuilder string = new StringBuilder(140);   
-	    int percent = (int) (current * 100 / total);
-	    string
-	        .append('\r')
-	        .append(String.join("", Collections.nCopies(percent == 0 ? 2 : 2 - (int) (Math.log10(percent)), " ")))
-	        .append(String.format(" %d%% [", percent))
-	        .append(String.join("", Collections.nCopies(percent, "=")))
-	        .append('>')
-	        .append(String.join("", Collections.nCopies(100 - percent, " ")))
-	        .append(']')
-	        .append(String.join("", Collections.nCopies((int) (Math.log10(total)) - (int) (Math.log10(current)), " ")))
-	        .append(String.format(" %d/%d, ETA: %s", current, total, etaHms))
-	    	.append("|")
-	    	.append(currentMetricScore);
-	    System.out.print(string);
+		TopChannelPerUserPerSlotRecommender recommender = new TopChannelPerUserPerSlotRecommender(context);
+		recommender.train();
+		EvaluationMeasure[] measures = { EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10 };
+		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent>(context, recommender, measures);
+		evaluator.evaluate();
 	}
 }

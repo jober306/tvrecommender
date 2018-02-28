@@ -3,7 +3,7 @@ package recommender;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import model.Recommendation;
+import model.IRecommendation;
 import model.UserItemMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 
@@ -111,13 +111,13 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected List<Recommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected List<Recommendation> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected List<? extends IRecommendation> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

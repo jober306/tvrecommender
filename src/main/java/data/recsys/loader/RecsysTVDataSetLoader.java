@@ -1,6 +1,6 @@
 package data.recsys.loader;
 
-import static data.recsys.loader.RecsysTVDataSetLoaderUtilities.mapLinesToTVEvent;
+import static data.recsys.loader.RecsysTVDataSetLoaderUtilities.linesToTVEvent;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -94,7 +94,7 @@ public class RecsysTVDataSetLoader {
 	 *         in the other.
 	 */
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet() {
-		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
+		JavaRDD<RecsysTVEvent> events = linesToTVEvent(loadLinesFromDataSet());
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
 		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc);
 		RecsysEPG epg = new RecsysEPG(programs, sc);
@@ -113,7 +113,7 @@ public class RecsysTVDataSetLoader {
 	 *         in the other.
 	 */
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet(int minDuration) {
-		JavaRDD<RecsysTVEvent> events = mapLinesToTVEvent(loadLinesFromDataSet());
+		JavaRDD<RecsysTVEvent> events = linesToTVEvent(loadLinesFromDataSet());
 		JavaRDD<RecsysTVEvent> filteredEvents = TVDataSetUtilities
 				.filterByMinDuration(events, 5);
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(filteredEvents);

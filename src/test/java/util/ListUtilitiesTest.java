@@ -1,5 +1,6 @@
 package util;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static util.ListUtilities.getFirstArgumentAsArray;
@@ -131,11 +132,57 @@ public class ListUtilitiesTest {
 	}
 	
 	@Test
+	public void cartesianProduct2Supplier(){
+		List<String> list1 = Arrays.asList("hoho", "haha");
+		List<Integer> list2 = Arrays.asList(1, 2);
+		List<Tuple2<String, Integer>> cartesianProduct = new CartesianProduct2<String, Integer>(list1, list2).generate().collect(toList());
+		int expectedSize = list1.size() * list2.size();
+		List<Tuple2<String, Integer>> expectedResult = Arrays.asList(new Tuple2<String, Integer>("hoho", 1),new Tuple2<String, Integer>("hoho", 2),new Tuple2<String, Integer>("haha", 1),new Tuple2<String, Integer>("haha", 2));
+		assertEquals(expectedSize, cartesianProduct.size());
+		assertEquals(expectedResult, cartesianProduct);
+	}
+	
+	@Test
+	public void cartesianProduct2Streams(){
+		List<String> list1 = Arrays.asList("hoho", "haha");
+		List<Integer> list2 = Arrays.asList(1, 2);
+		List<Tuple2<String, Integer>> cartesianProduct = ListUtilities.cartesianProductStream(list1, list2).collect(toList());
+		int expectedSize = list1.size() * list2.size();
+		List<Tuple2<String, Integer>> expectedResult = Arrays.asList(new Tuple2<String, Integer>("hoho", 1),new Tuple2<String, Integer>("hoho", 2),new Tuple2<String, Integer>("haha", 1),new Tuple2<String, Integer>("haha", 2));
+		assertEquals(expectedSize, cartesianProduct.size());
+		assertEquals(expectedResult, cartesianProduct);
+	}
+	
+	@Test
+	public void cartesianProduct3Supplier(){
+		List<String> list1 = Arrays.asList("hoho", "haha");
+		List<Integer> list2 = Arrays.asList(1, 2);
+		List<Double> list3 = Arrays.asList(5.0d);
+		List<Tuple3<String, Integer, Double>> cartesianProduct = new CartesianProduct3<String, Integer, Double>(list1, list2, list3).generate().collect(toList());
+		int expectedSize = list1.size() * list2.size() * list3.size();
+		List<Tuple3<String, Integer, Double>> expectedResult = Arrays.asList(new Tuple3<String, Integer, Double>("hoho", 1, 5.0d),new Tuple3<String, Integer, Double>("hoho", 2, 5.0d),new Tuple3<String, Integer, Double>("haha", 1, 5.0d),new Tuple3<String, Integer, Double>("haha", 2, 5.0d));
+		assertEquals(expectedSize, cartesianProduct.size());
+		assertEquals(expectedResult, cartesianProduct);
+	}
+	
+	@Test
 	public void cartesianProduct3Lists(){
 		List<String> list1 = Arrays.asList("hoho", "haha");
 		List<Integer> list2 = Arrays.asList(1, 2);
 		List<Double> list3 = Arrays.asList(5.0d);
 		List<Tuple3<String, Integer, Double>> cartesianProduct = ListUtilities.cartesianProduct(list1, list2, list3);
+		int expectedSize = list1.size() * list2.size() * list3.size();
+		List<Tuple3<String, Integer, Double>> expectedResult = Arrays.asList(new Tuple3<String, Integer, Double>("hoho", 1, 5.0d),new Tuple3<String, Integer, Double>("hoho", 2, 5.0d),new Tuple3<String, Integer, Double>("haha", 1, 5.0d),new Tuple3<String, Integer, Double>("haha", 2, 5.0d));
+		assertEquals(expectedSize, cartesianProduct.size());
+		assertEquals(expectedResult, cartesianProduct);
+	}
+	
+	@Test
+	public void cartesianProduct3Streams(){
+		List<String> list1 = Arrays.asList("hoho", "haha");
+		List<Integer> list2 = Arrays.asList(1, 2);
+		List<Double> list3 = Arrays.asList(5.0d);
+		List<Tuple3<String, Integer, Double>> cartesianProduct = ListUtilities.cartesianProductStream(list1, list2, list3).collect(toList());
 		int expectedSize = list1.size() * list2.size() * list3.size();
 		List<Tuple3<String, Integer, Double>> expectedResult = Arrays.asList(new Tuple3<String, Integer, Double>("hoho", 1, 5.0d),new Tuple3<String, Integer, Double>("hoho", 2, 5.0d),new Tuple3<String, Integer, Double>("haha", 1, 5.0d),new Tuple3<String, Integer, Double>("haha", 2, 5.0d));
 		assertEquals(expectedSize, cartesianProduct.size());

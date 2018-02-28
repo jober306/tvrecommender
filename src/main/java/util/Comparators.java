@@ -13,8 +13,8 @@ public class Comparators {
 
 			@Override
 			public int compare(UserPreference userPref1, UserPreference userPref2) {
-				int watchTime1 = tensors.getUserPreferenceTensorsWatchTime(userPref1);
-				int watchTime2 = tensors.getUserPreferenceTensorsWatchTime(userPref2);
+				int watchTime1 = tensors.getUserPreferenceTensorWatchTime(userPref1);
+				int watchTime2 = tensors.getUserPreferenceTensorWatchTime(userPref2);
 				return Integer.compare(watchTime1, watchTime2);
 			}
 			
@@ -26,7 +26,7 @@ public class Comparators {
 
 			@Override
 			public int compare(ScoredRecommendation program1, ScoredRecommendation program2) {
-				return Double.compare(program2.getScore(), program1.getScore());
+				return Double.compare(program2.score(), program1.score());
 			}
 		};
 	}

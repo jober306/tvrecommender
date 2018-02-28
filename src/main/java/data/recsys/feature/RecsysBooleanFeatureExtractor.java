@@ -34,6 +34,8 @@ public class RecsysBooleanFeatureExtractor extends
 	Map<Integer, Integer> channelIDMap;
 	Map<Byte, Integer> genreIDMap;
 	Map<Byte, Integer> subgenreIDMap;
+	
+	final int extractedVectorSize;
 
 	private int mappedID;
 
@@ -51,12 +53,13 @@ public class RecsysBooleanFeatureExtractor extends
 		initializeChannelIDMap(epg);
 		initializeGenreIDMap();
 		initializeSubgenreIDMap();
+		this.extractedVectorSize = channelIDMap.size() + genreIDMap.size() + subgenreIDMap.size();
 	}
 
 	private void initializeChannelIDMap(RecsysEPG epg) {
 		Map<Integer, Integer> tempMap = new HashMap<Integer, Integer>();
 		List<Integer> channelIDs = epg.getEPG()
-				.map(program -> program.getChannelId()).distinct().collect();
+				.map(program -> program.channelId()).distinct().collect();
 		for (int channelID : channelIDs) {
 			tempMap.put(channelID, mappedID);
 			mappedID++;
@@ -121,9 +124,9 @@ public class RecsysBooleanFeatureExtractor extends
 	 */
 	@Override
 	public Vector extractFeaturesFromProgram(RecsysTVProgram tvProgram) {
-		int channelID = tvProgram.getChannelId();
-		byte genreID = tvProgram.getGenreId();
-		byte subgenreID = tvProgram.getSubGenreId();
+		int channelID = tvProgram.channelId();
+		byte genreID = tvProgram.genreId();
+		byte subgenreID = tvProgram.subGenreId();
 		return createBooleanFeatureVector(channelID, genreID, subgenreID);
 	}
 
@@ -154,5 +157,10 @@ public class RecsysBooleanFeatureExtractor extends
 		features.add(new Tuple2<Integer, Double>(subgenreIDMap.get(subgenreID),
 				1.0d));
 		return Vectors.sparse(mappedID, features);
+	}
+	
+	@Override
+	public int extractedVectorSize(){
+		return this.extractedVectorSize;
 	}
 }

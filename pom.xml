@@ -14,6 +14,26 @@
 		        <target>1.8</target>
 		    </configuration>
 		</plugin>
+		  <plugin>
+		    <artifactId>maven-clean-plugin</artifactId>
+		    <version>3.0.0</version>
+		    <configuration>
+		      <filesets>
+		        <fileset>
+		          <directory>src/main/resources</directory>
+		          <excludes>
+		            <exclude>tv-audience-dataset/*</exclude>
+		          </excludes>
+		          <includes>
+		            <include>eventIDToIDMap*.txt</include>
+		            <include>programIDToIDMap*.txt</include>
+		      		<include>userIDToIDMap*.txt</include>
+		          </includes>
+		          <followSymlinks>false</followSymlinks>
+		        </fileset>
+		      </filesets>
+		    </configuration>
+		  </plugin>
 	</plugins>
  </build>
   <dependencies>
