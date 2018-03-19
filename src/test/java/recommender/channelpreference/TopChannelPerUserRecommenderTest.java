@@ -5,20 +5,19 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import model.Recommendation;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import recommender.AbstractTVRecommender;
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import model.Recommendation;
+import recommender.AbstractTVRecommender;
+import scala.Tuple2;
 
 public class TopChannelPerUserRecommenderTest {
 	
@@ -62,7 +61,7 @@ public class TopChannelPerUserRecommenderTest {
 		RecsysTVProgram notWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)0, 2, 2, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram1, mostWatchedChannelTVProgram2, mostWatchedChannelTVProgram3, notWatchedChannelTVProgram);
 		List<Recommendation> recommendations = (List<Recommendation>) recommender.recommend(user, tvPrograms.size(), tvPrograms);
-		int expectedNumberOfResults = 3;
+		int expectedNumberOfResults = 4;
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().programId());
 		assertEquals(expectedSecondProgramId2, recommendations.get(1).tvProgram().programId());

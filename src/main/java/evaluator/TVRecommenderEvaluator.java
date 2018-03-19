@@ -26,7 +26,8 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import recommender.AbstractTVRecommender;
-import recommender.channelpreference.TopChannelPerUserPerSlotRecommender;
+import recommender.channelpreference.ChannelPreferenceRecommender;
+import recommender.channelpreference.TopChannelPerUserRecommender;
 import scala.Tuple2;
 import util.ProgressPrinter;
 import util.SparkUtilities;
@@ -188,9 +189,9 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 
 	public static void main(String[] args) {
 		LocalDateTime trainingStartTime = RecsysTVDataSet.START_TIME;
-		LocalDateTime trainingEndTime = RecsysTVDataSet.START_TIME.plusDays(2);
-		LocalDateTime testStartTime = RecsysTVDataSet.START_TIME.plusDays(2);
-		LocalDateTime testEndTime = RecsysTVDataSet.START_TIME.plusDays(3);
+		LocalDateTime trainingEndTime = RecsysTVDataSet.START_TIME.plusDays(21);
+		LocalDateTime testStartTime = RecsysTVDataSet.START_TIME.plusDays(21);
+		LocalDateTime testEndTime = RecsysTVDataSet.START_TIME.plusDays(22);
 		JavaSparkContext sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		int minDuration = 5;
@@ -199,7 +200,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent> {
 		RecsysTVDataSet events = data._2;
 		//epg.cache(); events.cache();
 		EvaluationContext<RecsysTVProgram, RecsysTVEvent> context = new EvaluationContext<RecsysTVProgram, RecsysTVEvent>(epg, events, trainingStartTime, trainingEndTime, testStartTime, testEndTime);
-		TopChannelPerUserPerSlotRecommender recommender = new TopChannelPerUserPerSlotRecommender(context);
+		ChannelPreferenceRecommender recommender = new TopChannelPerUserRecommender(context);
 		recommender.train();
 		EvaluationMeasure[] measures = { EvaluationMeasure.MEAN_AVERAGE_PRECISION_AT_10 };
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent>(context, recommender, measures);
