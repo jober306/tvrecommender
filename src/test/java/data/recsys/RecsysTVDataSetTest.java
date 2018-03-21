@@ -3,17 +3,11 @@ package data.recsys;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -23,8 +17,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import util.SparkUtilities;
 import data.recsys.feature.RecsysFeatureExtractor;
+import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
+import util.SparkUtilities;
 
 public class RecsysTVDataSetTest {
 
@@ -116,9 +112,9 @@ public class RecsysTVDataSetTest {
 		int numberOfUsers = dataSet.getNumberOfUsers();
 		int numberOfPrograms = dataSet.getNumberOfTvShows();
 		int numberOfEvents = dataSet.getNumberOfEvents();
-		assertThat(numberOfUsers, is(3));
-		assertThat(numberOfPrograms, is(2));
-		assertThat(numberOfEvents, is(4));
+		assertEquals(3, numberOfUsers);
+		assertEquals(2, numberOfPrograms);
+		assertEquals(4, numberOfEvents);
 	}
 
 	@Test

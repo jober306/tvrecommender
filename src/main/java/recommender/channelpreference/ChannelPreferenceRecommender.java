@@ -18,15 +18,15 @@ import data.feature.FeatureExtractor;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.tensor.RecsysUserPreferenceTensorCalculator;
-import model.IRecommendation;
-import model.Recommendation;
+import model.recommendation.Recommendation;
+import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCollection;
 import recommender.AbstractTVRecommender;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent> {
+public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent, Recommendation> {
 		
 	protected UserPreferenceTensorCollection userPreferenceCollection;
 	
@@ -55,14 +55,15 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	}
 
 	@Override
-	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms){
-		return tvPrograms.stream()
+	protected Recommendations<Recommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms){
+		List<Recommendation> recommendations = tvPrograms.stream()
 				.map(curry1(this::toProgramWatchTime, userId))
 				.sorted(comparing(Tuple2<RecsysTVProgram, Integer>::_2).reversed())
 				.limit(numberOfResults)
 				.map(Tuple2<RecsysTVProgram, Integer>::_1)
 				.map(Recommendation::new)
 				.collect(Collectors.toList());
+		return new Recommendations<>(userId, recommendations);
 	}
 	
 	protected Tuple2<RecsysTVProgram, Integer> toProgramWatchTime(int userId, RecsysTVProgram tvProgram){
@@ -93,7 +94,7 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	}
 	
 	@Override
-	protected List<? extends IRecommendation> recommendForTesting(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms){
+	protected Recommendations<Recommendation> recommendForTesting(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms){
 		return recommendNormally(userId, numberOfResults, tvPrograms);
 	}
 }

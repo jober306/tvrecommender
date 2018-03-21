@@ -5,26 +5,25 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import model.Recommendation;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import recommender.AbstractTVRecommender;
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import model.recommendation.Recommendation;
+import model.recommendation.Recommendations;
+import scala.Tuple2;
 
 public class TopChannelPerUserPerSlotRecommenderTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	static AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
+	static ChannelPreferenceRecommender recommender;
 
 	@BeforeClass
 	public static void setUpOnce() {
@@ -45,7 +44,7 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgramNotInSlot, notWatchedChannelTVProgram1, notWatchedChannelTVProgram2);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 0;
-		List<Recommendation> recommendations = (List<Recommendation>) recommender.recommend(user, expectedNumberOfResults, tvPrograms);
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, expectedNumberOfResults, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 	}
 	
@@ -59,7 +58,7 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram, notWatchedChannelTVProgram1, notWatchedChannelTVProgram2);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
-		List<Recommendation> recommendations = (List<Recommendation>) recommender.recommend(user, expectedNumberOfResults, tvPrograms);
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, expectedNumberOfResults, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().programId());
 	}
@@ -72,7 +71,7 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelAndSlotTVProgram, secondMostWatchedChannelAndSlotTVProgram);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 2;
-		List<Recommendation> recommendations = (List<Recommendation>) recommender.recommend(user, expectedNumberOfResults, tvPrograms);
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, expectedNumberOfResults, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(mostWatchedChannelAndSlotTVProgram.programId(), recommendations.get(0).tvProgram().programId());
 		assertEquals(secondMostWatchedChannelAndSlotTVProgram.programId(), recommendations.get(1).tvProgram().programId());

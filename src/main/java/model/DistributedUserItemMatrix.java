@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import model.similarity.SimilarityMeasure;
-
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Matrices;
@@ -17,12 +15,12 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
+import com.google.common.primitives.Ints;
+
+import model.similarity.SimilarityMeasure;
 import scala.Tuple3;
 import util.MllibUtilities;
 import util.SparkUtilities;
-
-import com.google.common.primitives.Ints;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 /**
  * Class that represents an user item matrix (or rating matrix) in a mllib
@@ -135,10 +133,9 @@ public class DistributedUserItemMatrix extends UserItemMatrix implements Seriali
 	/**
 	 * Wrapper method that return cosine similarity between columns.
 	 * 
-	 * @param simMeasure TODO: use the similarity measure if one is given. Only use column similarities from mllib
-	 * if instance of <Class>NormallizedCosineSimilarity</class> is given.
+	 * @param simMeasure The similarity measure used between columns.
 	 * 
-	 * @return A coordinate matrix containing similarities between columns.
+	 * @return A sparse matrix containing similarities between columns.
 	 */
 	public Matrix getItemSimilarities(SimilarityMeasure simMeasure) {
 		int numCols = (int) getNumCols();

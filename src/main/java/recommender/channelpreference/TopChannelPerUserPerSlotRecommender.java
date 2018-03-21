@@ -1,7 +1,6 @@
 package recommender.channelpreference;
 
 import static java.util.Comparator.comparing;
-import static util.CurryingUtilities.curry1;
 
 import java.util.List;
 import java.util.Map;
@@ -14,8 +13,8 @@ import org.apache.spark.mllib.linalg.Vectors;
 import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
-import model.IRecommendation;
-import model.Recommendation;
+import model.recommendation.Recommendation;
+import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
 import scala.Tuple2;
 import scala.Tuple3;
@@ -28,11 +27,11 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 	}
 	
 	@Override
-	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
+	protected Recommendations<Recommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
 		return recommendByAggregatingSlots(userId, numberOfResults, tvPrograms);
 	}
 	
-	private List<? extends IRecommendation> recommendByAggregatingSlots(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
+	private Recommendations<Recommendation> recommendByAggregatingSlots(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
 		Stream<Short> allPossibleSlots = tvPrograms.stream()
 				.map(RecsysTVProgram::slot)
 				.distinct();
@@ -48,17 +47,8 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 				.map(entry -> new Tuple2<Integer, Integer>(entry.getKey(), entry.getValue()))
 				.sorted(comparing(Tuple2<Integer, Integer>::_2).reversed())
 				.collect(Collectors.toList());
-		return recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfResults, tvPrograms);
-	}
-	
-	private List<? extends IRecommendation> recommendEachProgramIndividually(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
-		return tvPrograms.stream()
-				.map(curry1(this::toProgramWatchTime, userId))
-				.sorted(comparing(Tuple2<RecsysTVProgram, Integer>::_2))
-				.limit(numberOfResults)
-				.map(Tuple2<RecsysTVProgram, Integer>::_1)
-				.map(Recommendation::new)
-				.collect(Collectors.toList());
+		List<Recommendation> recommendations = recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfResults, tvPrograms);
+		return new Recommendations<>(userId, recommendations);
 	}
 	
 	private Tuple3<Integer, Vector, Short> toUserPreferenceTuple(int userId, int channelId, short slot) {

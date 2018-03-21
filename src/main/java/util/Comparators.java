@@ -2,7 +2,7 @@ package util;
 
 import java.util.Comparator;
 
-import model.ScoredRecommendation;
+import model.recommendation.ScoredRecommendation;
 import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCollection;
 

@@ -1,6 +1,5 @@
 package util;
 
-import static util.TVDataSetUtilities.filterByDateTime;
 import static util.TimeUtilities.isDateTimeBetween;
 import static util.TimeUtilities.isTimeBetween;
 

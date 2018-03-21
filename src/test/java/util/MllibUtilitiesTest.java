@@ -24,7 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import scala.Tuple3;
-import scala.Tuple5;
 
 public class MllibUtilitiesTest {
 
@@ -189,7 +188,6 @@ public class MllibUtilitiesTest {
 	
 	@Test
 	public void sparseMatrixFormatToCSCMatrixFormatTest(){
-		Integer numRows = 4;
 		Integer numCols = 3;
 		List<MatrixEntry> entries = createMatrixEntries();
 		int[] expectedColPtrs = new int[]{0,1,2,4};

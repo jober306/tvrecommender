@@ -15,15 +15,15 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
-import model.Recommendation;
-import recommender.AbstractTVRecommender;
+import model.recommendation.Recommendation;
+import model.recommendation.Recommendations;
 import scala.Tuple2;
 
 public class TopChannelPerUserRecommenderTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	static AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
+	static ChannelPreferenceRecommender recommender;
 
 	@BeforeClass
 	public static void setUpOnce() {
@@ -44,7 +44,7 @@ public class TopChannelPerUserRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram, notWatchedChannelTVProgram1, notWatchedChannelTVProgram2);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
-		List<Recommendation> recommendations = (List<Recommendation>) recommender.recommend(user, expectedNumberOfResults, tvPrograms);
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, expectedNumberOfResults, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().programId());
 	}
@@ -60,7 +60,7 @@ public class TopChannelPerUserRecommenderTest {
 		RecsysTVProgram mostWatchedChannelTVProgram3 = new RecsysTVProgram((short)0, (short)0, 4, expectedThirdProgramId3, (byte) 0, (byte) 0);
 		RecsysTVProgram notWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)0, 2, 2, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram1, mostWatchedChannelTVProgram2, mostWatchedChannelTVProgram3, notWatchedChannelTVProgram);
-		List<Recommendation> recommendations = (List<Recommendation>) recommender.recommend(user, tvPrograms.size(), tvPrograms);
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms.size(), tvPrograms);
 		int expectedNumberOfResults = 4;
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().programId());

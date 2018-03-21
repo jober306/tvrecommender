@@ -7,20 +7,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import recommender.AbstractTVRecommender;
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import scala.Tuple2;
 
 public class TopChannelRecommenderTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	static AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent> predictor;
+	static ChannelPreferenceRecommender predictor;
 
 	@BeforeClass
 	public static void setUpOnce() {

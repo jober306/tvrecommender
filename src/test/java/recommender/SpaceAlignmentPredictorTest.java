@@ -3,15 +3,10 @@ package recommender;
 import static data.recsys.RecsysTVDataSet.START_TIME;
 import static org.junit.Assert.assertEquals;
 
-import java.util.List;
-
-import model.ScoredRecommendation;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
@@ -19,6 +14,9 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.feature.RecsysBooleanFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import model.recommendation.Recommendations;
+import model.recommendation.ScoredRecommendation;
+import scala.Tuple2;
 
 public class SpaceAlignmentPredictorTest {
 
@@ -43,8 +41,7 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		List<ScoredRecommendation> prediction = (List<ScoredRecommendation>) predictor.recommend(userId,
-				START_TIME.plusHours(19), numberOfResults);
+		Recommendations<ScoredRecommendation> prediction = predictor.recommend(userId, START_TIME.plusHours(19), numberOfResults);
 		assertEquals(numberOfResults, prediction.size());
 	}
 

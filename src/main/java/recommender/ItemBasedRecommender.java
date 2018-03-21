@@ -3,19 +3,19 @@ package recommender;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import model.IRecommendation;
-import model.UserItemMatrix;
-import model.similarity.NormalizedCosineSimilarity;
-
 import org.apache.spark.mllib.linalg.Matrix;
 
-import scala.Tuple2;
 import algorithm.QuickSelect;
 import data.Context;
 import data.EPG;
 import data.TVDataSet;
 import data.TVEvent;
 import data.TVProgram;
+import model.UserItemMatrix;
+import model.recommendation.Recommendations;
+import model.recommendation.ScoredRecommendation;
+import model.similarity.NormalizedCosineSimilarity;
+import scala.Tuple2;
 
 /**
  * Class that recommends items for a specific user using collaborative filtering
@@ -25,7 +25,7 @@ import data.TVProgram;
  *
  */
 public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
-		extends AbstractTVRecommender<T, U> {
+		extends AbstractTVRecommender<T, U, ScoredRecommendation> {
 
 	/**
 	 * The electronic programming guide used by this recommender.
@@ -111,13 +111,13 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected List<? extends IRecommendation> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

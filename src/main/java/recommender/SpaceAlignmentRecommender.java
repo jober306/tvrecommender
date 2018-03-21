@@ -17,10 +17,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import model.IRecommendation;
-import model.ScoredRecommendation;
-import model.UserItemMatrix;
-
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.DenseMatrix;
 import org.apache.spark.mllib.linalg.Matrix;
@@ -29,12 +25,15 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.BlockMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
-import util.MllibUtilities;
 import data.Context;
 import data.EvaluationContext;
 import data.TVEvent;
 import data.TVProgram;
 import data.feature.FeatureExtractor;
+import model.UserItemMatrix;
+import model.recommendation.Recommendations;
+import model.recommendation.ScoredRecommendation;
+import util.MllibUtilities;
 
 /**
  * Class that finds the optimal bilinear mapping between item content and the item
@@ -47,7 +46,7 @@ import data.feature.FeatureExtractor;
  * @author Jonathan Bergeron
  */
 public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
-		extends AbstractTVRecommender<T, U> {
+		extends AbstractTVRecommender<T, U, ScoredRecommendation> {
 	
 	/**
 	 * The spark context.
@@ -149,20 +148,26 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected List<? extends IRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
 		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
-		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream().map(entry -> scoreTVProgram(userId, entry)).collect(toList());
-		recommendations.sort(scoredRecommendationComparator());
-		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
+		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream()
+				.map(entry -> scoreTVProgram(userId, entry))
+				.sorted(scoredRecommendationComparator())
+				.limit(numberOfResults)
+				.collect(toList());
+		return new Recommendations<>(userId, recommendations);
 	}
 	
 	@Override
-	protected List<? extends IRecommendation> recommendForTesting(int userId,
+	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId,
 			int numberOfResults, List<T> tvPrograms) {
 		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
-		List<ScoredRecommendation> recommendations = tvPrograms.stream().map(program -> scoreTVProgram(itemIndexesSeenByUser, program)).collect(toList());
-		recommendations.sort(scoredRecommendationComparator());
-		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
+		List<ScoredRecommendation> recommendations = tvPrograms.stream()
+				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
+				.sorted(scoredRecommendationComparator())
+				.limit(numberOfResults)
+				.collect(toList());
+		return new Recommendations<>(userId, recommendations);
 	}
 	
 	private ScoredRecommendation scoreTVProgram(int userId, Entry<T, Vector> programWithFeatures) {

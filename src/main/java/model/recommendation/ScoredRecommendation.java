@@ -1,9 +1,9 @@
-package model;
+package model.recommendation;
 
 import data.TVProgram;
 
 
-public class ScoredRecommendation extends Recommendation{
+public class ScoredRecommendation extends AbstractRecommendation{
 	
 	double score;
 	
