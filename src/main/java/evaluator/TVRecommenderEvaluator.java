@@ -41,8 +41,7 @@ import util.SparkUtilities;
 public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> {
 	
 	/**
-	 * Context on which the evaluation will be made, the recommender must use the same context
-	 * to obtain coherent results.
+	 * The evalaution context that was used to train the recommender and that will be used to test it.
 	 */
 	EvaluationContext<T, U> context;
 
@@ -54,45 +53,43 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	/**
 	 * The array of measures on which evaluation will be based.
 	 */
-	List<EvaluationMetric<R>> measures;
+	List<EvaluationMetric<R>> metrics;
 
 
 	/**
 	 * Constructor of a tv recommender evaluator. It assumes the recommender lives in an evaluation context.
 	 * @param recommender The recommender to be evaluated.
-	 * @param measures The measures with respect to the recommender will be tested.
+	 * @param metrics The measures with respect to the recommender will be tested.
 	 */
-	public TVRecommenderEvaluator(AbstractTVRecommender<T, U, R> recommender, List<EvaluationMetric<R>> measures) {
+	public TVRecommenderEvaluator(AbstractTVRecommender<T, U, R> recommender, List<EvaluationMetric<R>> metrics) {
 		this.context = (EvaluationContext<T,U>) recommender.getContext();
-		this.measures = measures;
+		this.metrics = metrics;
 		this.recommender = recommender;
 	}
 
 	/**
 	 * Method that evaluates the recommender on all test users. The
-	 * results are stored in the evaluation measures.
-	 * @param numberOfRecommendations The number of recommendations the recommender will output.
+	 * results are stored in the evaluation metrics.
+	 * @param numberOfRecommendations The number of recommendations the recommender need to output.
 	 */
 	public void evaluateAllUsers(int numberOfRecommendations) {
 		List<Integer> testedUserIds = context.getTestSet().getAllUserIds();
-		testedUserIds.stream()
-			.forEach(testUser -> evaluateUser(testUser, numberOfRecommendations));
+		testedUserIds.stream().forEach(testUser -> evaluateUser(testUser, numberOfRecommendations));
 	}
 	
 	/**
 	 * Method that evaluate the recommender for a given user. The result is stored in the evaluation measures.
 	 * @param userId The user to evaluate.
-	 * @param numberOfRecommendations The number of recommendations the recommender will output.
+	 * @param numberOfRecommendations The number of recommendations the recommender need to output.
 	 */
 	public void evaluateUser(int userId, int numberOfRecommendations) {
 		Recommendations<R> recommendations = recommender.recommend(userId, numberOfRecommendations, context.getTestPrograms());
-		measures.stream()
-			.forEach(measure -> measure.evaluate(context, recommendations));
+		metrics.stream().forEach(metric -> metric.evaluate(recommendations, context));
 	}
 	
 	public void printResults() {
-		for(EvaluationMetric<R> measure : measures) {
-			System.out.println(measure + ": " + measure.mean());
+		for(EvaluationMetric<R> metric : metrics) {
+			System.out.println(metric + ": " + metric.mean());
 		}
 	}
 

@@ -1,6 +1,7 @@
 package evaluator.metric;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -30,14 +31,17 @@ public class Recall extends AbstractEvaluationMetric<Recommendation>{
 	@Override
 	protected double performEvaluation(Recommendations<Recommendation> recommendations,
 			List<Integer> groundTruth) {
-		int truePositive = (int) recommendations.stream()
+		List<Integer> distinctGroundTruth = groundTruth.stream()
+				.distinct()
+				.collect(Collectors.toList());
+		double truePositive = (double) recommendations.stream()
 			.limit(cutoff)
 			.map(Recommendation::tvProgram)
 			.map(TVProgram::programId)
 			.distinct()
-			.filter(groundTruth::contains)
+			.filter(distinctGroundTruth::contains)
 			.count();
-		return (double) truePositive / groundTruth.size();
+		return distinctGroundTruth.size() == 0 ? 0.0d : (double) truePositive / distinctGroundTruth.size();
 	}
 	
 }

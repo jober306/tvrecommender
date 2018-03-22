@@ -3,6 +3,7 @@ package evaluator.metric;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -33,21 +34,25 @@ public class AveragePrecision extends AbstractEvaluationMetric<Recommendation>{
 		List<Integer> recommendedTVShowIndexes = recommendations.stream()
 				.map(Recommendation::tvProgram)
 				.map(TVProgram::programId)
+				.distinct()
 				.collect(toList());
-		return calculateAveragePrecision(cutoff, recommendedTVShowIndexes, groundTruth);
+		List<Integer> distinctGroundTruth = groundTruth.stream()
+				.distinct()
+				.collect(Collectors.toList());
+		return calculateAveragePrecision(cutoff, recommendedTVShowIndexes, distinctGroundTruth);
 	}
 
-	private double calculateAveragePrecision(int cutoff, List<Integer> recommendedTVShowIndexes, List<Integer> actuallySeenTVShowIndexes) {
+	private double calculateAveragePrecision(int cutoff, List<Integer> recommendedTVShowIndexes, List<Integer> distinctGroundTruth) {
 		double averagePrecision = 0.0d;
 		double truePositiveRecommendedTVShow = 0;
 		for (int k = 1; k <= Math.min(recommendedTVShowIndexes.size(), cutoff); k++) {
 			int recommendedTVShowIndex = recommendedTVShowIndexes.get(k - 1);
-			if (actuallySeenTVShowIndexes.contains(recommendedTVShowIndex)) {
+			if (distinctGroundTruth.contains(recommendedTVShowIndex)) {
 				truePositiveRecommendedTVShow++;
 				averagePrecision += truePositiveRecommendedTVShow / k;
 			}
 		}
-		return averagePrecision / actuallySeenTVShowIndexes.size();
+		return distinctGroundTruth.size() == 0 ? 0.0d : averagePrecision / distinctGroundTruth.size();
 	}
 	
 	@Override

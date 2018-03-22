@@ -32,10 +32,9 @@ public class Precision extends AbstractEvaluationMetric<Recommendation>{
 				.limit(cutoff)
 				.map(Recommendation::tvProgram)
 				.map(TVProgram::programId)
-				.distinct()
 				.filter(groundTruth::contains)
 				.count();
-			return (double) truePositive / cutoff;
+			return (double) truePositive / Math.min(cutoff, recommendations.size());
 	}
 
 }

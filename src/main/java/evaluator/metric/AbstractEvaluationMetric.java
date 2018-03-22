@@ -61,12 +61,12 @@ public abstract class AbstractEvaluationMetric<R extends AbstractRecommendation>
 				.average().orElse(0.0d);
 	}
 
-	
-	public final double geometricMeans() {
+	@Override
+	public final double geometricMean() {
 		double product = results.stream()
 				.mapToDouble(EvaluationResult::score)
 				.reduce(1.0d, (a, b) -> a * b);
 		double nthRoot = 1.0d / results.size();
-		return Math.pow(product, nthRoot);
+		return results.size() == 0 ? 0.0d : Math.pow(product, nthRoot);
 	}
 }

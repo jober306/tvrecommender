@@ -1,5 +1,7 @@
 package evaluator.metric;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -35,26 +37,27 @@ public interface EvaluationMetric<R extends AbstractRecommendation> {
 	 * Method that returns the geometric mean of all the evaluation it has made.
 	 * @return The geometric mean score of all the evaluations.
 	 */
-	public double geometricMeans();
+	public double geometricMean();
 	
 	/**
 	 * Method that evaluates a stream of recommendations given its evaluation context.
-	 * @param context The evaluation context in which the recommendations have been made.
 	 * @param recommendationsStream The recommendations stream made by a recommender.
+	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return A stream containing the evaluation results. The results are ordered in the same way the recommendations are.
 	 */
-	default public Stream<EvaluationResult> evaluate(EvaluationContext<?, ?> context, Stream<Recommendations<R>> recommendationsStream){
+	default public List<EvaluationResult> evaluate(Stream<Recommendations<R>> recommendationsStream, EvaluationContext<?, ?> context){
 		return recommendationsStream
-				.map(recommendations -> evaluate(context, recommendations));
+				.map(recommendations -> evaluate(recommendations, context))
+				.collect(toList());
 	}
 	
 	/**
 	 * Method that evaluates recommendations given its evaluation context.
-	 * @param context The evaluation context in which the recommendations have been made.
 	 * @param recommendations The recommendations made by a recommender.
+	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return The evaluation result
 	 */
-	default public EvaluationResult evaluate(EvaluationContext<?,?> context, Recommendations<R> recommendations) {
+	default public EvaluationResult evaluate(Recommendations<R> recommendations, EvaluationContext<?,?> context) {
 		List<Integer> groundTruth = context.getGroundTruth().get(recommendations.userId());
 		return evaluate(recommendations, groundTruth);
 	}
