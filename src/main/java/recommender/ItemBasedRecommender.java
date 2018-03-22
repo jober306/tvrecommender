@@ -35,7 +35,7 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	/**
 	 * The tv data set on which the matrix M prime will be build.
 	 */
-	TVDataSet<U> tvDataset;
+	TVDataSet<T, U> tvDataset;
 
 	/**
 	 * The user item matrix.

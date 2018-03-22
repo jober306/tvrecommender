@@ -2,17 +2,16 @@ package data;
 
 import java.util.List;
 
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
-
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
 import data.feature.FeatureExtractor;
+import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
 
-public class TVDataSetMock extends TVDataSet<TVEventMock> {
+public class TVDataSetMock extends TVDataSet<TVProgramMock, TVEventMock> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -71,7 +70,7 @@ public class TVDataSetMock extends TVDataSet<TVEventMock> {
 	}
 
 	@Override
-	public List<Integer> getProgramIndexesSeenByUser(int userIndex) {
+	public List<Integer> getTvProgramSeenByUser(int userIndex) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -83,7 +82,7 @@ public class TVDataSetMock extends TVDataSet<TVEventMock> {
 	}
 
 	@Override
-	public JavaRDD<TVEventMock>[] splitTVEventsRandomly(double[] ratios) {
+	public List<TVDataSet<TVProgramMock, TVEventMock>> splitTVEventsRandomly(double[] ratios) {
 		// TODO Auto-generated method stub
 		return null;
 	}

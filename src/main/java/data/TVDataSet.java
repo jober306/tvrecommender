@@ -1,7 +1,11 @@
 package data;
 
+import static java.util.stream.Collectors.toList;
+import static util.CurryingUtilities.curry2;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -14,6 +18,7 @@ import data.feature.FeatureExtractor;
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
 import util.Lazy;
+import util.SparkUtilities;
 
 /**
  * Abstract class that represents a tv data set. It contains the tv events rdd
@@ -21,24 +26,37 @@ import util.Lazy;
  * 
  * @author Jonathan Bergeron
  *
- * @param <T>
+ * @param <U>
  *            A child class of the abstract class TVEvent. The RDD will be of
  *            this class.
  */
-public abstract class TVDataSet<T extends TVEvent> implements Serializable {
+public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implements Serializable {
 	
+	/**
+	 * Method to initialize any resources needed after constructing the data set.
+	 */
+	abstract protected void initialize();
+	
+	// ----------ML lib convertion methods----------------
+	abstract public JavaRDD<Rating> convertToMLlibRatings();
+
+	abstract public DistributedUserItemMatrix convertToDistUserItemMatrix();
+	
+	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
+
+	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<? extends TVProgram, U> extractor);
+	
+	private static final long serialVersionUID = 1L;
 	/**
 	 * Method to load lazily load attributes. See the lazy interface for more information.
 	 */
     static <U> Supplier<U> lazily(Lazy<U> lazy) { return lazy; }
 	static <G> Supplier<G> value(G value) { return ()->value; }
-	
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The java rdd containing all the tv events.
 	 */
-	transient protected JavaRDD<T> eventsData;
+	transient protected JavaRDD<U> eventsData;
 
 	/**
 	 * The java spark context used to load the tv events.
@@ -66,17 +84,11 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * @param eventsData
 	 * @param sc
 	 */
-	public TVDataSet(JavaRDD<T> eventsData, JavaSparkContext sc) {
+	public TVDataSet(JavaRDD<U> eventsData, JavaSparkContext sc) {
 		this.eventsData = eventsData;
 		this.sc = sc;
 		initialize();
 	}
-	
-	public void cache(){
-		eventsData = eventsData.cache();
-	}
-	
-	abstract protected void initialize();
 
 	/**
 	 * Method used to create a new data set from some events and a spark
@@ -88,12 +100,10 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public TVDataSet<T> newInstance(JavaRDD<T> eventsData, JavaSparkContext sc) {
+	public TVDataSet<T, U> newInstance(JavaRDD<U> eventsData, JavaSparkContext sc) {
 		try {
-			return this
-					.getClass()
-					.getDeclaredConstructor(JavaRDD.class,
-							JavaSparkContext.class).newInstance(eventsData, sc);
+			TVDataSet<T, U> newTvDataSet = this.getClass().getDeclaredConstructor(JavaRDD.class, JavaSparkContext.class).newInstance(eventsData, sc);
+			return newTvDataSet;
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
@@ -101,24 +111,68 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 			return null;
 		}
 	}
-
-	// ----------ML lib convertion methods----------------
-	abstract public JavaRDD<Rating> convertToMLlibRatings();
-
-	abstract public DistributedUserItemMatrix convertToDistUserItemMatrix();
 	
-	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
+	public void cache(){
+		eventsData = eventsData.cache();
+	}
 
-	abstract public IndexedRowMatrix getContentMatrix(
-			FeatureExtractor<? extends TVProgram, T> extractor);
+	/**
+	 * Check if the data set is empty.
+	 * 
+	 * @return true if the data set is empty
+	 */
+	public boolean isEmpty() {
+		return eventsData.isEmpty();
+	}
 
-	// --------General Utilities methods--------------------
+	/**
+	 * Method that check if a particular event is in the data set. The
+	 * comparison are done by the <method>equals</method> and
+	 * <method>hashCode</method> methods of the <class>RecsysTVEvent</class>.
+	 * 
+	 * @param event
+	 *            The event to be tested if it is in the data set.
+	 * @return True if the event is in the data set, false otherwise.
+	 */
+	public boolean contains(U event) {
+		JavaRDD<U> eventRDD = SparkUtilities
+				.<U> elementToJavaRDD(event, sc);
+		JavaRDD<U> intersection = eventsData.intersection(eventRDD);
+		return !intersection.isEmpty();
+	}
+	
+	public List<Integer> getTvProgramSeenByUser(int userIndex) {
+		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex)
+				.map(tvEvent -> tvEvent.getProgramId()).distinct().collect();
+	}
+
+	/**
+	 * Method that return the size of the data set. It is the same as
+	 * getNumberOfEvents.
+	 */
+	public int count() {
+		return (int) eventsData.count();
+	}
+
+	/**
+	 * Randomly split data with respect to the given ratios. The tv events are
+	 * shuffled before creating the folders.
+	 * 
+	 * @param ratios
+	 *            The ratio of Tv events there should be in each folder.
+	 * @return An array of RecsysTVDataSet.
+	 */
+	public List<TVDataSet<T, U>> splitTVEventsRandomly(double[] ratios) {
+		JavaRDD<U>[] splittedEvents = eventsData.randomSplit(ratios);
+		return Arrays.stream(splittedEvents).map(curry2(this::newInstance, sc)).collect(toList());
+	}
+
 	/**
 	 * Getter method that return the data attached to this data set.
 	 * 
 	 * @return The java RDD containing all the recsys tv event.
 	 */
-	public JavaRDD<T> getEventsData() {
+	public JavaRDD<U> getEventsData() {
 		return eventsData;
 	}
 
@@ -130,16 +184,7 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	public JavaSparkContext getJavaSparkContext() {
 		return sc;
 	}
-
-	abstract public boolean isEmpty();
-
-	abstract public boolean contains(T event);
-
-	/**
-	 * Method that return the list of all distinct user Ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct user Ids.
-	 */
+	
 	public List<Integer> getAllUserIds() {
 		return allUserIds.get();
 	}
@@ -149,11 +194,6 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 				.collect();
 	}
 
-	/**
-	 * Method that return the list of all distinct program Ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct program Ids.
-	 */
 	public List<Integer> getAllProgramIds() {
 		return eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct()
 				.collect();
@@ -164,11 +204,6 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 				.collect();
 	}
 
-	/**
-	 * Method that return the list of all distinct event Ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct event Ids.
-	 */
 	public List<Integer> getAllEventIds() {
 		return allEventIds.get();
 	}
@@ -178,11 +213,6 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 				.collect();
 	}
 
-	/**
-	 * Method that return the list of all distinct channel ids in the data set.
-	 * 
-	 * @return A list of integer representing all the distinct channel ids.
-	 */
 	public List<Integer> getAllChannelIds() {
 		return allChannelIds.get();
 	}
@@ -207,10 +237,4 @@ public abstract class TVDataSet<T extends TVEvent> implements Serializable {
 	public int getNumberOfTvShows(){
 		return numberOfTvShows.get();
 	}
-
-	abstract public List<Integer> getProgramIndexesSeenByUser(int userIndex);
-
-	abstract public int count();
-
-	abstract public JavaRDD<T>[] splitTVEventsRandomly(double[] ratios);
 }

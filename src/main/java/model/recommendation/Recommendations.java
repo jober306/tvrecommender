@@ -11,6 +11,7 @@ public class Recommendations<T extends AbstractRecommendation> extends ArrayList
 	
 	public Recommendations(int userId, List<T> recommendations) {
 		this.userId = userId;
+		addAll(recommendations);
 	}
 	
 	public int userId() {

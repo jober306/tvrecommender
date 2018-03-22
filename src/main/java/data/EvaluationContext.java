@@ -19,13 +19,13 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 	/**
 	 * The events used to test the recommender.
 	 */
-	final TVDataSet<U> testSet;
+	final TVDataSet<T, U> testSet;
 	
 	final List<T> testPrograms;
 	
 	final Map<Integer, List<Integer>> groundTruth;
 	
-	public EvaluationContext(EPG<T> epg, TVDataSet<U> events,
+	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events,
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
 		super(epg, events);
 		this.testPrograms = createTestPrograms(testStartTime, testEndTime);
@@ -33,7 +33,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 		this.groundTruth = createGroundTruth();
 	}
 	
-	public EvaluationContext(EPG<T> epg, TVDataSet<U> events, 
+	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events, 
 			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime, 
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
 		super(epg, events, trainingStartTime, trainingEndTime);
@@ -42,7 +42,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 		this.groundTruth = createGroundTruth();
 	}
 	
-	public TVDataSet<U> getTestSet(){
+	public TVDataSet<T, U> getTestSet(){
 		return this.testSet;
 	}
 	

@@ -29,8 +29,8 @@ public class AbstractEvaluationMetricTest {
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
 	static final int USER_ID = 10;
+	static EvaluationContext<RecsysTVProgram, RecsysTVEvent> context;
 	
-	EvaluationContext<RecsysTVProgram, RecsysTVEvent> context;
 	OneMetric<Recommendation> oneMetric;
 	IncrementMetric<Recommendation> incMetric;
 	
@@ -38,11 +38,12 @@ public class AbstractEvaluationMetricTest {
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
+		context = new EvaluationContext<>(data._1(), data._2(), RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME);
+
 	}
 	
 	@Before
 	public void setUp() {
-		this.context = new EvaluationContext<>(data._1(), data._2(), RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME);
 		this.oneMetric = new OneMetric<>();
 		this.incMetric = new IncrementMetric<>();
 	}
@@ -117,13 +118,14 @@ public class AbstractEvaluationMetricTest {
 	
 	@After
 	public void tearDown() {
-		this.context = null;
 		this.oneMetric = null;
 		this.incMetric = null;
 	}
 	
 	@AfterClass
 	public static void tearDownOnce() {
+		RecsysTVDataSet testSet = (RecsysTVDataSet) context.getTestSet();
+		testSet.closeMap();
 		RecsysTVDataSet dataSet = data._2();
 		dataSet.close();
 	}

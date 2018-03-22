@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -111,7 +112,7 @@ public class RecsysTVDataSetTest {
 	public void getNumberOfEntitiesTest() {
 		int numberOfUsers = dataSet.getNumberOfUsers();
 		int numberOfPrograms = dataSet.getNumberOfTvShows();
-		int numberOfEvents = dataSet.getNumberOfEvents();
+		int numberOfEvents = dataSet.count();
 		assertEquals(3, numberOfUsers);
 		assertEquals(2, numberOfPrograms);
 		assertEquals(4, numberOfEvents);
@@ -120,66 +121,36 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void getProgramIndexesSeenByUserTest() {
 		List<Integer> programsSeenByUser1 = dataSet
-				.getProgramIndexesSeenByUser(1);
+				.getTvProgramSeenByUser(1);
 		assertEquals(1, programsSeenByUser1.size());
 		assertTrue(programsSeenByUser1.contains(tvEvent1.getProgramId()));
 		List<Integer> programsSeenByUser3 = dataSet
-				.getProgramIndexesSeenByUser(3);
+				.getTvProgramSeenByUser(3);
 		assertEquals(2, programsSeenByUser3.size());
 		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramId()));
 		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramId()));
-		List<Integer> programsSeenByUser4 = dataSet.getProgramIndexesSeenByUser(5);
+		List<Integer> programsSeenByUser4 = dataSet.getTvProgramSeenByUser(5);
 		assertTrue(programsSeenByUser4.contains(tvEvent4.getProgramId()));
 	}
 
 	@Test
 	public void getProgramIndexesSeenByUserNotExistingTest() {
-		List<Integer> userNotExisting = dataSet.getProgramIndexesSeenByUser(-1);
+		List<Integer> userNotExisting = dataSet.getTvProgramSeenByUser(-1);
 		assertEquals(0, userNotExisting.size());
-	}
-
-	@Test
-	public void getIndexesCorrespondingToRatiosTest() {
-		createBiggerDataSet(100);
-		double[] ratios = { 0.34, 0.21, 0.45 };
-		int[] indexObtained = dataSet.getIndexesCorrespondingToRatios(ratios);
-		int[] indexExpected = { 0, 34, 55, 100 };
-		for (int i = 0; i < indexExpected.length; i++) {
-			assertTrue(indexObtained[i] == indexExpected[i]);
-		}
 	}
 
 	@Test
 	public void splitDataRandomlyTest() {
 		createBiggerDataSet(42);
 		double[] ratios = { 0.17, 0.43, 0.40 };
-		JavaRDD<RecsysTVEvent>[] splittedDataSet = dataSet
-				.splitTVEventsRandomly(ratios);
-		assertTrue(splittedDataSet[0].intersection(splittedDataSet[1])
-				.intersection(splittedDataSet[2]).isEmpty());
-		assertTrue(splittedDataSet[0].union(splittedDataSet[1])
-				.union(splittedDataSet[2]).count() == 42);
-	}
-
-	@Test
-	public void splitDataDistributedTest() {
-		createBiggerDataSet(42);
-		double[] ratios = { 0.17, 0.43, 0.40 };
-		int[] expectedSize = { 7, 18, 17 };
-		RecsysTVDataSet[] splittedDataSet = dataSet
-				.splitDataDistributed(ratios);
-		for (int i = 0; i < splittedDataSet.length; i++) {
-			assertTrue(splittedDataSet[i].getNumberOfEvents() == expectedSize[i]);
-		}
-		assertTrue(splittedDataSet[0].getEventsData()
-				.intersection(splittedDataSet[1].getEventsData())
-				.intersection(splittedDataSet[2].getEventsData()).isEmpty());
-		assertTrue(splittedDataSet[0].getEventsData()
-				.union(splittedDataSet[1].getEventsData())
-				.union(splittedDataSet[2].getEventsData()).count() == 42);
-		for (RecsysTVDataSet dataSet : splittedDataSet) {
-			dataSet.closeMap();
-		}
+		List<RecsysTVDataSet> splittedDataSet = dataSet.splitTVEventsRandomly(ratios).stream()
+				.map(tvDataSet -> (RecsysTVDataSet) tvDataSet)
+				.collect(Collectors.toList());
+		JavaRDD<RecsysTVEvent> split0 = splittedDataSet.get(0).getEventsData();
+		JavaRDD<RecsysTVEvent> split1 = splittedDataSet.get(1).getEventsData();
+		JavaRDD<RecsysTVEvent> split2 = splittedDataSet.get(2).getEventsData();
+		assertTrue(split0.intersection(split1).intersection(split2).isEmpty());
+		assertTrue(split0.union(split1).union(split2).count() == 42);
 	}
 
 	private void createBiggerDataSet(int dataSetSize) {

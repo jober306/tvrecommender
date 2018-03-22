@@ -10,6 +10,7 @@ import org.apache.spark.api.java.JavaRDD;
 
 import data.TVDataSet;
 import data.TVEvent;
+import data.TVProgram;
 
 /**
  * Class that offers some general utilities on tv data set objects.
@@ -76,7 +77,7 @@ public class TVDataSetUtilities {
 	 * @param startTime
 	 * @param endTime
 	 */
-	public static <T extends TVEvent> TVDataSet<T> createSubDataSet(TVDataSet<T> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
+	public static <T extends TVProgram, U extends TVEvent> TVDataSet<T, U> createSubDataSet(TVDataSet<T, U> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
 		return dataSet.newInstance(
 				filterByDateTime(dataSet.getEventsData(), startTime, endTime),
 				dataSet.getJavaSparkContext());

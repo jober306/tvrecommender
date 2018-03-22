@@ -8,9 +8,6 @@ import java.time.Month;
 import java.util.HashSet;
 import java.util.List;
 
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -21,15 +18,16 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.apache.spark.mllib.recommendation.Rating;
 
-import scala.Tuple2;
-import scala.Tuple3;
-import util.SparkUtilities;
 import data.TVDataSet;
 import data.TVProgram;
 import data.feature.FeatureExtractor;
 import data.recsys.mapper.MapID;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
+import model.DistributedUserItemMatrix;
+import model.LocalUserItemMatrix;
+import scala.Tuple2;
+import scala.Tuple3;
 
 /**
  * Class that represents a data set of recsys tv event. The class holds the
@@ -39,7 +37,7 @@ import data.recsys.mapper.RecSysMapReader;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
+public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> implements
 		Serializable, MapID {
 
 	/**
@@ -98,109 +96,6 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 		mapCreator.createProgramIDToIDMap(getAllProgramIds());
 		mapCreator.createEventIDToIDMap(getAllEventIds());
 		idMap = new RecSysMapReader(mapCreator.getFileNames());
-	}
-
-	/**
-	 * Check if the data set is empty.
-	 * 
-	 * @return true if the data set is empty
-	 */
-	public boolean isEmpty() {
-		return eventsData.isEmpty();
-	}
-
-	/**
-	 * Method that check if a particular event is in the data set. The
-	 * comparison are done by the <method>equals</method> and
-	 * <method>hashCode</method> methods of the <class>RecsysTVEvent</class>.
-	 * 
-	 * @param event
-	 *            The event to be tested if it is in the data set.
-	 * @return True if the event is in the data set, false otherwise.
-	 */
-	public boolean contains(RecsysTVEvent event) {
-		JavaRDD<RecsysTVEvent> eventRDD = SparkUtilities
-				.<RecsysTVEvent> elementToJavaRDD(event, sc);
-		JavaRDD<RecsysTVEvent> intersection = eventsData.intersection(eventRDD);
-		return !intersection.isEmpty();
-	}
-
-	/**
-	 * Method that count all the events in the data set. (Events are assumed to
-	 * be distinct).
-	 */
-	public int getNumberOfEvents() {
-		return (int) eventsData.count();
-	}
-
-	public List<Integer> getProgramIndexesSeenByUser(int userIndex) {
-		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex)
-				.map(tvEvent -> tvEvent.getProgramId()).distinct().collect();
-	}
-
-	/**
-	 * Method that return the size of the data set. It is the same as
-	 * getNumberOfEvents.
-	 */
-	public int count() {
-		return (int) eventsData.count();
-	}
-
-	/**
-	 * Randomly split data with respect to the given ratios. The tv events are
-	 * shuffled before creating the folders.
-	 * 
-	 * @param ratios
-	 *            The ratio of Tv events there should be in each folder.
-	 * @return An array of RecsysTVDataSet.
-	 */
-	public JavaRDD<RecsysTVEvent>[] splitTVEventsRandomly(double[] ratios) {
-		return eventsData.randomSplit(ratios);
-	}
-
-	/**
-	 * Method that splits the data with respect to the given ratios. The data is
-	 * not randomly separated.
-	 * 
-	 * @param ratios
-	 *            The ratios corresponding to the subset size.
-	 * @return A list containing all the subsets.
-	 */
-	public RecsysTVDataSet[] splitDataDistributed(double[] ratios) {
-		RecsysTVDataSet[] splittedData = new RecsysTVDataSet[ratios.length];
-		int[] indexes = getIndexesCorrespondingToRatios(ratios);
-		for (int i = 1; i <= ratios.length; i++) {
-			final int lowerLimit = indexes[i - 1];
-			final int upperLimit = indexes[i];
-			JavaRDD<RecsysTVEvent> splitData = eventsData
-					.filter(tvEvent -> lowerLimit <= broadcastedIdMap
-							.getValue().getEventIDtoIDMap()
-							.get(tvEvent.getEventID())
-							&& broadcastedIdMap.getValue().getEventIDtoIDMap()
-									.get(tvEvent.getEventID()) < upperLimit);
-			splittedData[i - 1] = new RecsysTVDataSet(splitData, sc);
-		}
-		return splittedData;
-	}
-
-	/**
-	 * Method that return the indexes at which the data need to be splitted.
-	 * 
-	 * @param ratios
-	 *            The ratio in each subset
-	 * @return The indexes of when to create a new subset of the partition.
-	 */
-	public int[] getIndexesCorrespondingToRatios(double[] ratios) {
-		int[] indexes = new int[ratios.length + 1];
-		indexes[0] = 0;
-		int total = getNumberOfEvents();
-		for (int i = 1; i < ratios.length; i++) {
-			indexes[i] = indexes[i - 1]
-					+ (int) Math.floor(ratios[i - 1] * total);
-			if (i == ratios.length - 1)
-				indexes[indexes.length - 1] = total;
-		}
-		return indexes;
 	}
 
 	/**
@@ -312,8 +207,7 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVEvent> implements
 			broadcastedIdMap.unpersist();
 			broadcastedIdMap.destroy();
 		}
-		sc.close();
-		eventsData = null;
+		closeSparkContext();
 	}
 
 	public void closeMap() {

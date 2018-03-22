@@ -19,21 +19,21 @@ public class Context<T extends TVProgram, U extends TVEvent>{
 	/**
 	 * The whole data set of events.
 	 */
-	final TVDataSet<U> events;
+	final TVDataSet<T, U> events;
 	
 	/**
 	 * The training set on which the recommender will train.
 	 */
-	final TVDataSet<U> trainingSet;
+	final TVDataSet<T, U> trainingSet;
 	
 	
-	public Context(EPG<T> epg, TVDataSet<U> events){
+	public Context(EPG<T> epg, TVDataSet<T, U> events){
 		this.epg = epg;
 		this.events = events;
 		this.trainingSet = events;
 	}
 	
-	public Context(EPG<T> epg, TVDataSet<U> events, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
+	public Context(EPG<T> epg, TVDataSet<T, U> events, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
 		this.epg = epg;
 		this.events = events;
 		this.trainingSet = createSubDataSet(events, trainingStartTime, trainingEndTime);
@@ -43,11 +43,11 @@ public class Context<T extends TVProgram, U extends TVEvent>{
 		return epg;
 	}
 	
-	public TVDataSet<U> getEvents(){
+	public TVDataSet<T, U> getEvents(){
 		return events;
 	}
 
-	public TVDataSet<U> getTrainingSet(){
+	public TVDataSet<T, U> getTrainingSet(){
 		return trainingSet;
 	}
 }

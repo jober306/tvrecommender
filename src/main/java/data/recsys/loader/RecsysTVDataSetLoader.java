@@ -5,13 +5,13 @@ import static data.recsys.loader.RecsysTVDataSetLoaderUtilities.linesToTVEvent;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
-import scala.Tuple2;
-import util.SparkUtilities;
-import util.TVDataSetUtilities;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import scala.Tuple2;
+import util.SparkUtilities;
+import util.TVDataSetUtilities;
 
 /**
  * Class used to load data in the form of the recsys tv data set. The loader is
