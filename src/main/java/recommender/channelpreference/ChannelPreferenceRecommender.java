@@ -37,8 +37,8 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	long totalUserPref;
 	long startTime;
 	
-	public ChannelPreferenceRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, boolean anyUsers, boolean anySlots) {
-		super(context);
+	public ChannelPreferenceRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
+		super(context, numberOfRecommendations);
 		this.anyUsers = anyUsers;
 		this.anySlots = anySlots;
 	}
@@ -55,11 +55,11 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	}
 
 	@Override
-	protected Recommendations<Recommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms){
+	protected Recommendations<Recommendation> recommendNormally(int userId, List<RecsysTVProgram> tvPrograms){
 		List<Recommendation> recommendations = tvPrograms.stream()
 				.map(curry1(this::toProgramWatchTime, userId))
 				.sorted(comparing(Tuple2<RecsysTVProgram, Integer>::_2).reversed())
-				.limit(numberOfResults)
+				.limit(numberOfRecommendations)
 				.map(Tuple2<RecsysTVProgram, Integer>::_1)
 				.map(Recommendation::new)
 				.collect(Collectors.toList());
@@ -94,7 +94,7 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	}
 	
 	@Override
-	protected Recommendations<Recommendation> recommendForTesting(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms){
-		return recommendNormally(userId, numberOfResults, tvPrograms);
+	protected Recommendations<Recommendation> recommendForTesting(int userId, List<RecsysTVProgram> tvPrograms){
+		return recommendNormally(userId, tvPrograms);
 	}
 }

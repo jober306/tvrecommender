@@ -55,8 +55,8 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(Context<T, U> context) {
-		super(context);
+	public ItemBasedRecommender(Context<T, U> context, int numberOfRecommendations) {
+		super(context, numberOfRecommendations);
 	}
 
 	/**
@@ -111,13 +111,13 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<T> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -155,10 +155,8 @@ public class RecsysTVDataSetLoader {
 	 */
 	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(
 			JavaRDD<RecsysTVEvent> events) {
-		return events.map(
-				event -> new RecsysTVProgram(event.getWeek(), event.getSlot(),
-						event.getChannelId(), event.getProgramId(), event
-								.getGenreID(), event.getSubgenreID()))
+		return events
+				.map(RecsysTVProgram::new)
 				.distinct();
 	}
 

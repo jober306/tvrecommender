@@ -113,9 +113,9 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	 * @param C
 	 *            The content matrix of all the items.
 	 */
-	public SpaceAlignmentRecommender(Context<T, U> context,
+	public SpaceAlignmentRecommender(Context<T, U> context, int numberOfRecommendations,
 			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
-		super(context);
+		super(context, numberOfRecommendations);
 		this.extractor = extractor;
 		this.r = r;
 		this.neighbourhoodSize = neighbourhoddSize;
@@ -148,24 +148,23 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<T> tvPrograms) {
 		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
 		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream()
 				.map(entry -> scoreTVProgram(userId, entry))
 				.sorted(scoredRecommendationComparator())
-				.limit(numberOfResults)
+				.limit(numberOfRecommendations)
 				.collect(toList());
 		return new Recommendations<>(userId, recommendations);
 	}
 	
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId,
-			int numberOfResults, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<T> tvPrograms) {
 		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
 		List<ScoredRecommendation> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
 				.sorted(scoredRecommendationComparator())
-				.limit(numberOfResults)
+				.limit(numberOfRecommendations)
 				.collect(toList());
 		return new Recommendations<>(userId, recommendations);
 	}
@@ -221,13 +220,10 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		DenseMatrix V = (DenseMatrix)Csvd.V();
 		BlockMatrix invertedSigma = vectorToCoordinateMatrix(invertVector(Csvd.s()), sc).toBlockMatrix();
 		BlockMatrix Ut = U.transpose();
-		// *********************************Intermediate operations*********************************************
 		BlockMatrix leftMat = invertedSigma.multiply(Ut);
 		BlockMatrix rightMat = U.multiply(invertedSigma);
 		BlockMatrix S = context.getTrainingSet().convertToDistUserItemMatrix().getItemSimilarities(sc).toBlockMatrix();
-		IndexedRowMatrix intermediateMat = leftMat.multiply(S).multiply(rightMat).toIndexedRowMatrix();
-		// ***************************************************************************************************
-		
+		IndexedRowMatrix intermediateMat = leftMat.multiply(S).multiply(rightMat).toIndexedRowMatrix();		
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat.computeSVD(r, false, 0.0d);
 		//Casting the V matrix of svd to dense matrix because Spark 2.2.0 always return a dense matrix and it is needed to multiply.
 		DenseMatrix Q = (DenseMatrix) intMatsvd.V();

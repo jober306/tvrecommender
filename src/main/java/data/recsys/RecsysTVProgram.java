@@ -58,6 +58,11 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 		this.subGenreId = subGenreId;
 		this.slot = slot;
 	}
+	
+	public RecsysTVProgram(RecsysTVEvent event) {
+		this(event.getWeek(), event.getSlot(), event.getChannelId(), 
+				event.getProgramId(), event.getGenreID(), event.getSubgenreID());
+	}
 
 	/**
 	 * @return the genreId

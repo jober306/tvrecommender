@@ -21,17 +21,16 @@ import scala.Tuple3;
 
 public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecommender{
 	
-	public TopChannelPerUserPerSlotRecommender(
-			Context<RecsysTVProgram, RecsysTVEvent> context) {
-		super(context, false, false);
+	public TopChannelPerUserPerSlotRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
+		super(context, numberOfRecommendations, false, false);
 	}
 	
 	@Override
-	protected Recommendations<Recommendation> recommendNormally(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
-		return recommendByAggregatingSlots(userId, numberOfResults, tvPrograms);
+	protected Recommendations<Recommendation> recommendNormally(int userId, List<RecsysTVProgram> tvPrograms) {
+		return recommendByAggregatingSlots(userId, tvPrograms);
 	}
 	
-	private Recommendations<Recommendation> recommendByAggregatingSlots(int userId, int numberOfResults, List<RecsysTVProgram> tvPrograms) {
+	private Recommendations<Recommendation> recommendByAggregatingSlots(int userId, List<RecsysTVProgram> tvPrograms) {
 		Stream<Short> allPossibleSlots = tvPrograms.stream()
 				.map(RecsysTVProgram::slot)
 				.distinct();
@@ -47,7 +46,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 				.map(entry -> new Tuple2<Integer, Integer>(entry.getKey(), entry.getValue()))
 				.sorted(comparing(Tuple2<Integer, Integer>::_2).reversed())
 				.collect(Collectors.toList());
-		List<Recommendation> recommendations = recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfResults, tvPrograms);
+		List<Recommendation> recommendations = recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfRecommendations, tvPrograms);
 		return new Recommendations<>(userId, recommendations);
 	}
 	

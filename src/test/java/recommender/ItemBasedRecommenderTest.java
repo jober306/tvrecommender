@@ -8,26 +8,27 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import scala.Tuple2;
 import data.Context;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import scala.Tuple2;
 
 public class ItemBasedRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
+	final static int numberOfResults = 2;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
-		recommender = new ItemBasedRecommender<>(context);
+		recommender = new ItemBasedRecommender<>(context, numberOfResults);
 		recommender.train();
 	}
 

@@ -71,7 +71,7 @@ public class CurryingUtilities {
 	public static <T, U, R> Function<T, R> curry2(BiFunction<T, U, R> biFunc, U arg2){
 		return curry2(biFunc).apply(arg2);
 	}
-	
+		
 	/**
 	 * Curry the second argument of a biconsumer.
 	 * @param biCons The biconsumer to curry.

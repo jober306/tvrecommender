@@ -12,16 +12,23 @@ import model.recommendation.AbstractRecommendation;
 import model.recommendation.Recommendations;
 
 public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> {
+	
+	abstract protected Recommendations<R> recommendNormally(int userId, List<T> tvPrograms);
 
+	abstract protected Recommendations<R> recommendForTesting(int userId, List<T> tvPrograms);
+	
 	/**
 	 * The context of this recommender;
 	 */
 	final protected Context<T, U> context;
 
 	final RecommendFunction<T, R> recommendFunctionRef;
+	
+	protected int numberOfRecommendations;
 
-	public AbstractTVRecommender(Context<T, U> context) {
+	public AbstractTVRecommender(Context<T, U> context, int numberOfRecommendations) {
 		this.context = context;
+		this.numberOfRecommendations = numberOfRecommendations;
 		if (context instanceof EvaluationContext) {
 			recommendFunctionRef = this::recommendForTesting;
 		} else {
@@ -31,6 +38,14 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 
 	public Context<T, U> getContext() {
 		return this.context;
+	}
+	
+	public int numberOfRecommendations() {
+		return this.numberOfRecommendations;
+	}
+	
+	public void setNumberOfRecommendations(int numberOfRecommendations) {
+		this.numberOfRecommendations = numberOfRecommendations;
 	}
 	
 	abstract public void train();
@@ -49,11 +64,10 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	 *            The number of results that will be returned.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public Recommendations<R> recommend(int userId, LocalDateTime targetWatchTime,
-			int numberOfResults) {
+	public Recommendations<R> recommend(int userId, LocalDateTime targetWatchTime) {
 		List<T> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
 				targetWatchTime);
-		return recommend(userId, numberOfResults, tvPrograms);
+		return recommend(userId, tvPrograms);
 	}
 
 	/**
@@ -75,21 +89,16 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
 	public Recommendations<R> recommend(int userId, LocalDateTime startTargetTime,
-			LocalDateTime endTargetTime, int numberOfResults) {
+			LocalDateTime endTargetTime) {
 		List<T> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
 				startTargetTime, endTargetTime);
-		return recommend(userId, numberOfResults, tvPrograms);
+		return recommend(userId, tvPrograms);
 	}
 
-	public Recommendations<R> recommend(int userId, int numberOfResults,
-			List<T> tvProrams) {
-		return recommendFunctionRef.recommend(userId, numberOfResults,
-				tvProrams);
+	public Recommendations<R> recommend(int userId, List<T> tvProrams) {
+		return recommendFunctionRef.recommend(userId, tvProrams);
 	}
-
-	abstract protected Recommendations<R> recommendNormally(int userId,
-			int numberOfResults, List<T> tvPrograms);
-
-	abstract protected Recommendations<R> recommendForTesting(int userId,
-			int numberOfResults, List<T> tvPrograms);
+	
+	
+	
 }

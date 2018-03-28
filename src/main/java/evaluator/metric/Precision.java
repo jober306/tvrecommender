@@ -36,5 +36,13 @@ public class Precision extends AbstractEvaluationMetric<Recommendation>{
 				.count();
 			return (double) truePositive / Math.min(cutoff, recommendations.size());
 	}
-
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getClass().getSimpleName());
+		sb.append("@");
+		sb.append(cutoff);
+		return sb.toString();
+	}
 }

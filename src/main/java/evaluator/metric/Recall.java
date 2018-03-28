@@ -44,4 +44,12 @@ public class Recall extends AbstractEvaluationMetric<Recommendation>{
 		return distinctGroundTruth.size() == 0 ? 0.0d : (double) truePositive / distinctGroundTruth.size();
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getClass().getSimpleName());
+		sb.append("@");
+		sb.append(cutoff);
+		return sb.toString();
+	}
 }

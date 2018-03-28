@@ -8,5 +8,5 @@ import model.recommendation.Recommendations;
 
 @FunctionalInterface
 public interface RecommendFunction<T extends TVProgram, R extends AbstractRecommendation> {
-	Recommendations<R> recommend(int userId, int numberOfResults, List<T> tvPrograms);
+	Recommendations<R> recommend(int userId, List<T> tvPrograms);
 }

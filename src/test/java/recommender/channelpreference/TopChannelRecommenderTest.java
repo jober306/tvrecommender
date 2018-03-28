@@ -19,22 +19,21 @@ public class TopChannelRecommenderTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	static ChannelPreferenceRecommender predictor;
+	static ChannelPreferenceRecommender recommender;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
-		predictor = new TopChannelRecommender(context);
-		predictor.train();
+		recommender = new TopChannelRecommender(context, 1);
+		recommender.train();
 	}
 	
 	@Test
 	public void recommendTest() {
 		int expectedRecommendation = 254329;
-		int recommendation = predictor
-				.recommend(0, START_TIME.plusHours(19), 1).get(0).tvProgram().programId();
+		int recommendation = recommender.recommend(0, START_TIME.plusHours(19)).get(0).tvProgram().programId();
 		assertEquals(expectedRecommendation, recommendation);
 	}
 	

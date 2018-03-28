@@ -1,9 +1,8 @@
 package evaluator.metric;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import evaluator.result.EvaluationResult;
+import evaluator.result.SingleUserResult;
 import model.recommendation.AbstractRecommendation;
 import model.recommendation.Recommendations;
 
@@ -25,48 +24,10 @@ public abstract class AbstractEvaluationMetric<R extends AbstractRecommendation>
 	 */
 	abstract protected double performEvaluation(Recommendations<R> recommendations, List<Integer> groundTruth);
 	
-	/**
-	 * The evaluation results accumulated so far by this metric.
-	 * When an evaluation is made on some recommendations, the result will be added automatically to this list. 
-	 */
-	protected List<EvaluationResult> results;
-	
-	/**
-	 * No arguments constructor that initiates an empty list of results.
-	 */
-	public AbstractEvaluationMetric() {
-		results = new ArrayList<EvaluationResult>();
-	}
-	
-	/**
-	 * Method that return the list of evaluation results.
-	 * @return The list of evaluation results.
-	 */
-	public final List<EvaluationResult> results(){
-		return results;
-	}
 	
 	@Override
-	public final EvaluationResult evaluate(Recommendations<R> recommendations, List<Integer> groundTruth) {
+	public final SingleUserResult evaluate(Recommendations<R> recommendations, List<Integer> groundTruth) {
 		double score = performEvaluation(recommendations, groundTruth);
-		EvaluationResult result = new EvaluationResult(recommendations.userId(), score);
-		results.add(result);
-		return result;
-	}
-
-	@Override
-	public final double mean() {
-		return results.stream()
-				.mapToDouble(EvaluationResult::score)
-				.average().orElse(0.0d);
-	}
-
-	@Override
-	public final double geometricMean() {
-		double product = results.stream()
-				.mapToDouble(EvaluationResult::score)
-				.reduce(1.0d, (a, b) -> a * b);
-		double nthRoot = 1.0d / results.size();
-		return results.size() == 0 ? 0.0d : Math.pow(product, nthRoot);
+		return new SingleUserResult(recommendations.userId(), score);
 	}
 }

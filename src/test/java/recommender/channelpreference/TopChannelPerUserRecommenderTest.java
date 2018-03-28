@@ -30,7 +30,7 @@ public class TopChannelPerUserRecommenderTest {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
 		data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
-		recommender = new TopChannelPerUserRecommender(context);
+		recommender = new TopChannelPerUserRecommender(context, 10);
 		recommender.train();
 	}
 	
@@ -44,7 +44,8 @@ public class TopChannelPerUserRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram, notWatchedChannelTVProgram1, notWatchedChannelTVProgram2);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, expectedNumberOfResults, tvPrograms);
+		recommender.setNumberOfRecommendations(expectedNumberOfResults);
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().programId());
 	}
@@ -60,8 +61,9 @@ public class TopChannelPerUserRecommenderTest {
 		RecsysTVProgram mostWatchedChannelTVProgram3 = new RecsysTVProgram((short)0, (short)0, 4, expectedThirdProgramId3, (byte) 0, (byte) 0);
 		RecsysTVProgram notWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)0, 2, 2, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram1, mostWatchedChannelTVProgram2, mostWatchedChannelTVProgram3, notWatchedChannelTVProgram);
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms.size(), tvPrograms);
 		int expectedNumberOfResults = 4;
+		recommender.setNumberOfRecommendations(tvPrograms.size());
+		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().programId());
 		assertEquals(expectedSecondProgramId2, recommendations.get(1).tvProgram().programId());

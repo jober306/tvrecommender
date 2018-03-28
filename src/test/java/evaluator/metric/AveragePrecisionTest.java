@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import evaluator.result.EvaluationResult;
+import evaluator.result.SingleUserResult;
 
 public class AveragePrecisionTest extends RecommendationsFixture{
 	
@@ -17,7 +17,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	public void averagePrecisionAt3NoGoodRecommendations() {
 		avgPrecision = new AveragePrecision(3);
 		List<Integer> groundTruth = Arrays.asList(6,7,8,9);
-		EvaluationResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
+		SingleUserResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
 		double expectedResult = 0.0d;
 		double actualResult = result.score();
@@ -28,7 +28,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	public void averagePrecisionAt3OneGoodRecommendation() {
 		avgPrecision = new AveragePrecision(3);
 		List<Integer> groundTruth = Arrays.asList(3,7,8,9);
-		EvaluationResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
+		SingleUserResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
 		double expectedResult = 1/ (3.0d * 4.0d);
 		double actualResult = result.score();
@@ -39,7 +39,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	public void averagePrecisionAt3OneGoodRecommendationBigGroundTruthWithDuplicate() {
 		avgPrecision = new AveragePrecision(3);
 		List<Integer> groundTruth = Arrays.asList(3,7,8,9,9,9,9,9);
-		EvaluationResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
+		SingleUserResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
 		double expectedResult = 1/ (3.0d * 4.0d);
 		double actualResult = result.score();
@@ -50,7 +50,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	public void averagePrecisionAt5GroundTruthEmptyTest() {
 		avgPrecision = new AveragePrecision(5);
 		List<Integer> groundTruth = Arrays.asList();
-		EvaluationResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
+		SingleUserResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
 		double expectedResult = 0.0d;
 		double actualResult = result.score();
@@ -61,7 +61,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	public void averagePrecisionAt15HigherThanRecommendations() {
 		avgPrecision = new AveragePrecision(15);
 		List<Integer> groundTruth = Arrays.asList(3,7,8,9);
-		EvaluationResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
+		SingleUserResult result = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
 		double expectedResult = 1/ (3.0d * 4.0d);
 		double actualResult = result.score();

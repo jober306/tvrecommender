@@ -34,14 +34,14 @@ public class SpaceAlignmentPredictorTest {
 		data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		RecsysBooleanFeatureExtractor featureExtractor = new RecsysBooleanFeatureExtractor(data._1());
-		predictor = new SpaceAlignmentRecommender<>(context, featureExtractor, r, neighbourhoodSize, loader.getJavaSparkContext());
+		predictor = new SpaceAlignmentRecommender<>(context, numberOfResults, featureExtractor, r, neighbourhoodSize, loader.getJavaSparkContext());
 		predictor.train();
 	}
 
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		Recommendations<ScoredRecommendation> prediction = predictor.recommend(userId, START_TIME.plusHours(19), numberOfResults);
+		Recommendations<ScoredRecommendation> prediction = predictor.recommend(userId, START_TIME.plusHours(19));
 		assertEquals(numberOfResults, prediction.size());
 	}
 

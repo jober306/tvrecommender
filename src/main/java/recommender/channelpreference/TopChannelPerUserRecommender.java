@@ -6,8 +6,7 @@ import data.recsys.RecsysTVProgram;
 
 public class TopChannelPerUserRecommender extends ChannelPreferenceRecommender{
 
-	public TopChannelPerUserRecommender(
-			Context<RecsysTVProgram, RecsysTVEvent> context) {
-		super(context, false, true);
+	public TopChannelPerUserRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
+		super(context, numberOfRecommendations, false, true);
 	}
 }
