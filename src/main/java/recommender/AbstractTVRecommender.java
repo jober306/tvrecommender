@@ -20,7 +20,7 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	/**
 	 * The context of this recommender;
 	 */
-	final protected Context<T, U> context;
+	protected Context<T, U> context;
 
 	final RecommendFunction<T, R> recommendFunctionRef;
 	
@@ -38,6 +38,10 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 
 	public Context<T, U> getContext() {
 		return this.context;
+	}
+	
+	public void setContext(Context<T, U> context){
+		this.context = context;
 	}
 	
 	public int numberOfRecommendations() {

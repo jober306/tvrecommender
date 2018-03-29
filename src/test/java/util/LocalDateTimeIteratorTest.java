@@ -29,7 +29,7 @@ public class LocalDateTimeIteratorTest {
 
 	@Test
 	public void validTimeIterableTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
+		TimeRange timeIt = new TimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		for(LocalDateTime time : timeIt) {
 			times.add(time);
@@ -41,7 +41,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void validTimeStreamTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
+		TimeRange timeIt = new TimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
 		List<LocalDateTime> times = timeIt.stream().collect(Collectors.toList());
 		int expectedSize = 7;
 		assertEquals(expectedSize, times.size());
@@ -50,7 +50,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void validTimeIteratorTest() {
-		Iterator<LocalDateTime> timeIt = new LocalDateTimeIterator(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH).iterator();
+		Iterator<LocalDateTime> timeIt = new TimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH).iterator();
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		while(timeIt.hasNext()) {
 			times.add(timeIt.next());
@@ -62,7 +62,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void invalidTimeIterableTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
+		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		for(LocalDateTime time : timeIt) {
 			times.add(time);
@@ -73,7 +73,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void invalidTimeStreamTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
+		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
 		List<LocalDateTime> times = timeIt.stream().collect(Collectors.toList());
 		int expectedSize = 0;
 		assertEquals(expectedSize, times.size());
@@ -81,7 +81,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void invalidTimeIteratorTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
+		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		while(timeIt.hasNext()) {
 			times.add(timeIt.next());
@@ -92,7 +92,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void validTimeIterableMinonOneMonthTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
+		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		for(LocalDateTime time : timeIt) {
 			times.add(time);
@@ -104,7 +104,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void validTimeStreamMinonOneMonthTest() {
-		LocalDateTimeIterator timeIt = new LocalDateTimeIterator(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
+		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
 		List<LocalDateTime> times = timeIt.stream().collect(Collectors.toList());
 		int expectedSize = 7;
 		assertEquals(expectedSize, times.size());
@@ -113,7 +113,7 @@ public class LocalDateTimeIteratorTest {
 	
 	@Test
 	public void validTimeIteratorMinonOneMonthTest() {
-		Iterator<LocalDateTime> timeIt = new LocalDateTimeIterator(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH).iterator();
+		Iterator<LocalDateTime> timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH).iterator();
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		while(timeIt.hasNext()) {
 			times.add(timeIt.next());

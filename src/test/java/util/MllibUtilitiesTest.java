@@ -243,7 +243,6 @@ public class MllibUtilitiesTest {
 	public void toDenseLocalVectorsTest() {
 		List<Vector> vectors = MllibUtilities.toDenseLocalVectors(R);
 		for (int i = 0; i < matrixValues.length; i++) {
-			System.out.println(vectors.get(i));
 			assertArrayEquals(matrixValues[i], vectors.get(i).toArray(), 0.0d);
 		}
 	}

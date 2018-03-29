@@ -2,6 +2,7 @@ package evaluator;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Stream;
 
@@ -21,6 +22,7 @@ import evaluator.metric.IncrementMetric;
 import evaluator.metric.OneMetric;
 import evaluator.result.EvaluationResultsAnalyzer;
 import evaluator.result.MetricResults;
+import evaluator.result.SingleUserResult;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
@@ -65,23 +67,29 @@ public class EvaluationResultsAnalyzerTest {
 	@Test
 	public void evaluatingMeanWithEmptyMetricResultsTest() {
 		double expectedMean = 0.0d;
-		assertEquals(expectedMean, oneMetric.mean(), 0.0d);
+		MetricResults result = new MetricResults(new ArrayList<SingleUserResult>());
+		analyzer = new EvaluationResultsAnalyzer(incMetric, result);
+		assertEquals(expectedMean, analyzer.means().get(incMetric), 0.0d);
 	}
 	
 	@Test
 	public void evaluatingGeometricMeanWithEmptyMetricResultsTest() {
 		double expectedGeoMean = 0.0d;
-		assertEquals(expectedGeoMean, oneMetric.geometricMean(), 0.0d);
+		MetricResults result = new MetricResults(new ArrayList<SingleUserResult>());
+		analyzer = new EvaluationResultsAnalyzer(oneMetric, result);
+		assertEquals(expectedGeoMean, analyzer.geometricMeans().get(oneMetric), 0.0d);
 	}
 	
 	@Test
 	public void evaluatingGeometricMeanTest() {
-		Recommendations<Recommendation> recommendations = new Recommendations<>(USER_ID, Collections.emptyList());
-		Stream<Recommendations<Recommendation>> recommendationsStream = Stream.of(recommendations, recommendations, recommendations);
-		incMetric.evaluate(recommendationsStream, context);
-		
+		Recommendations<Recommendation> recommendations1 = new Recommendations<>(1, Collections.emptyList());
+		Recommendations<Recommendation> recommendations2 = new Recommendations<>(2, Collections.emptyList());
+		Recommendations<Recommendation> recommendations3 = new Recommendations<>(3, Collections.emptyList());
+		Stream<Recommendations<Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		MetricResults result = incMetric.evaluate(recommendationsStream, context);
+		analyzer = new EvaluationResultsAnalyzer(incMetric, result);
 		double expectedGeoMean = 1.8171205928321d;
-		assertEquals(expectedGeoMean, incMetric.geometricMean(), 0.000001d);
+		assertEquals(expectedGeoMean, analyzer.geometricMeans().get(incMetric), 0.000001d);
 	}
 	
 	@After
