@@ -2,7 +2,9 @@ package evaluator.result;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
+import util.StreamUtilities;
 
 public class MetricResults {
 	
@@ -13,10 +15,18 @@ public class MetricResults {
 	}
 	
 	public MetricResults(List<SingleUserResult> results) {
-		this.usersScore = results.stream().collect(Collectors.toMap(SingleUserResult::userId, SingleUserResult::score));
+		this.usersScore = StreamUtilities.toMapAverage(results.stream(), SingleUserResult::userId, SingleUserResult::score);
 	}
 	
 	public Map<Integer, Double> usersScore(){
 		return this.usersScore;
+	}
+	
+	public Optional<Double> userScore(int userId){
+		if(this.usersScore.containsKey(userId)){
+			return Optional.of(this.usersScore.get(userId));
+		}else{
+			return Optional.empty();
+		}
 	}
 }

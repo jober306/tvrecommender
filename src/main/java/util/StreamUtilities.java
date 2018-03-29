@@ -1,10 +1,13 @@
 package util;
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.*;
 import java.util.stream.StreamSupport;
 
@@ -59,5 +62,10 @@ public class StreamUtilities {
 	public static<A, B, C, D> Stream<Tuple4<A, B, C, D>> zip(Stream<? extends A> a, Stream<? extends B> b, Stream<? extends C> c, Stream<? extends D> d){
 		Stream<Tuple3<A, B, C>> abc = zip(a, b, c);
 		return zip(abc, d, (e, f) -> new Tuple4<A, B, C, D>(e._1(), e._2(), e._3(), f));
+	}
+	
+	public static <T, K> Map<K, Double> toMapAverage(Stream<T> stream, Function<? super T,? extends K> keyMapper, Function<? super T,Double> scoreMapper){
+		return stream.collect(Collectors.toMap(keyMapper, t -> new Tuple2<Double, Integer>(scoreMapper.apply(t), 1), (scoreCount1, scoreCount2) -> new Tuple2<>(scoreCount1._1() + scoreCount2._1(), scoreCount1._2() + scoreCount2._2())))
+		.entrySet().stream().collect(Collectors.toMap(Entry::getKey, k -> k.getValue()._1() / k.getValue()._2()));
 	}
 }
