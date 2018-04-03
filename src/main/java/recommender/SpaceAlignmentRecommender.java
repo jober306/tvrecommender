@@ -10,6 +10,7 @@ import static util.MllibUtilities.toDenseLocalVectors;
 import static util.MllibUtilities.vectorToCoordinateMatrix;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -167,6 +168,15 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 				.limit(numberOfRecommendations)
 				.collect(toList());
 		return new Recommendations<>(userId, recommendations);
+	}
+	
+	@Override
+	protected Map<String, String> parameters() {
+		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("Feature Extractor", this.extractor.getClass().getSimpleName());
+		parameters.put("Maximum Rank", Integer.toString(this.r));
+		parameters.put("Neighbourhood Size", Integer.toString(this.neighbourhoodSize));
+		return parameters;
 	}
 	
 	private ScoredRecommendation scoreTVProgram(int userId, Entry<T, Vector> programWithFeatures) {

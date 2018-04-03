@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaSparkContext;
@@ -17,9 +16,11 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import evaluator.information.Informative;
 import evaluator.metric.EvaluationMetric;
 import evaluator.metric.Precision;
 import evaluator.metric.Recall;
+import evaluator.result.EvaluationInfo;
 import evaluator.result.EvaluationResults;
 import evaluator.result.MetricResults;
 import model.recommendation.AbstractRecommendation;
@@ -43,22 +44,24 @@ import util.SparkUtilities;
  *            A class extending TVProgram on which the data set and the tv
  *            recommender is built.
  */
-public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> {
+public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> implements Informative{
 	
 	/**
 	 * The evalaution context that was used to train the recommender and that will be used to test it.
 	 */
-	EvaluationContext<T, U> context;
+	final EvaluationContext<T, U> context;
 
 	/**
 	 * The tv recommender to evaluate.
 	 */
-	AbstractTVRecommender<T, U, R> recommender;
+	final AbstractTVRecommender<T, U, R> recommender;
 
 	/**
 	 * The array of measures on which evaluation will be based.
 	 */
-	List<EvaluationMetric<R>> metrics;
+	final List<EvaluationMetric<R>> metrics;
+	
+	final EvaluationInfo info;
 
 
 	/**
@@ -70,6 +73,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 		this.context = (EvaluationContext<T,U>) recommender.getContext();
 		this.metrics = metrics;
 		this.recommender = recommender;
+		this.info = new EvaluationInfo(recommender, context);
 	}
 
 	/**
@@ -80,14 +84,8 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 		List<Recommendations<R>> testedUserRecommendations = context.getTestSet().getAllUserIds().stream()
 			.map(testedUser -> recommender.recommend(testedUser, context.getTestPrograms()))
 			.collect(Collectors.toList());
-		Map<EvaluationMetric<?>, MetricResults> results = metrics.stream().collect(Collectors.toMap(Function.identity(), metric -> metric.evaluate(testedUserRecommendations.stream(), context)));
-		return new EvaluationResults(results);
-	}
-	
-	public void printResults() {
-		for(EvaluationMetric<R> metric : metrics) {
-			System.out.println(metric);
-		}
+		Map<String, MetricResults> results = metrics.stream().collect(Collectors.toMap(EvaluationMetric::name, metric -> metric.evaluate(testedUserRecommendations.stream(), context)));
+		return new EvaluationResults(results, info);
 	}
 
 	public static void main(String[] args) {
@@ -107,6 +105,10 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 		recommender.train();
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		evaluator.evaluate();
-		evaluator.printResults();
+	}
+
+	@Override
+	public EvaluationInfo info() {
+		return this.info;
 	}
 }

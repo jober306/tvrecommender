@@ -14,7 +14,7 @@ import model.recommendation.Recommendations;
  * @author Jonathan Bergeron
  *
  */
-public class AveragePrecision extends AbstractEvaluationMetric<Recommendation>{
+public class AveragePrecision implements EvaluationMetric<Recommendation>{
 	
 	/**
 	 * The number of recommendations that will be considered
@@ -30,7 +30,16 @@ public class AveragePrecision extends AbstractEvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double performEvaluation(Recommendations<Recommendation> recommendations, List<Integer> groundTruth) {
+	public String name() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getClass().getSimpleName());
+		sb.append("@");
+		sb.append(cutoff);
+		return sb.toString();
+	}
+	
+	@Override
+	public double evaluate(Recommendations<Recommendation> recommendations, List<Integer> groundTruth) {
 		List<Integer> recommendedTVShowIndexes = recommendations.stream()
 				.map(Recommendation::tvProgram)
 				.map(TVProgram::programId)
@@ -53,14 +62,5 @@ public class AveragePrecision extends AbstractEvaluationMetric<Recommendation>{
 			}
 		}
 		return distinctGroundTruth.size() == 0 ? 0.0d : averagePrecision / distinctGroundTruth.size();
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.getClass().getSimpleName());
-		sb.append("@");
-		sb.append(cutoff);
-		return sb.toString();
 	}
 }

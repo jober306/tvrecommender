@@ -16,11 +16,9 @@ import java.util.Map;
  */
 public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends Context<T, U>{
 	
-	/**
-	 * The events used to test the recommender.
-	 */
+	final LocalDateTime testStartTime;
+	final LocalDateTime testEndTime;
 	final TVDataSet<T, U> testSet;
-	
 	final List<T> testPrograms;
 	
 	final Map<Integer, List<Integer>> groundTruth;
@@ -28,6 +26,8 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events,
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
 		super(epg, events);
+		this.testStartTime = testStartTime;
+		this.testEndTime = testEndTime;
 		this.testPrograms = createTestPrograms(testStartTime, testEndTime);
 		this.testSet = createSubDataSet(events, testStartTime, testEndTime);
 		this.groundTruth = createGroundTruth();
@@ -37,9 +37,19 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime, 
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
 		super(epg, events, trainingStartTime, trainingEndTime);
+		this.testStartTime = testStartTime;
+		this.testEndTime = testEndTime;
 		this.testPrograms = createTestPrograms(testStartTime, testEndTime);
 		this.testSet = createSubDataSet(events, testStartTime, testEndTime);
 		this.groundTruth = createGroundTruth();
+	}
+	
+	public LocalDateTime testStartTime(){
+		return this.testStartTime;
+	}
+	
+	public LocalDateTime testEndTime(){
+		return this.testEndTime;
 	}
 	
 	public TVDataSet<T, U> getTestSet(){

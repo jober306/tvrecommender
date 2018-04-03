@@ -1,6 +1,7 @@
 package recommender;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.spark.mllib.linalg.Matrix;
@@ -118,6 +119,12 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 
 	@Override
 	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<T> tvPrograms) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected Map<String, String> parameters() {
 		// TODO Auto-generated method stub
 		return null;
 	}

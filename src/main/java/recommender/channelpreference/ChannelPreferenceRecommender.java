@@ -6,7 +6,9 @@ import static util.CurryingUtilities.curry1;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.spark.mllib.linalg.Vector;
@@ -64,6 +66,11 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 				.map(Recommendation::new)
 				.collect(Collectors.toList());
 		return new Recommendations<>(userId, recommendations);
+	}
+	
+	@Override
+	public Map<String, String> parameters(){
+		return Collections.emptyMap();
 	}
 	
 	protected Tuple2<RecsysTVProgram, Integer> toProgramWatchTime(int userId, RecsysTVProgram tvProgram){

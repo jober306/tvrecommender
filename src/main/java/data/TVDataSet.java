@@ -5,6 +5,7 @@ import static util.CurryingUtilities.curry2;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -15,9 +16,11 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
 import data.feature.FeatureExtractor;
+import evaluator.information.Informative;
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
 import util.Lazy;
+import util.LocalDateTimeDTO;
 import util.SparkUtilities;
 
 /**
@@ -30,7 +33,7 @@ import util.SparkUtilities;
  *            A child class of the abstract class TVEvent. The RDD will be of
  *            this class.
  */
-public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implements Serializable {
+public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implements Serializable, Informative {
 	
 	/**
 	 * Method to initialize any resources needed after constructing the data set.
@@ -71,11 +74,13 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	 */
 	transient Supplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
 	transient Supplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
+	transient Supplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(eventsData.count()));
 	transient Supplier<List<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
 	transient Supplier<List<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
 	transient Supplier<List<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
 	transient Supplier<List<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
-	
+	transient Supplier<LocalDateTime> startTime = lazily(() -> startTime = value(initStartTime()));
+	transient Supplier<LocalDateTime> endTime = lazily(() -> endTime = value(initEndTime()));
 	
 	/**
 	 * Abstract constructor that initialize the tv events data and the spark
@@ -230,11 +235,43 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 		return (int)eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().count();
 	}
 	
+	private LocalDateTime initStartTime(){
+		return eventsData
+				.map(TVEvent::getWatchTime)
+				.map(LocalDateTimeDTO::new)
+				.reduce(LocalDateTimeDTO::min)
+				.toLocalDateTime();
+	}
+	
+	private LocalDateTime initEndTime(){
+		return eventsData
+				.map(TVEvent::getWatchTime)
+				.map(LocalDateTimeDTO::new)
+				.reduce(LocalDateTimeDTO::max)
+				.toLocalDateTime();
+	}
+	
 	public int getNumberOfUsers(){
 		return numberOfUsers.get();
 	}
 	
 	public int getNumberOfTvShows(){
 		return numberOfTvShows.get();
+	}
+	
+	public long numberOfTvEvents(){
+		return numberOfTvEvents.get();
+	}
+	
+	public LocalDateTime startTime(){
+		return startTime.get();
+	}
+	
+	public LocalDateTime endTime(){
+		return endTime.get();
+	}
+	
+	public TVDataSetInfo info(){
+		return new TVDataSetInfo(this.getClass().getSimpleName(), getNumberOfUsers(), getNumberOfTvShows(), numberOfTvEvents());
 	}
 }

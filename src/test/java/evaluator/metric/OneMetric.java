@@ -12,11 +12,16 @@ import model.recommendation.Recommendations;
  *
  * @param <R> The type of the recommendation.
  */
-public class OneMetric<R extends AbstractRecommendation> extends AbstractEvaluationMetric<R>{
+public class OneMetric<R extends AbstractRecommendation> implements EvaluationMetric<R>{
 
 	@Override
-	protected double performEvaluation(Recommendations<R> recommendations, List<Integer> groundTruth) {
+	public double evaluate(Recommendations<R> recommendations, List<Integer> groundTruth) {
 		return 1.0d;
+	}
+
+	@Override
+	public String name() {
+		return this.getClass().getSimpleName();
 	}
 
 }

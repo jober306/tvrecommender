@@ -11,7 +11,7 @@ import model.recommendation.Recommendations;
  * @author Jonathan Bergeron
  *
  */
-public class Precision extends AbstractEvaluationMetric<Recommendation>{
+public class Precision implements EvaluationMetric<Recommendation>{
 	
 	/**
 	 * The number of recommendations that will be considered
@@ -27,7 +27,7 @@ public class Precision extends AbstractEvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	protected double performEvaluation(Recommendations<Recommendation> recommendations, List<Integer> groundTruth) {
+	public double evaluate(Recommendations<Recommendation> recommendations, List<Integer> groundTruth) {
 		int truePositive = (int) recommendations.stream()
 				.limit(cutoff)
 				.map(Recommendation::tvProgram)
@@ -38,7 +38,7 @@ public class Precision extends AbstractEvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public String toString() {
+	public String name() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getClass().getSimpleName());
 		sb.append("@");

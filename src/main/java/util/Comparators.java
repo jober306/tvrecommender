@@ -1,13 +1,19 @@
 package util;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import model.recommendation.ScoredRecommendation;
 import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCollection;
 
-public class Comparators {
+public class Comparators implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static Comparator<UserPreference> UserPreferenceTensorComparator(UserPreferenceTensorCollection tensors){
 		return new Comparator<UserPreference>(){
 

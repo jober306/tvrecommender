@@ -2,20 +2,24 @@ package recommender;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import data.Context;
 import data.EvaluationContext;
 import data.TVEvent;
 import data.TVProgram;
+import evaluator.information.Informative;
 import model.RecommendFunction;
 import model.recommendation.AbstractRecommendation;
 import model.recommendation.Recommendations;
 
-public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> {
+public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> implements Informative{
 	
 	abstract protected Recommendations<R> recommendNormally(int userId, List<T> tvPrograms);
 
 	abstract protected Recommendations<R> recommendForTesting(int userId, List<T> tvPrograms);
+	
+	abstract protected Map<String, String> parameters();
 	
 	/**
 	 * The context of this recommender;
@@ -35,7 +39,11 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 			recommendFunctionRef = this::recommendNormally;
 		}
 	}
-
+	
+	public RecommenderInfo info(){
+		return new RecommenderInfo(this.getClass().getSimpleName(), parameters());
+	}
+	
 	public Context<T, U> getContext() {
 		return this.context;
 	}

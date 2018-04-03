@@ -21,6 +21,9 @@ public class Context<T extends TVProgram, U extends TVEvent>{
 	 */
 	final TVDataSet<T, U> events;
 	
+	
+	final LocalDateTime trainingStartTime;
+	final LocalDateTime trainingEndTime;
 	/**
 	 * The training set on which the recommender will train.
 	 */
@@ -30,12 +33,16 @@ public class Context<T extends TVProgram, U extends TVEvent>{
 	public Context(EPG<T> epg, TVDataSet<T, U> events){
 		this.epg = epg;
 		this.events = events;
+		this.trainingStartTime = events.startTime();
+		this.trainingEndTime = events.endTime();
 		this.trainingSet = events;
 	}
 	
 	public Context(EPG<T> epg, TVDataSet<T, U> events, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
 		this.epg = epg;
 		this.events = events;
+		this.trainingStartTime = trainingStartTime;
+		this.trainingEndTime = trainingEndTime;
 		this.trainingSet = createSubDataSet(events, trainingStartTime, trainingEndTime);
 	}
 	
@@ -43,7 +50,7 @@ public class Context<T extends TVProgram, U extends TVEvent>{
 		return epg;
 	}
 	
-	public TVDataSet<T, U> getEvents(){
+	public TVDataSet<T, U> getTvDataSet(){
 		return events;
 	}
 

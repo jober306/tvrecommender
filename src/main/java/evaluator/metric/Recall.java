@@ -12,7 +12,7 @@ import model.recommendation.Recommendations;
  * @author Jonathan Bergeron
  *
  */
-public class Recall extends AbstractEvaluationMetric<Recommendation>{
+public class Recall implements EvaluationMetric<Recommendation>{
 	
 
 	/**
@@ -29,7 +29,7 @@ public class Recall extends AbstractEvaluationMetric<Recommendation>{
 	}
 
 	@Override
-	protected double performEvaluation(Recommendations<Recommendation> recommendations,
+	public double evaluate(Recommendations<Recommendation> recommendations,
 			List<Integer> groundTruth) {
 		List<Integer> distinctGroundTruth = groundTruth.stream()
 				.distinct()
@@ -45,7 +45,7 @@ public class Recall extends AbstractEvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public String toString() {
+	public String name() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.getClass().getSimpleName());
 		sb.append("@");
