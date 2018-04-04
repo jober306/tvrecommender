@@ -1,7 +1,7 @@
-package util;
+package util.spark.mllib;
 
 import static java.lang.Math.toIntExact;
-import static util.ListUtilities.getSecondArgumentAsList;
+import static util.collections.ListUtilities.getSecondArgumentAsList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +32,7 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import util.spark.SparkUtilities;
 
 /**
  * Class that offers multiple utility function on mlllib distributed matrix

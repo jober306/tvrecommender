@@ -3,11 +3,10 @@ package recommender;
 import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static util.Comparators.scoredRecommendationComparator;
-import static util.MllibUtilities.invertVector;
-import static util.MllibUtilities.scalarProduct;
-import static util.MllibUtilities.toDenseLocalVectors;
-import static util.MllibUtilities.vectorToCoordinateMatrix;
+import static util.spark.mllib.MllibUtilities.invertVector;
+import static util.spark.mllib.MllibUtilities.scalarProduct;
+import static util.spark.mllib.MllibUtilities.toDenseLocalVectors;
+import static util.spark.mllib.MllibUtilities.vectorToCoordinateMatrix;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,7 +33,7 @@ import data.feature.FeatureExtractor;
 import model.UserItemMatrix;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
-import util.MllibUtilities;
+import util.spark.mllib.MllibUtilities;
 
 /**
  * Class that finds the optimal bilinear mapping between item content and the item
@@ -153,7 +152,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
 		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream()
 				.map(entry -> scoreTVProgram(userId, entry))
-				.sorted(scoredRecommendationComparator())
+				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed())
 				.limit(numberOfRecommendations)
 				.collect(toList());
 		return new Recommendations<>(userId, recommendations);
@@ -164,7 +163,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
 		List<ScoredRecommendation> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
-				.sorted(scoredRecommendationComparator())
+				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed())
 				.limit(numberOfRecommendations)
 				.collect(toList());
 		return new Recommendations<>(userId, recommendations);

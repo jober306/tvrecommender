@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import model.similarity.NormalizedCosineSimilarity;
+import util.spark.SparkUtilities;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.api.java.JavaRDD;
@@ -19,8 +20,6 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import util.SparkUtilities;
 
 import com.google.common.primitives.Ints;
 

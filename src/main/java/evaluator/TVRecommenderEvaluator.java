@@ -21,7 +21,7 @@ import evaluator.metric.EvaluationMetric;
 import evaluator.metric.Precision;
 import evaluator.metric.Recall;
 import evaluator.result.EvaluationInfo;
-import evaluator.result.EvaluationResults;
+import evaluator.result.EvaluationResult;
 import evaluator.result.MetricResults;
 import model.recommendation.AbstractRecommendation;
 import model.recommendation.Recommendation;
@@ -30,7 +30,7 @@ import recommender.AbstractTVRecommender;
 import recommender.channelpreference.ChannelPreferenceRecommender;
 import recommender.channelpreference.TopChannelPerUserRecommender;
 import scala.Tuple2;
-import util.SparkUtilities;
+import util.spark.SparkUtilities;
 
 /**
  * Class that evaluate a tv recommender on a given data set.
@@ -80,12 +80,17 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	 * Method that evaluates the recommender on all test users.
 	 * @param numberOfRecommendations The number of recommendations the recommender need to output.
 	 */
-	public EvaluationResults evaluate() {
+	public EvaluationResult evaluate() {
 		List<Recommendations<R>> testedUserRecommendations = context.getTestSet().getAllUserIds().stream()
 			.map(testedUser -> recommender.recommend(testedUser, context.getTestPrograms()))
 			.collect(Collectors.toList());
 		Map<String, MetricResults> results = metrics.stream().collect(Collectors.toMap(EvaluationMetric::name, metric -> metric.evaluate(testedUserRecommendations.stream(), context)));
-		return new EvaluationResults(results, info);
+		return new EvaluationResult(results, info);
+	}
+	
+	@Override
+	public EvaluationInfo info() {
+		return this.info;
 	}
 
 	public static void main(String[] args) {
@@ -105,10 +110,5 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 		recommender.train();
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		evaluator.evaluate();
-	}
-
-	@Override
-	public EvaluationInfo info() {
-		return this.info;
 	}
 }

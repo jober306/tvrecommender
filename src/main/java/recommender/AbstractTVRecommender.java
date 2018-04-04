@@ -26,13 +26,17 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	 */
 	protected Context<T, U> context;
 
-	final RecommendFunction<T, R> recommendFunctionRef;
+	RecommendFunction<T, R> recommendFunctionRef;
 	
 	protected int numberOfRecommendations;
 
 	public AbstractTVRecommender(Context<T, U> context, int numberOfRecommendations) {
-		this.context = context;
+		this.setContext(context);
 		this.numberOfRecommendations = numberOfRecommendations;
+	}
+	
+	public void setContext(Context<T, U> context){
+		this.context = context;
 		if (context instanceof EvaluationContext) {
 			recommendFunctionRef = this::recommendForTesting;
 		} else {
@@ -46,10 +50,6 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	
 	public Context<T, U> getContext() {
 		return this.context;
-	}
-	
-	public void setContext(Context<T, U> context){
-		this.context = context;
 	}
 	
 	public int numberOfRecommendations() {

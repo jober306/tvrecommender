@@ -1,4 +1,4 @@
-package util;
+package util.time;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-public class LocalDateTimeIteratorTest {
+import util.time.TimeRange;
+
+public class TimeRangeTest {
 	
 	static final LocalDateTime MY_BIRTHDAY = LocalDateTime.of(1990, 10, 11, 0, 0);
 	static final LocalDateTime ONE_MONTHS_OLD = MY_BIRTHDAY.plusDays(7);

@@ -13,7 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import data.recsys.RecsysTVEvent;
-import util.SparkUtilities;
+import util.spark.SparkUtilities;
 
 public class TVDataSetUtilitiesTest {
 	

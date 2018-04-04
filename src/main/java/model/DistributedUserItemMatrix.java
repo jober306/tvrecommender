@@ -19,8 +19,8 @@ import com.google.common.primitives.Ints;
 
 import model.similarity.SimilarityMeasure;
 import scala.Tuple3;
-import util.MllibUtilities;
-import util.SparkUtilities;
+import util.spark.SparkUtilities;
+import util.spark.mllib.MllibUtilities;
 
 /**
  * Class that represents an user item matrix (or rating matrix) in a mllib

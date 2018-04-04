@@ -16,6 +16,12 @@ import java.util.function.Supplier;
  * Supplier<Goo> fieldGoo = lazily(() -> fieldGoo=value(expensiveInitGoo()));
  * Supplier<Eep> fieldEep = lazily(() -> fieldEep=value(expensiveInitEep()));
  * 
+ * And add Getters on those suppliers:
+ * 
+ * public Baz getFieldBaz(){
+ * 	return fieldBaz.get();
+ * }
+ * 
  * @param <T> The class of the attribute to load layzily.
  */
 public interface Lazy<T> extends Supplier<T>{

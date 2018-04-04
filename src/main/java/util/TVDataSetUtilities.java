@@ -1,7 +1,7 @@
 package util;
 
-import static util.TimeUtilities.isDateTimeBetween;
-import static util.TimeUtilities.isTimeBetween;
+import static util.time.TimeUtilities.isDateTimeBetween;
+import static util.time.TimeUtilities.isTimeBetween;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;

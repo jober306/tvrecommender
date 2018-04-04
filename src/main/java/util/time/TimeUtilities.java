@@ -1,4 +1,4 @@
-package util;
+package util.time;
 
 import java.io.Serializable;
 import java.time.LocalTime;

@@ -21,7 +21,7 @@ import org.junit.Test;
 import data.recsys.feature.RecsysFeatureExtractor;
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
-import util.SparkUtilities;
+import util.spark.SparkUtilities;
 
 public class RecsysTVDataSetTest {
 

@@ -1,7 +1,7 @@
 package data;
 
 import static java.util.stream.Collectors.toList;
-import static util.CurryingUtilities.curry2;
+import static util.currying.CurryingUtilities.curry2;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -14,14 +14,13 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
-
 import data.feature.FeatureExtractor;
 import evaluator.information.Informative;
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
 import util.Lazy;
-import util.LocalDateTimeDTO;
-import util.SparkUtilities;
+import util.spark.SparkUtilities;
+import util.time.LocalDateTimeDTO;
 
 /**
  * Abstract class that represents a tv data set. It contains the tv events rdd

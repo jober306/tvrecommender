@@ -16,7 +16,7 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import scala.Tuple3;
 import scala.collection.Iterator;
-import util.MllibUtilities;
+import util.spark.mllib.MllibUtilities;
 
 import com.google.common.primitives.Ints;
 

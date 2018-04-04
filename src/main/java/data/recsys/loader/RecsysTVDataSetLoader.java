@@ -10,8 +10,8 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import scala.Tuple2;
-import util.SparkUtilities;
 import util.TVDataSetUtilities;
+import util.spark.SparkUtilities;
 
 /**
  * Class used to load data in the form of the recsys tv data set. The loader is

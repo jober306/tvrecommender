@@ -2,14 +2,12 @@ package evaluator.result;
 
 import java.util.Map;
 
-import evaluator.metric.EvaluationMetric;
-
 /**
  * Class that encapsulates results of an evaluation for a particular metric.
  * @author Jonathan Bergeron
  *
  */
-public class EvaluationResults {
+public class EvaluationResult {
 	
 	/**
 	 * The tested user id
@@ -22,7 +20,7 @@ public class EvaluationResults {
 	 * @param userId The tested user id
 	 * @param score The evaluation score obtained
 	 */
-	public EvaluationResults(Map<String, MetricResults> usersScorePerMetric, EvaluationInfo evaluationInfo) {
+	public EvaluationResult(Map<String, MetricResults> usersScorePerMetric, EvaluationInfo evaluationInfo) {
 		this.usersScorePerMetric = usersScorePerMetric;
 		this.evaluationInfo = evaluationInfo;
 	}

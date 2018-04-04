@@ -8,7 +8,7 @@ import data.EvaluationContext;
 import evaluator.result.MetricResults;
 import model.recommendation.AbstractRecommendation;
 import model.recommendation.Recommendations;
-import util.StreamUtilities;
+import util.collections.StreamUtilities;
 
 /**
  * Interface class that represent an evaluation metric. Class implementing it must be able to evaluate

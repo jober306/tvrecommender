@@ -1,8 +1,7 @@
-package util;
+package util.time;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 
 public class LocalDateTimeDTO implements Serializable{
 

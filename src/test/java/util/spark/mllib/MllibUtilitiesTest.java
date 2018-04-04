@@ -1,4 +1,4 @@
-package util;
+package util.spark.mllib;
 
 import static java.lang.Math.toIntExact;
 import static org.junit.Assert.assertArrayEquals;
@@ -24,6 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import scala.Tuple3;
+import util.spark.SparkUtilities;
+import util.spark.mllib.MllibUtilities;
 
 public class MllibUtilitiesTest {
 

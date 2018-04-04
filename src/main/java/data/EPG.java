@@ -1,6 +1,6 @@
 package data;
 
-import static util.TimeUtilities.isDateTimeBetween;
+import static util.time.TimeUtilities.isDateTimeBetween;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

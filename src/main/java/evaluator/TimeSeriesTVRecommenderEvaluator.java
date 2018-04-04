@@ -6,9 +6,9 @@ import data.EPG;
 import data.TVDataSet;
 import data.TVEvent;
 import data.TVProgram;
-import evaluator.result.EvaluationResults;
+import evaluator.result.EvaluationResult;
 import model.recommendation.AbstractRecommendation;
-import util.TimeRange;
+import util.time.TimeRange;
 
 public class TimeSeriesTVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> {
 	
@@ -20,7 +20,7 @@ public class TimeSeriesTVRecommenderEvaluator<T extends TVProgram, U extends TVE
 		this.epg = epg;
 	}
 	
-	public List<EvaluationResults> evaluate(TimeRange trainingStartTimes, TimeRange trainingEndTimes, TimeRange testStartTimes, TimeRange testEndTimes){
+	public List<EvaluationResult> evaluate(TimeRange trainingStartTimes, TimeRange trainingEndTimes, TimeRange testStartTimes, TimeRange testEndTimes){
 		return null;
 	}
 	

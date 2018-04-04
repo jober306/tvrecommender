@@ -2,7 +2,7 @@ package recommender.channelpreference;
 
 import static java.util.Comparator.comparing;
 import static model.tensor.UserPreferenceTensorCollection.ANY;
-import static util.CurryingUtilities.curry1;
+import static util.currying.CurryingUtilities.curry1;
 
 import java.util.ArrayList;
 import java.util.Collection;

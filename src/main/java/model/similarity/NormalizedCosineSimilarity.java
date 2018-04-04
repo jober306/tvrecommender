@@ -1,6 +1,6 @@
 package model.similarity;
 
-import static util.MllibUtilities.calculateL2Norm;
+import static util.spark.mllib.MllibUtilities.calculateL2Norm;
 
 import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;

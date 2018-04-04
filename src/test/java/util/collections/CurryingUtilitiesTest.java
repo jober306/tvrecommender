@@ -1,8 +1,8 @@
-package util;
+package util.collections;
 
 import static org.junit.Assert.assertEquals;
-import static util.CurryingUtilities.curry1;
-import static util.CurryingUtilities.curry2;
+import static util.currying.CurryingUtilities.curry1;
+import static util.currying.CurryingUtilities.curry2;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,15 +1,15 @@
-package util;
+package util.collections;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static util.ListUtilities.getFirstArgumentAsArray;
-import static util.ListUtilities.getFirstArgumentAsList;
-import static util.ListUtilities.getSecondArgumentAsArray;
-import static util.ListUtilities.getSecondArgumentAsList;
-import static util.ListUtilities.intersection;
-import static util.ListUtilities.substract;
-import static util.ListUtilities.union;
+import static util.collections.ListUtilities.getFirstArgumentAsArray;
+import static util.collections.ListUtilities.getFirstArgumentAsList;
+import static util.collections.ListUtilities.getSecondArgumentAsArray;
+import static util.collections.ListUtilities.getSecondArgumentAsList;
+import static util.collections.ListUtilities.intersection;
+import static util.collections.ListUtilities.substract;
+import static util.collections.ListUtilities.union;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +21,9 @@ import org.junit.Test;
 
 import scala.Tuple2;
 import scala.Tuple3;
+import util.collections.CartesianProduct2;
+import util.collections.CartesianProduct3;
+import util.collections.ListUtilities;
 
 public class ListUtilitiesTest {
 

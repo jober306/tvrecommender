@@ -1,6 +1,6 @@
 package data.recsys;
 
-import static util.MllibUtilities.sparseMatrixFormatToCSCMatrixFormat;
+import static util.spark.mllib.MllibUtilities.sparseMatrixFormatToCSCMatrixFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
