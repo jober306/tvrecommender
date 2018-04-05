@@ -3,11 +3,13 @@ package data.recsys.mapper;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 public class RecSysMapReaderTest {
 	
@@ -16,9 +18,9 @@ public class RecSysMapReaderTest {
 	@Before
 	public void setUp(){
 		RecSysMapCreator mapCreator = new RecSysMapCreator();
-		List<Integer> eventIds = Arrays.asList(1,2,3,4,5,6);
-		List<Integer> userIds = Arrays.asList(7,8,9,10);
-		List<Integer> programIds = Arrays.asList(11,12,13);
+		Set<Integer> eventIds = Sets.newHashSet(Arrays.asList(1,2,3,4,5,6));
+		Set<Integer> userIds = Sets.newHashSet(Arrays.asList(7,8,9,10));
+		Set<Integer> programIds = Sets.newHashSet(Arrays.asList(11,12,13));
 		mapCreator.createEventIDToIDMap(eventIds);
 		mapCreator.createUserIDToIDMap(userIds);
 		mapCreator.createProgramIDToIDMap(programIds);

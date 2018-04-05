@@ -37,7 +37,6 @@ public class RecsysUserPreferenceTensorCalculator extends UserPreferenceTensorCa
 			return tensor;
 		});
 		userPrefTensors.foreach(tensor -> acc.add(tensor));
-		
 		return acc.value();
 	}
 }

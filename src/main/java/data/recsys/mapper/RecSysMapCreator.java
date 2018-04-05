@@ -4,7 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 /**
  * Class that creates a mapping from the Recsys ids to original ids ranging from 0 to # of users/programs/event.
@@ -107,7 +107,7 @@ public class RecSysMapCreator {
 	 * Method that creates the user ID map file.
 	 * @param userIDs The list of distinct user ids in the recsys tv data set.
 	 */
-	public void createUserIDToIDMap(List<Integer> userIDs) {
+	public void createUserIDToIDMap(Set<Integer> userIDs) {
 		createMap(userIDs, getUserIDToIDMapPath());
 	}
 	
@@ -115,7 +115,7 @@ public class RecSysMapCreator {
 	 * Method that creates the program ID map file.
 	 * @param userIDs The list of distinct program ids in the recsys tv data set.
 	 */
-	public void createProgramIDToIDMap(List<Integer> programIDs) {
+	public void createProgramIDToIDMap(Set<Integer> programIDs) {
 		createMap(programIDs, getProgramIDToIDMapPath());
 	}
 	
@@ -123,11 +123,11 @@ public class RecSysMapCreator {
 	 * Method that creates the event ID map file.
 	 * @param userIDs The list of distinct event ids in the recsys tv data set.
 	 */
-	public void createEventIDToIDMap(List<Integer> eventIDs) {
+	public void createEventIDToIDMap(Set<Integer> eventIDs) {
 		createMap(eventIDs, getEventIDToIDMapPath());
 	}
 	
-	private void createMap(List<Integer> ids, String path){
+	private void createMap(Set<Integer> ids, String path){
 		BufferedWriter bw;
 		try {
 			

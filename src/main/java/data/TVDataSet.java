@@ -1,19 +1,22 @@
 package data;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static util.currying.CurryingUtilities.curry2;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
+
+import com.google.common.collect.Sets;
+
 import data.feature.FeatureExtractor;
 import evaluator.information.Informative;
 import model.DistributedUserItemMatrix;
@@ -33,11 +36,6 @@ import util.time.LocalDateTimeDTO;
  *            this class.
  */
 public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implements Serializable, Informative {
-	
-	/**
-	 * Method to initialize any resources needed after constructing the data set.
-	 */
-	abstract protected void initialize();
 	
 	// ----------ML lib convertion methods----------------
 	abstract public JavaRDD<Rating> convertToMLlibRatings();
@@ -74,10 +72,10 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	transient Supplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
 	transient Supplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
 	transient Supplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(eventsData.count()));
-	transient Supplier<List<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
-	transient Supplier<List<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
-	transient Supplier<List<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
-	transient Supplier<List<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
+	transient Supplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
+	transient Supplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
+	transient Supplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
+	transient Supplier<Set<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
 	transient Supplier<LocalDateTime> startTime = lazily(() -> startTime = value(initStartTime()));
 	transient Supplier<LocalDateTime> endTime = lazily(() -> endTime = value(initEndTime()));
 	
@@ -91,7 +89,6 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	public TVDataSet(JavaRDD<U> eventsData, JavaSparkContext sc) {
 		this.eventsData = eventsData;
 		this.sc = sc;
-		initialize();
 	}
 
 	/**
@@ -145,9 +142,9 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 		return !intersection.isEmpty();
 	}
 	
-	public List<Integer> getTvProgramSeenByUser(int userIndex) {
-		return eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex)
-				.map(tvEvent -> tvEvent.getProgramId()).distinct().collect();
+	public Set<Integer> getTvProgramSeenByUser(int userIndex) {
+		return Sets.newHashSet(eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex)
+				.map(tvEvent -> tvEvent.getProgramId()).distinct().collect());
 	}
 
 	/**
@@ -166,9 +163,9 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	 *            The ratio of Tv events there should be in each folder.
 	 * @return An array of RecsysTVDataSet.
 	 */
-	public List<TVDataSet<T, U>> splitTVEventsRandomly(double[] ratios) {
+	public Set<TVDataSet<T, U>> splitTVEventsRandomly(double[] ratios) {
 		JavaRDD<U>[] splittedEvents = eventsData.randomSplit(ratios);
-		return Arrays.stream(splittedEvents).map(curry2(this::newInstance, sc)).collect(toList());
+		return Arrays.stream(splittedEvents).map(curry2(this::newInstance, sc)).collect(toSet());
 	}
 
 	/**
@@ -189,41 +186,36 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 		return sc;
 	}
 	
-	public List<Integer> getAllUserIds() {
+	public Set<Integer> getAllUserIds() {
 		return allUserIds.get();
 	}
 	
-	private List<Integer> initAllUserIds(){
-		return eventsData.map(tvEvent -> tvEvent.getUserID()).distinct()
-				.collect();
+	private Set<Integer> initAllUserIds(){
+		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getUserID()).distinct().collect());
 	}
 
-	public List<Integer> getAllProgramIds() {
-		return eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct()
-				.collect();
+	public Set<Integer> getAllProgramIds() {
+		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().collect());
 	}
 	
-	private List<Integer> initAllProgramIds(){
-		return eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct()
-				.collect();
+	private Set<Integer> initAllProgramIds(){
+		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().collect());
 	}
 
-	public List<Integer> getAllEventIds() {
+	public Set<Integer> getAllEventIds() {
 		return allEventIds.get();
 	}
 	
-	public List<Integer> initAllEventIds(){
-		return eventsData.map(tvEvent -> tvEvent.getEventID()).distinct()
-				.collect();
+	public Set<Integer> initAllEventIds(){
+		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getEventID()).distinct().collect());
 	}
 
-	public List<Integer> getAllChannelIds() {
+	public Set<Integer> getAllChannelIds() {
 		return allChannelIds.get();
 	}
 	
-	public List<Integer> initAllChannelIds(){
-		return eventsData.map(tvEvent -> tvEvent.getChannelId()).distinct()
-				.collect();
+	public Set<Integer> initAllChannelIds(){
+		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getChannelId()).distinct().collect());
 	}
 
 	private int initNumberOfUsers(){

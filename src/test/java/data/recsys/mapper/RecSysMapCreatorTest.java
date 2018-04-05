@@ -6,13 +6,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 public class RecSysMapCreatorTest {
 	
@@ -32,9 +35,9 @@ public class RecSysMapCreatorTest {
 	
 	@Test
 	public void testConstructorWithFileAlreadyCreated(){
-		mapCreator.createEventIDToIDMap(Arrays.asList(1,23,3,4,5,6));
-		mapCreator.createUserIDToIDMap(Arrays.asList(1,23,3,4,5,6));
-		mapCreator.createProgramIDToIDMap(Arrays.asList(1,23,3,4,5,6));
+		mapCreator.createEventIDToIDMap(Sets.newHashSet(Arrays.asList(1,23,3,4,5,6)));
+		mapCreator.createUserIDToIDMap(Sets.newHashSet(Arrays.asList(1,23,3,4,5,6)));
+		mapCreator.createProgramIDToIDMap(Sets.newHashSet(Arrays.asList(1,23,3,4,5,6)));
 		RecSysMapCreator secondMapCreator = new RecSysMapCreator();
 		assertEquals("userIDToIDMap2.txt", secondMapCreator.getuserIDToIDMapFileName());
 		assertEquals("programIDToIDMap2.txt", secondMapCreator.getProgramIDToIDMapFileName());
@@ -49,9 +52,9 @@ public class RecSysMapCreatorTest {
 	
 	@Test
 	public void testMapCreatedCorrectly(){
-		List<Integer> eventIds = Arrays.asList(1,2,3,4,5,6);
-		List<Integer> userIds = Arrays.asList(7,8,9,10);
-		List<Integer> programIds = Arrays.asList(11,12,13);
+		Set<Integer> eventIds = Sets.newHashSet(Arrays.asList(1,2,3,4,5,6));
+		Set<Integer> userIds = Sets.newHashSet(Arrays.asList(7,8,9,10));
+		Set<Integer> programIds = Sets.newHashSet(Arrays.asList(11,12,13));
 		mapCreator.createEventIDToIDMap(eventIds);
 		mapCreator.createUserIDToIDMap(userIds);
 		mapCreator.createProgramIDToIDMap(programIds);
@@ -60,7 +63,7 @@ public class RecSysMapCreatorTest {
 		fileToRead[1] = new File(mapCreator.getProgramIDToIDMapPath());
 		fileToRead[2] = new File(mapCreator.getEventIDToIDMapPath());
 		for(int i = 0; i < 3; i++){
-			List<Integer> readOriginalIds = new ArrayList<Integer>(); 
+			Set<Integer> readOriginalIds = new HashSet<Integer>(); 
 			try (BufferedReader br = new BufferedReader(new FileReader(fileToRead[i]))){
 				String line = "";
 				int index = 0;

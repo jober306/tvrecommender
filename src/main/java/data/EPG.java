@@ -18,7 +18,7 @@ import org.apache.spark.api.java.JavaSparkContext;
  * @param <T>
  *            The child class of TVProgram that this EPG will contain.
  */
-public abstract class EPG<T extends TVProgram> implements Serializable {
+public class EPG<T extends TVProgram> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

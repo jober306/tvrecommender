@@ -1,6 +1,5 @@
 package data;
 
-import java.util.List;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -11,19 +10,12 @@ import data.feature.FeatureExtractor;
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
 
-public class TVDataSetMock extends TVDataSet<TVProgramMock, TVEventMock> {
+public class TVDataSetMock extends TVDataSet<TVProgram, TVEvent> {
 
 	private static final long serialVersionUID = 1L;
 
-	public boolean mockInitialized;
-
-	public TVDataSetMock(JavaRDD<TVEventMock> eventsData, JavaSparkContext sc) {
+	public TVDataSetMock(JavaRDD<TVEvent> eventsData, JavaSparkContext sc) {
 		super(eventsData, sc);
-	}
-
-	@Override
-	protected void initialize() {
-		mockInitialized = true;
 	}
 
 	@Override
@@ -39,56 +31,13 @@ public class TVDataSetMock extends TVDataSet<TVProgramMock, TVEventMock> {
 	}
 
 	@Override
-	public IndexedRowMatrix getContentMatrix(
-			FeatureExtractor<?, TVEventMock> extractor) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean contains(TVEventMock event) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public int getNumberOfUsers() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getNumberOfTvShows() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public List<Integer> getTvProgramSeenByUser(int userIndex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public int count() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public List<TVDataSet<TVProgramMock, TVEventMock>> splitTVEventsRandomly(double[] ratios) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public LocalUserItemMatrix convertToLocalUserItemMatrix() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? extends TVProgram, TVEvent> extractor) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,20 +1,205 @@
 package data;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Set;
+
+import org.apache.spark.api.java.JavaRDD;
 import org.junit.Test;
 
-public class TVDataSetTest {
+import com.google.common.collect.Sets;
 
+
+public class TVDataSetTest extends TVDataSetFixture{
+	
 	@Test
-	public void newInstanceTest() {
-		TVDataSetMock dataSetMock = new TVDataSetMock(null, null);
-		TVDataSet<TVProgramMock, TVEventMock> dataSet = (TVDataSet<TVProgramMock, TVEventMock>) dataSetMock;
-		TVDataSet<TVProgramMock, TVEventMock> newDataSet = dataSet.newInstance(null, null);
-		assertThat(dataSetMock.mockInitialized, equalTo(true));
-		assertThat(newDataSet, instanceOf(TVDataSetMock.class));
-		assertThat(((TVDataSetMock) newDataSet).mockInitialized, equalTo(true));
+	public void isNotEmptyOnValidDatasetTest(){
+		assertTrue(!dataset.isEmpty());
+	}
+	
+	@Test
+	public void isEmptyOnEmptyDatasetTest(){
+		assertTrue(emptyDataset.isEmpty());
+	}
+	
+	@Test
+	public void containsShallowCopyOfEventTest(){
+		assertTrue(dataset.contains(event1));
+	}
+	
+	@Test
+	public void containsDeepCopyOfEventTest(){
+		TVEvent deepCopyEvent1 = new TVEvent(event1.getWatchTime(), event1.getProgramId(), event1.getChannelId(), event1.getUserID(), event1.getEventID(), event1.getDuration());
+		assertTrue(dataset.contains(deepCopyEvent1));
+	}
+	
+	@Test
+	public void doesNotContainEventInEmptyDatasetTest(){
+		assertTrue(!emptyDataset.contains(event1));
+	}
+	
+	@Test
+	public void getProgramSeenByExistingUserOnValidDatasetTest(){
+		Set<Integer> expectedIndexSeenUser1 = Sets.newHashSet(Arrays.asList(1,2));
+		Set<Integer> actualIndexSeenUser1 = dataset.getTvProgramSeenByUser(1);
+		assertEquals(expectedIndexSeenUser1, actualIndexSeenUser1);
+	}
+	
+	@Test
+	public void programSeenByNonExistingUserShouldBeEmptyTest(){
+		Set<Integer> actualSet = dataset.getTvProgramSeenByUser(10);
+		assertTrue(actualSet.isEmpty());
+	}
+	
+	@Test
+	public void countOnValidDatasetTest(){
+		int expectedCount = 6;
+		int actualCount = dataset.count();
+		assertEquals(expectedCount, actualCount);
+	}
+	
+	@Test
+	public void countOnEmptyDatasetShouldBeZeroTest(){
+		int expectedCount = 0;
+		int actualCount = emptyDataset.count();
+		assertEquals(expectedCount, actualCount);
+	}
+	
+	@Test
+	public void splitValidDatasetIntersectionIsEmptyTest(){
+		double[] ratios = { 0.17, 0.43, 0.40 };
+		Set<TVDataSet<TVProgram, TVEvent>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
+		JavaRDD<TVEvent> intersection = splittedDataSet.stream().map(TVDataSet::getEventsData).reduce(JavaRDD::intersection).get();
+		assertTrue(intersection.isEmpty());
+	}
+	
+	@Test
+	public void splitValidDatasetUnionIsOriginalDatasetTest(){
+		double[] ratios = { 0.17, 0.43, 0.40 };
+		Set<TVDataSet<TVProgram, TVEvent>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
+		JavaRDD<TVEvent> unions = splittedDataSet.stream().map(TVDataSet::getEventsData).reduce(JavaRDD::union).get();
+		Set<TVEvent> expectedTVEvents = Sets.newHashSet(Arrays.asList(event1, event2, event3, event4, event5, event6));
+		Set<TVEvent> actualTVEvents = Sets.newHashSet(unions.collect());
+		assertEquals(expectedTVEvents, actualTVEvents);
+	}
+	
+	@Test
+	public void splitEmptyDatasetAllShouldBeEmptyTest(){
+		double[] ratios = { 0.1, 0.5, 0.4 };
+		Set<TVDataSet<TVProgram, TVEvent>> splittedDataSets = emptyDataset.splitTVEventsRandomly(ratios);
+		for(TVDataSet<TVProgram, TVEvent> splittedDataset : splittedDataSets){
+			assertTrue(splittedDataset.isEmpty());
+		}
+	}
+	
+	@Test
+	public void allUserIdsOnValidDatasetTest(){
+		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,2,3));
+		Set<Integer> actualSet = dataset.getAllUserIds();
+		assertEquals(expectedSet, actualSet);
+	}
+	
+	@Test
+	public void allUserIdsOnEmptyDatasetShouldBeEmptyTest(){
+		Set<Integer> actualSet = emptyDataset.getAllUserIds();
+		assertTrue(actualSet.isEmpty());
+	}
+	
+	@Test
+	public void allTVProgramIdsOnValidDatasetTest(){
+		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,2,3));
+		Set<Integer> actualSet = dataset.getAllProgramIds();
+		assertEquals(expectedSet, actualSet);
+	}
+	
+	@Test
+	public void allTVProgramIdsOnEmptyDatasetShouldBeEmptyTest(){
+		Set<Integer> actualSet = emptyDataset.getAllProgramIds();
+		assertTrue(actualSet.isEmpty());
+	}
+	
+	@Test
+	public void allEventIdsOnValidDatasetTest(){
+		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(0,1,2,3,4,5));
+		Set<Integer> actualSet = dataset.getAllEventIds();
+		assertEquals(expectedSet, actualSet);
+	}
+	
+	@Test
+	public void allEventIdsOnEmptyDatasetShouldBeEmptyTest(){
+		Set<Integer> actualSet = emptyDataset.getAllEventIds();
+		assertTrue(actualSet.isEmpty());
+	}
+	
+	@Test
+	public void allChannelIdsOnValidDatasetTest(){
+		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,5));
+		Set<Integer> actualSet = dataset.getAllChannelIds();
+		assertEquals(expectedSet, actualSet);
+	}
+	
+	@Test
+	public void allChannelIdsOnEmptyDatasetShouldBeEmptyTest(){
+		Set<Integer> actualSet = emptyDataset.getAllChannelIds();
+		assertTrue(actualSet.isEmpty());
+	}
+	
+	@Test
+	public void numberOfUsersOnValideDatasetTest(){
+		int expectedNumberOfUsers = 3;
+		int actualNumberOfUsers = dataset.getNumberOfUsers();
+		assertEquals(expectedNumberOfUsers, actualNumberOfUsers);
+	}
+	
+	@Test
+	public void numberOfUsersOnEmptyDatasetTest(){
+		int expectedNumberOfUsers = 0;
+		int actualNumberOfUsers = emptyDataset.getNumberOfUsers();
+		assertEquals(expectedNumberOfUsers, actualNumberOfUsers);
+	}
+	
+	@Test
+	public void numberOfTvProgramsOnValideDatasetTest(){
+		int expectedNumberOfTVPrograms = 3;
+		int actualNumberOfTvPrograms = dataset.getNumberOfTvShows();
+		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
+	}
+	
+	@Test
+	public void numberOfTVProgramsOnEmptyDatasetTest(){
+		int expectedNumberOfTVPrograms = 0;
+		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvShows();
+		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
+	}
+	
+	@Test
+	public void numberOfTvEventsOnValideDatasetTest(){
+		long expectedNumberOfTVEvents = 6;
+		long actualNumberOfTvEvents = dataset.numberOfTvEvents();
+		assertEquals(expectedNumberOfTVEvents, actualNumberOfTvEvents);
+	}
+	
+	@Test
+	public void numberOfTVEventsOnEmptyDatasetTest(){
+		long expectedNumberOfTVEvents = 0;
+		long actualNumberOfTvEvents = emptyDataset.numberOfTvEvents();
+		assertEquals(expectedNumberOfTVEvents, actualNumberOfTvEvents);
+	}
+	
+	@Test
+	public void validDatasetStartTimeTest(){
+		LocalDateTime expectedStartTime = baseTime;
+		LocalDateTime actualStartTime = dataset.startTime();
+		assertEquals(expectedStartTime, actualStartTime);
+	}
+	
+	@Test
+	public void validDatasetEndTimeTest(){
+		LocalDateTime expectedEndTime = baseTime.plusHours(2);
+		LocalDateTime actualEndTime = dataset.endTime();
+		assertEquals(expectedEndTime, actualEndTime);
 	}
 }

@@ -13,7 +13,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @author Jonathan Bergeron
  *
  */
-public abstract class TVEvent implements Serializable {
+public class TVEvent implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

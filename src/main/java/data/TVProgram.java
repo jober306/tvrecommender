@@ -15,7 +15,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @author Jonathan Bergeron
  *
  */
-public abstract class TVProgram implements Serializable {
+public class TVProgram implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

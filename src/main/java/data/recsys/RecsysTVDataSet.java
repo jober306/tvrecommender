@@ -78,10 +78,6 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 	public RecsysTVDataSet(JavaRDD<RecsysTVEvent> eventsData,
 			JavaSparkContext sc) {
 		super(eventsData, sc);
-	}
-
-	@Override
-	protected void initialize() {
 		initializeMapReader();
 		broadcastedIdMap = sc.broadcast(idMap);
 		mapClosed = false;

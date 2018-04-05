@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import data.recsys.feature.RecsysFeatureExtractor;
 import model.DistributedUserItemMatrix;
 import model.LocalUserItemMatrix;
+import scala.Tuple2;
 import util.spark.SparkUtilities;
 
 public class RecsysTVDataSetTest {
@@ -60,120 +62,11 @@ public class RecsysTVDataSetTest {
 	}
 
 	@Test
-	public void isNotEmptyTest() {
-		assertTrue(!dataSet.isEmpty());
-	}
-
-	@Test
-	public void isEmptyTest() {
-		dataSet.close();
-		JavaSparkContext defaultJavaSparkContext = SparkUtilities
-				.getADefaultSparkContext();
-		JavaRDD<RecsysTVEvent> emptyRDD = SparkUtilities
-				.<RecsysTVEvent> elementsToJavaRDD(
-						new ArrayList<RecsysTVEvent>(), defaultJavaSparkContext);
-		RecsysTVDataSet emptyDataSet = new RecsysTVDataSet(emptyRDD,
-				defaultJavaSparkContext);
-		assertTrue(emptyDataSet.isEmpty());
-		emptyDataSet.close();
-	}
-
-	@Test
-	public void containstTest() {
-		assertTrue(dataSet.contains(tvEvent1));
-		assertTrue(dataSet.contains(tvEvent2));
-		assertTrue(dataSet.contains(tvEvent3));
-		assertTrue(dataSet.contains(tvEvent4));
-	}
-
-	@Test
-	public void getAllUserIdsTest() {
-		List<Integer> userIds = dataSet.getAllUserIds();
-		assertTrue(userIds.contains(tvEvent1.getUserID()));
-		assertTrue(userIds.contains(tvEvent2.getUserID()));
-		assertTrue(userIds.contains(tvEvent4.getUserID()));
-	}
-
-	@Test
-	public void getAllProgramIdsTest() {
-		List<Integer> programIds = dataSet.getAllProgramIds();
-		assertTrue(programIds.contains(tvEvent1.getProgramId()));
-		assertTrue(programIds.contains(tvEvent2.getProgramId()));
-	}
-
-	@Test
-	public void getAllEventIdsTest() {
-		List<Integer> eventIds = dataSet.getAllEventIds();
-		assertTrue(eventIds.contains(tvEvent1.getEventID()));
-		assertTrue(eventIds.contains(tvEvent2.getEventID()));
-	}
-
-	@Test
-	public void getNumberOfEntitiesTest() {
-		int numberOfUsers = dataSet.getNumberOfUsers();
-		int numberOfPrograms = dataSet.getNumberOfTvShows();
-		int numberOfEvents = dataSet.count();
-		assertEquals(3, numberOfUsers);
-		assertEquals(2, numberOfPrograms);
-		assertEquals(4, numberOfEvents);
-	}
-
-	@Test
-	public void getProgramIndexesSeenByUserTest() {
-		List<Integer> programsSeenByUser1 = dataSet
-				.getTvProgramSeenByUser(1);
-		assertEquals(1, programsSeenByUser1.size());
-		assertTrue(programsSeenByUser1.contains(tvEvent1.getProgramId()));
-		List<Integer> programsSeenByUser3 = dataSet
-				.getTvProgramSeenByUser(3);
-		assertEquals(2, programsSeenByUser3.size());
-		assertTrue(programsSeenByUser3.contains(tvEvent2.getProgramId()));
-		assertTrue(programsSeenByUser3.contains(tvEvent3.getProgramId()));
-		List<Integer> programsSeenByUser4 = dataSet.getTvProgramSeenByUser(5);
-		assertTrue(programsSeenByUser4.contains(tvEvent4.getProgramId()));
-	}
-
-	@Test
-	public void getProgramIndexesSeenByUserNotExistingTest() {
-		List<Integer> userNotExisting = dataSet.getTvProgramSeenByUser(-1);
-		assertEquals(0, userNotExisting.size());
-	}
-
-	@Test
-	public void splitDataRandomlyTest() {
-		createBiggerDataSet(42);
-		double[] ratios = { 0.17, 0.43, 0.40 };
-		List<RecsysTVDataSet> splittedDataSet = dataSet.splitTVEventsRandomly(ratios).stream()
-				.map(tvDataSet -> (RecsysTVDataSet) tvDataSet)
-				.collect(Collectors.toList());
-		JavaRDD<RecsysTVEvent> split0 = splittedDataSet.get(0).getEventsData();
-		JavaRDD<RecsysTVEvent> split1 = splittedDataSet.get(1).getEventsData();
-		JavaRDD<RecsysTVEvent> split2 = splittedDataSet.get(2).getEventsData();
-		assertTrue(split0.intersection(split1).intersection(split2).isEmpty());
-		assertTrue(split0.union(split1).union(split2).count() == 42);
-	}
-
-	private void createBiggerDataSet(int dataSetSize) {
-		dataSet.close();
-		List<RecsysTVEvent> events = new ArrayList<RecsysTVEvent>();
-		for (int i = 0; i < dataSetSize; i++) {
-			events.add(new RecsysTVEvent((short) 1, (short) 2, (byte) 3,
-					(byte) 4, (byte) 81, 1 + i, 202344 + i, 50880093 + i, 5));
-		}
-		JavaSparkContext defaultJavaSparkContext = SparkUtilities
-				.getADefaultSparkContext();
-		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
-				.<RecsysTVEvent> elementsToJavaRDD(events,
-						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
-	}
-
-	@Test
 	public void convertDataSetToMLlibRatingsTest() {
 		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
 		assertTrue(ratings.count() == 4);
-		final List<Integer> expectedUserIds = dataSet.getAllUserIds();
-		final List<Integer> expectedProgramIds = dataSet.getAllProgramIds();
+		final Set<Integer> expectedUserIds = dataSet.getAllUserIds();
+		final Set<Integer> expectedProgramIds = dataSet.getAllProgramIds();
 		ratings.foreach(rating -> {
 			assertTrue(expectedUserIds.contains(rating.user()));
 			assertTrue(expectedProgramIds.contains(rating.product()));
@@ -184,24 +77,39 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void convertToDistributedMatrixTest() {
 		DistributedUserItemMatrix R = dataSet.convertToDistUserItemMatrix();
-		List<Integer> userIds = dataSet.getAllUserIds();
-		for (int userId : userIds) {
-			int mappedId = dataSet.getMappedUserID(userId);
-			assertArrayEquals(expectedUserItemMatrixValues.get(userId), R.getRow(mappedId)
-					.toArray(), 0.0d);
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getMappedUserID(event.getUserID()), dataSet.getMappedProgramID(event.getProgramId()))).collect(Collectors.toSet());
+		for (int row = 0; row < R.getNumRows(); row++) {
+			for(int col = 0; col < R.getNumCols(); col++){
+				double actualValue = R.getValue(row, col);
+				Tuple2<Integer, Integer> currentIndexes = new Tuple2<>(row, col);
+				if(seenIndexes.contains(currentIndexes)){
+					double expectedValue = 1.0d;
+					assertEquals(expectedValue, actualValue, 0.0d);
+				}else{
+					double expectedValue = 0.0d;
+					assertEquals(expectedValue, actualValue, 0.0d);
+				}
+			}
 		}
 	}
 	
 	@Test
 	public void convertToLocalMatrixTest(){
 		LocalUserItemMatrix R = dataSet.convertToLocalUserItemMatrix();
-		List<Integer> userIds = dataSet.getAllUserIds();
-		for (int userId : userIds) {
-			int mappedId = dataSet.getMappedUserID(userId);
-			assertArrayEquals(expectedUserItemMatrixValues.get(userId), R.getRow(mappedId)
-					.toArray(), 0.0d);
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getMappedUserID(event.getUserID()), dataSet.getMappedProgramID(event.getProgramId()))).collect(Collectors.toSet());
+		for (int row = 0; row < R.getNumRows(); row++) {
+			for(int col = 0; col < R.getNumCols(); col++){
+				double actualValue = R.getValue(row, col);
+				Tuple2<Integer, Integer> currentIndexes = new Tuple2<>(row, col);
+				if(seenIndexes.contains(currentIndexes)){
+					double expectedValue = 1.0d;
+					assertEquals(expectedValue, actualValue, 0.0d);
+				}else{
+					double expectedValue = 0.0d;
+					assertEquals(expectedValue, actualValue, 0.0d);
+				}
+			}
 		}
-
 	}
 
 	@Test

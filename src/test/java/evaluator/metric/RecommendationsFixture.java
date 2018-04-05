@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 
-import data.TVProgramMock;
+import data.TVProgram;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
@@ -19,16 +19,16 @@ public abstract class RecommendationsFixture {
 	
 	static final LocalDateTime time = LocalDateTime.of(2018, 03, 21, 16, 6);
 	
-	static final Recommendation rec1 = new Recommendation(new TVProgramMock(time, time, 0, 1));
-	static final Recommendation rec2 = new Recommendation(new TVProgramMock(time, time, 0, 2));
-	static final Recommendation rec3 = new Recommendation(new TVProgramMock(time, time, 0, 3));
-	static final Recommendation rec4 = new Recommendation(new TVProgramMock(time, time, 0, 4));
-	static final Recommendation rec5= new Recommendation(new TVProgramMock(time, time, 0, 2));
-	static final Recommendation rec6 = new Recommendation(new TVProgramMock(time, time, 0, 3));
-	static final Recommendation rec7 = new Recommendation(new TVProgramMock(time, time, 0, 4));
-	static final Recommendation rec8 = new Recommendation(new TVProgramMock(time, time, 0, 3));
-	static final Recommendation rec9 = new Recommendation(new TVProgramMock(time, time, 0, 4));
-	static final Recommendation rec10 = new Recommendation(new TVProgramMock(time, time, 0, 4));
+	static final Recommendation rec1 = new Recommendation(new TVProgram(time, time, 0, 1));
+	static final Recommendation rec2 = new Recommendation(new TVProgram(time, time, 0, 2));
+	static final Recommendation rec3 = new Recommendation(new TVProgram(time, time, 0, 3));
+	static final Recommendation rec4 = new Recommendation(new TVProgram(time, time, 0, 4));
+	static final Recommendation rec5= new Recommendation(new TVProgram(time, time, 0, 2));
+	static final Recommendation rec6 = new Recommendation(new TVProgram(time, time, 0, 3));
+	static final Recommendation rec7 = new Recommendation(new TVProgram(time, time, 0, 4));
+	static final Recommendation rec8 = new Recommendation(new TVProgram(time, time, 0, 3));
+	static final Recommendation rec9 = new Recommendation(new TVProgram(time, time, 0, 4));
+	static final Recommendation rec10 = new Recommendation(new TVProgram(time, time, 0, 4));
 	
 	
 	protected Recommendations<Recommendation> distinctRecommendations;
