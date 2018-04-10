@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import scala.Tuple4;
+
 /**
  * Class that represents a context in which a recommender lives.
  * The context is used to evaluate the recommender.
@@ -42,6 +44,11 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 		this.testPrograms = createTestPrograms(testStartTime, testEndTime);
 		this.testSet = createSubDataSet(events, testStartTime, testEndTime);
 		this.groundTruth = createGroundTruth();
+	}
+	
+	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events, 
+			Tuple4<LocalDateTime, LocalDateTime, LocalDateTime, LocalDateTime> trainingTestingTimes){
+		this(epg, events, trainingTestingTimes._1(), trainingTestingTimes._2(), trainingTestingTimes._3(), trainingTestingTimes._4());
 	}
 	
 	public LocalDateTime testStartTime(){
@@ -84,5 +91,11 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 	
 	private List<T> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){
 		return getEPG().getListProgramsBetweenTimes(testStartTime, testEndTime);
+	}
+	
+	@Override
+	public void close() {
+		super.close();
+		trainingSet.close();
 	}
 }

@@ -3,6 +3,7 @@ package recommender.channelpreference;
 import static data.recsys.RecsysTVDataSet.START_TIME;
 import static org.junit.Assert.assertEquals;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,19 +15,22 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import scala.Tuple2;
+import util.spark.SparkUtilities;
 
 public class TopChannelRecommenderTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
-	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
+	
+	static JavaSparkContext sc;
 	static ChannelPreferenceRecommender recommender;
 
 	@BeforeClass
 	public static void setUpOnce() {
-		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
-		data = loader.loadDataSet();
+		sc = SparkUtilities.getADefaultSparkContext();
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
-		recommender = new TopChannelRecommender(context, 1);
+		recommender = new TopChannelRecommender(context, 10);
 		recommender.train();
 	}
 	
@@ -39,6 +43,7 @@ public class TopChannelRecommenderTest {
 	
 	@AfterClass
 	public static void tearDownOnce() {
-		data._2().close();
+		recommender.closeContextDatasets();
+		sc.close();
 	}
 }

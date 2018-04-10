@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -25,10 +26,13 @@ import evaluator.metric.OneMetric;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
+import util.spark.SparkUtilities;
 
 public class MetricResultsTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
+	
+	static JavaSparkContext sc;
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
 	static EvaluationContext<RecsysTVProgram, RecsysTVEvent> context;
 	
@@ -39,7 +43,8 @@ public class MetricResultsTest {
 	
 	@BeforeClass
 	public static void setUpOnce() {
-		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
+		sc = SparkUtilities.getADefaultSparkContext();
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		data = loader.loadDataSet();
 		context = new EvaluationContext<>(data._1(), data._2(), RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME);
 	}
@@ -114,9 +119,7 @@ public class MetricResultsTest {
 	
 	@AfterClass
 	public static void tearDownOnce() {
-		RecsysTVDataSet testSet = (RecsysTVDataSet) context.getTestSet();
-		testSet.closeMap();
-		RecsysTVDataSet dataSet = data._2();
-		dataSet.close();
+		context.close();
+		sc.close();
 	}
 }

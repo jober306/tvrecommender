@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import util.time.TimeRange;
+import util.time.DateTimeRange;
 
 public class TimeRangeTest {
 	
@@ -31,7 +31,7 @@ public class TimeRangeTest {
 
 	@Test
 	public void validTimeIterableTest() {
-		TimeRange timeIt = new TimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		for(LocalDateTime time : timeIt) {
 			times.add(time);
@@ -43,7 +43,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void validTimeStreamTest() {
-		TimeRange timeIt = new TimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH);
 		List<LocalDateTime> times = timeIt.stream().collect(Collectors.toList());
 		int expectedSize = 7;
 		assertEquals(expectedSize, times.size());
@@ -52,7 +52,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void validTimeIteratorTest() {
-		Iterator<LocalDateTime> timeIt = new TimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH).iterator();
+		Iterator<LocalDateTime> timeIt = new DateTimeRange(MY_BIRTHDAY, SIX_MONTHS_OLD, ONE_MONTH).iterator();
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		while(timeIt.hasNext()) {
 			times.add(timeIt.next());
@@ -64,7 +64,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void invalidTimeIterableTest() {
-		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		for(LocalDateTime time : timeIt) {
 			times.add(time);
@@ -75,7 +75,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void invalidTimeStreamTest() {
-		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
 		List<LocalDateTime> times = timeIt.stream().collect(Collectors.toList());
 		int expectedSize = 0;
 		assertEquals(expectedSize, times.size());
@@ -83,7 +83,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void invalidTimeIteratorTest() {
-		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		while(timeIt.hasNext()) {
 			times.add(timeIt.next());
@@ -94,7 +94,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void validTimeIterableMinonOneMonthTest() {
-		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		for(LocalDateTime time : timeIt) {
 			times.add(time);
@@ -106,7 +106,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void validTimeStreamMinonOneMonthTest() {
-		TimeRange timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
+		DateTimeRange timeIt = new DateTimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH);
 		List<LocalDateTime> times = timeIt.stream().collect(Collectors.toList());
 		int expectedSize = 7;
 		assertEquals(expectedSize, times.size());
@@ -115,7 +115,7 @@ public class TimeRangeTest {
 	
 	@Test
 	public void validTimeIteratorMinonOneMonthTest() {
-		Iterator<LocalDateTime> timeIt = new TimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH).iterator();
+		Iterator<LocalDateTime> timeIt = new DateTimeRange(SIX_MONTHS_OLD, MY_BIRTHDAY, MINUS_ONE_MONTH).iterator();
 		List<LocalDateTime> times = new ArrayList<LocalDateTime>();
 		while(timeIt.hasNext()) {
 			times.add(timeIt.next());

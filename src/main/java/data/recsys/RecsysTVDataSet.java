@@ -203,29 +203,5 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 			broadcastedIdMap.unpersist();
 			broadcastedIdMap.destroy();
 		}
-		closeSparkContext();
-	}
-
-	public void closeMap() {
-		if (!mapClosed) {
-			idMap.close();
-			mapClosed = true;
-			broadcastedIdMap.unpersist();
-			broadcastedIdMap.destroy();
-		}
-	}
-
-	public void closeSparkContext() {
-		sc.close();
-		eventsData = null;
-	}
-
-	@Override
-	public void finalize() {
-		if (!mapClosed) {
-			idMap.close();
-			broadcastedIdMap.unpersist();
-			broadcastedIdMap.destroy();
-		}
 	}
 }

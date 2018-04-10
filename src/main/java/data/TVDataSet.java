@@ -37,6 +37,8 @@ import util.time.LocalDateTimeDTO;
  */
 public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implements Serializable, Informative {
 	
+	abstract public void close();
+	
 	// ----------ML lib convertion methods----------------
 	abstract public JavaRDD<Rating> convertToMLlibRatings();
 

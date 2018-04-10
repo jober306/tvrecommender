@@ -3,12 +3,14 @@ package data.recsys.feature;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vector;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import scala.Tuple2;
+import util.spark.SparkUtilities;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -21,10 +23,12 @@ public class RecsysBooleanFeatureExtractorTest {
 
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
 	static public RecsysBooleanFeatureExtractor featureExtractor;
+	static JavaSparkContext sc;
 
 	@BeforeClass
 	public static void setUp() {
-		data = new RecsysTVDataSetLoader(path).loadDataSet();
+		sc = SparkUtilities.getADefaultSparkContext();
+		data = new RecsysTVDataSetLoader(path, sc).loadDataSet();
 		featureExtractor = new RecsysBooleanFeatureExtractor(data._1);
 	}
 
@@ -89,5 +93,6 @@ public class RecsysBooleanFeatureExtractorTest {
 	@AfterClass
 	public static void tearDown() {
 		data._2.close();
+		sc.close();
 	}
 }

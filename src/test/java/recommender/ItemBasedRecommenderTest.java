@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -15,20 +16,22 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import scala.Tuple2;
+import util.spark.SparkUtilities;
 
 public class ItemBasedRecommenderTest {
 
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
+	
+	static JavaSparkContext sc;
 	static ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
-	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	final static int numberOfResults = 2;
 
 	@BeforeClass
 	public static void setUpOnce() {
-		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
-		data = loader.loadDataSet();
+		sc = SparkUtilities.getADefaultSparkContext();
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
-		recommender = new ItemBasedRecommender<>(context, numberOfResults);
+		recommender = new ItemBasedRecommender<>(context, 10);
 		recommender.train();
 	}
 
@@ -51,6 +54,7 @@ public class ItemBasedRecommenderTest {
 
 	@AfterClass
 	public static void tearDownOnce() {
-		data._2().close();
+		recommender.closeContextDatasets();
+		sc.close();
 	}
 }

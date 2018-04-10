@@ -1,6 +1,8 @@
 package evaluator.result;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import data.EvaluationContext;
 import data.TVDataSetInfo;
@@ -8,8 +10,10 @@ import evaluator.information.Information;
 import recommender.AbstractTVRecommender;
 import recommender.RecommenderInfo;
 
-public class EvaluationInfo implements Information{
+public class EvaluationInfo implements Information, Serializable{
 	 
+	private static final long serialVersionUID = 1L;
+
 	RecommenderInfo recommenderInfo;
 	
 	TVDataSetInfo trainingTvDataSetInfo;
@@ -32,7 +36,28 @@ public class EvaluationInfo implements Information{
 	}
 	
 	public EvaluationInfo(AbstractTVRecommender<?,?,?> recommender, EvaluationContext<?, ?> context){
-		this(recommender.info(), context.getTrainingSet().info(), context.getTestSet().info(), context.getTrainingSet().startTime(), context.getTrainingSet().endTime(), context.getTestSet().startTime(), context.getTestSet().endTime());
+		this(recommender.info(), context.getTrainingSet().info(), context.getTestSet().info(), context.getTrainingStartTime(), context.getTrainingEndTime(), context.testStartTime(), context.testEndTime());
+	}
+
+	public LocalDateTime getTrainingStartTime() {
+		return trainingStartTime;
+	}
+
+	public LocalDateTime getTrainingEndTime() {
+		return trainingEndTime;
+	}
+
+	public LocalDateTime getTestStartTime() {
+		return testStartTime;
+	}
+
+	public LocalDateTime getTestEndTime() {
+		return testEndTime;
+	}
+	
+	public String generateFileName(){
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd");
+		return trainingStartTime.format(formatter) + "-" + trainingEndTime.format(formatter) + "--" + testStartTime.format(formatter) + "-" + testEndTime.format(formatter);
 	}
 
 	@Override

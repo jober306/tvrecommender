@@ -1,9 +1,9 @@
 package data.recsys;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +16,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import data.recsys.feature.RecsysFeatureExtractor;
@@ -26,7 +28,9 @@ import scala.Tuple2;
 import util.spark.SparkUtilities;
 
 public class RecsysTVDataSetTest {
-
+	
+	static JavaSparkContext sc;
+	
 	final static Map<Integer, double[]> expectedUserItemMatrixValues;
 	static{
 		expectedUserItemMatrixValues = new HashMap<Integer, double[]>();
@@ -45,7 +49,12 @@ public class RecsysTVDataSetTest {
 			(byte) 1, (byte) 4, (byte) 30, 5, 5785, 51097405, 30);
 
 	RecsysTVDataSet dataSet;
-
+	
+	@BeforeClass
+	public static void setUpOnce(){
+		sc = SparkUtilities.getADefaultSparkContext();
+	}
+	
 	@Before
 	public void setUp() {
 		List<RecsysTVEvent> events = new ArrayList<RecsysTVEvent>();
@@ -53,12 +62,15 @@ public class RecsysTVDataSetTest {
 		events.add(tvEvent2);
 		events.add(tvEvent3);
 		events.add(tvEvent4);
-		JavaSparkContext defaultJavaSparkContext = SparkUtilities
-				.getADefaultSparkContext();
-		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities
-				.<RecsysTVEvent> elementsToJavaRDD(events,
-						defaultJavaSparkContext);
-		dataSet = new RecsysTVDataSet(eventsRDD, defaultJavaSparkContext);
+		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities.elementsToJavaRDD(events,sc);
+		dataSet = new RecsysTVDataSet(eventsRDD, sc);
+	}
+	
+	@Test
+	public void startTimeConvertedProperlyTest(){
+		LocalDateTime expectedTime = RecsysTVDataSet.START_TIME.plusWeeks(2).plusHours(1);
+		LocalDateTime actualTime = tvEvent1.getWatchTime();
+		assertEquals(expectedTime, actualTime);
 	}
 
 	@Test
@@ -124,5 +136,10 @@ public class RecsysTVDataSetTest {
 	@After
 	public void tearDown() {
 		dataSet.close();
+	}
+	
+	@AfterClass
+	public static void tearDownOnce(){
+		sc.close();
 	}
 }

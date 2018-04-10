@@ -1,8 +1,12 @@
 package data;
 
+import java.io.Serializable;
+
 import evaluator.information.Information;
 
-public class TVDataSetInfo implements Information{
+public class TVDataSetInfo implements Information, Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	final String name;
 	final int numberOfUsers;

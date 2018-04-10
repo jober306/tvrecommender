@@ -21,6 +21,10 @@ import scala.Tuple3;
 
 public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecommender{
 	
+	public TopChannelPerUserPerSlotRecommender(int numberOfRecommendations) {
+		super(numberOfRecommendations, false, false);
+	}
+	
 	public TopChannelPerUserPerSlotRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
 		super(context, numberOfRecommendations, false, false);
 	}

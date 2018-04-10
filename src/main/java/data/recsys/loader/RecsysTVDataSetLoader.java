@@ -163,7 +163,8 @@ public class RecsysTVDataSetLoader {
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader l = new RecsysTVDataSetLoader();
 		Tuple2<RecsysEPG, RecsysTVDataSet> data = l.loadDataSet();
-		System.out.println(data._1.getEPG().count());
-		System.out.println(data._2.getEventsData().count());
+		System.out.println(RecsysTVDataSet.START_TIME);
+		System.out.println(data._2.startTime());
+		System.out.println(data._2.endTime());
 	}
 }

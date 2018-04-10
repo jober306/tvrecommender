@@ -48,7 +48,11 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	 * an upper triangular matrix.
 	 */
 	Matrix S;
-
+	
+	public ItemBasedRecommender(int numberOfRecommendations) {
+		super(numberOfRecommendations);
+	}
+	
 	/**
 	 * Constructor of the class that need a rating matrix to create the item
 	 * similarities matrix.
@@ -124,7 +128,7 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
 	}
 
 	@Override
-	protected Map<String, String> parameters() {
+	protected Map<String, String> additionalParameters() {
 		// TODO Auto-generated method stub
 		return null;
 	}

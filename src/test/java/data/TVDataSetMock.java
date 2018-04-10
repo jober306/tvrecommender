@@ -42,4 +42,9 @@ public class TVDataSetMock extends TVDataSet<TVProgram, TVEvent> {
 		return null;
 	}
 
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+	}
+
 }

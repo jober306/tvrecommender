@@ -18,6 +18,10 @@ public class MetricResults {
 		this.usersScore = usersScore;
 	}
 	
+	public String metricName(){
+		return this.metricName;
+	}
+	
 	public Map<Integer, Double> usersScore(){
 		return this.usersScore;
 	}

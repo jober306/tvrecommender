@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public class TimeRange implements Iterator<LocalDateTime>, Iterable<LocalDateTime>{
+public class DateTimeRange implements Iterator<LocalDateTime>, Iterable<LocalDateTime>{
 	
 	final LocalDateTime startTime;
 	final LocalDateTime endTime;
@@ -14,7 +14,7 @@ public class TimeRange implements Iterator<LocalDateTime>, Iterable<LocalDateTim
 	
 	LocalDateTime current;
 	
-	public TimeRange(LocalDateTime startTime, LocalDateTime endTime, Duration duration) {
+	public DateTimeRange(LocalDateTime startTime, LocalDateTime endTime, Duration duration) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.iterationDuration = duration;
@@ -24,6 +24,9 @@ public class TimeRange implements Iterator<LocalDateTime>, Iterable<LocalDateTim
 	
 	public Stream<LocalDateTime> stream(){
 		Duration totalDuration = Duration.between(startTime, endTime);
+		if(iterationDuration.getSeconds() == 0){
+			return Stream.generate(this::next);
+		}
 		long numberOfIterations = totalDuration.getSeconds() / iterationDuration.getSeconds();
 		if(numberOfIterations < 0) {
 			return Stream.empty();

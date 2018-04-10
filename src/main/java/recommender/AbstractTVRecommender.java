@@ -1,6 +1,7 @@
 package recommender;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,16 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 
 	abstract protected Recommendations<R> recommendForTesting(int userId, List<T> tvPrograms);
 	
-	abstract protected Map<String, String> parameters();
+	abstract protected Map<String, String> additionalParameters();
+	
+	public Map<String, String> parameters(){
+		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("Number of Recommendations", Integer.toString(numberOfRecommendations));
+		parameters.putAll(additionalParameters());
+		return parameters;
+	}
+	
+	abstract public void train();
 	
 	/**
 	 * The context of this recommender;
@@ -29,6 +39,10 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	RecommendFunction<T, R> recommendFunctionRef;
 	
 	protected int numberOfRecommendations;
+	
+	public AbstractTVRecommender(int numberOfRecommendations){
+		this.numberOfRecommendations = numberOfRecommendations;
+	}
 
 	public AbstractTVRecommender(Context<T, U> context, int numberOfRecommendations) {
 		this.setContext(context);
@@ -42,6 +56,10 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 		} else {
 			recommendFunctionRef = this::recommendNormally;
 		}
+	}
+	
+	public void closeContextDatasets(){
+		context.close();
 	}
 	
 	public RecommenderInfo info(){
@@ -59,8 +77,6 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	public void setNumberOfRecommendations(int numberOfRecommendations) {
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
-	
-	abstract public void train();
 
 	/**
 	 * Method that returns the original (not the mapped one) tv show indexes in

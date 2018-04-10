@@ -2,11 +2,13 @@ package data.recsys.loader;
 
 import static org.junit.Assert.assertTrue;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import scala.Tuple2;
+import util.spark.SparkUtilities;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -23,10 +25,12 @@ public class RecsysTVDataSetLoaderTest {
 
 	static RecsysTVDataSetLoader loader;
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
+	static JavaSparkContext sc;
 
 	@BeforeClass
 	public static void setUp() {
-		loader = new RecsysTVDataSetLoader(path);
+		sc = SparkUtilities.getADefaultSparkContext();
+		loader = new RecsysTVDataSetLoader(path, sc);
 		data = loader.loadDataSet();
 	}
 
@@ -48,6 +52,7 @@ public class RecsysTVDataSetLoaderTest {
 	public static void tearDown() {
 		RecsysTVDataSet dataSet = data._2();
 		dataSet.close();
+		sc.close();
 		loader = null;
 	}
 }

@@ -38,6 +38,12 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	long totalUserPref;
 	long startTime;
 	
+	public ChannelPreferenceRecommender(int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
+		super(numberOfRecommendations);
+		this.anyUsers = anyUsers;
+		this.anySlots = anySlots;
+	}
+	
 	public ChannelPreferenceRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
 		super(context, numberOfRecommendations);
 		this.anyUsers = anyUsers;
@@ -68,7 +74,7 @@ public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender
 	}
 	
 	@Override
-	public Map<String, String> parameters(){
+	public Map<String, String> additionalParameters(){
 		return Collections.emptyMap();
 	}
 	

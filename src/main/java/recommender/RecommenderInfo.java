@@ -1,10 +1,14 @@
 package recommender;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import evaluator.information.Information;
 
-public final class RecommenderInfo implements Information{
+public final class RecommenderInfo implements Information, Serializable{
+	
+
+	private static final long serialVersionUID = 1L;
 	
 	final String name;
 	final Map<String, String> parameters;

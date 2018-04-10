@@ -4,6 +4,7 @@ import static model.tensor.UserPreferenceTensorCollection.ANY;
 import static model.tensor.UserPreferenceTensorCollection.getAnyFeatureVector;
 import static org.junit.Assert.assertEquals;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -13,17 +14,20 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.feature.RecsysFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import data.recsys.tensor.RecsysUserPreferenceTensorCalculator;
+import util.spark.SparkUtilities;
 
 public class UserPrefenreceTensorCalculatorTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	
+	static JavaSparkContext sc;
 	static RecsysTVDataSetLoader loader;
 	static RecsysTVDataSet dataSet;
 	
 	@BeforeClass
 	public static void setUp(){
-		loader = new RecsysTVDataSetLoader(path);
+		sc = SparkUtilities.getADefaultSparkContext();
+		loader = new RecsysTVDataSetLoader(path, sc);
 		dataSet = loader.loadDataSet()._2();
 	}
 	
@@ -51,6 +55,7 @@ public class UserPrefenreceTensorCalculatorTest {
 	@AfterClass
 	public static void tearDown(){
 		dataSet.close();
+		sc.close();
 		loader = null;
 	}
 }

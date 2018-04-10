@@ -59,11 +59,11 @@ public class LocalDateTimeDTO implements Serializable{
 	}
 
     public static int compare(LocalDateTimeDTO dto, LocalDateTimeDTO otherDto){
-        int cmp = (dto.getYear() - dto.getYear());
+        int cmp = (dto.getYear() - otherDto.getYear());
         if (cmp == 0) {
-            cmp = (dto.getMonth() - dto.getMonth());
+            cmp = (dto.getMonth() - otherDto.getMonth());
             if (cmp == 0) {
-                cmp = (dto.getDayOfMonth() - dto.getDayOfMonth());
+                cmp = (dto.getDayOfMonth() - otherDto.getDayOfMonth());
                 if(cmp == 0){
                     cmp = Integer.compare(dto.getHour(), otherDto.getHour());
                     if (cmp == 0) {

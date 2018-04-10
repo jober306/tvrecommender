@@ -103,7 +103,16 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	 */
 	Map<T, List<Double>> newTVShowsSimilarities;
 	
-
+	
+	public SpaceAlignmentRecommender(int numberOfRecommendations,
+			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
+		super(numberOfRecommendations);
+		this.extractor = extractor;
+		this.r = r;
+		this.neighbourhoodSize = neighbourhoddSize;
+		this.sc = sc;
+	}
+	
 	/**
 	 * 
 	 * @param R
@@ -170,8 +179,9 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 	
 	@Override
-	protected Map<String, String> parameters() {
+	protected Map<String, String> additionalParameters() {
 		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("Number of Recommendations: ", Integer.toString(numberOfRecommendations));
 		parameters.put("Feature Extractor", this.extractor.getClass().getSimpleName());
 		parameters.put("Maximum Rank", Integer.toString(this.r));
 		parameters.put("Neighbourhood Size", Integer.toString(this.neighbourhoodSize));

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,17 +19,20 @@ import data.recsys.loader.RecsysTVDataSetLoader;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
+import util.spark.SparkUtilities;
 
 public class TopChannelPerUserRecommenderTest {
 	
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
-	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
+	
+	static JavaSparkContext sc;
 	static ChannelPreferenceRecommender recommender;
 
 	@BeforeClass
 	public static void setUpOnce() {
-		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path);
-		data = loader.loadDataSet();
+		sc = SparkUtilities.getADefaultSparkContext();
+		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
 		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		recommender = new TopChannelPerUserRecommender(context, 10);
 		recommender.train();
@@ -72,6 +76,7 @@ public class TopChannelPerUserRecommenderTest {
 	
 	@AfterClass
 	public static void tearDownOnce() {
-		data._2().close();
+		recommender.closeContextDatasets();
+		sc.close();
 	}
 }

@@ -57,4 +57,17 @@ public class Context<T extends TVProgram, U extends TVEvent>{
 	public TVDataSet<T, U> getTrainingSet(){
 		return trainingSet;
 	}
+
+	public LocalDateTime getTrainingStartTime() {
+		return trainingStartTime;
+	}
+
+	public LocalDateTime getTrainingEndTime() {
+		return trainingEndTime;
+	}
+	
+	public void close(){
+		events.close();
+		trainingSet.close();
+	}
 }
