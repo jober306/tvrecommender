@@ -79,7 +79,7 @@ public class MetricResultsTest {
 		Recommendations<Recommendation> recommendations2 = new Recommendations<>(2, Collections.emptyList());
 		Recommendations<Recommendation> recommendations3 = new Recommendations<>(3, Collections.emptyList());
 
-		Stream<Recommendations<Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		Stream<Recommendations<? extends Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
 		MetricResults result = incMetric.evaluate(recommendationsStream, context);
 		double expectedMean = 2.0d;
 		assertEquals(expectedMean, result.mean(), 0.0d);
@@ -104,7 +104,7 @@ public class MetricResultsTest {
 		Recommendations<Recommendation> recommendations1 = new Recommendations<>(1, Collections.emptyList());
 		Recommendations<Recommendation> recommendations2 = new Recommendations<>(2, Collections.emptyList());
 		Recommendations<Recommendation> recommendations3 = new Recommendations<>(3, Collections.emptyList());
-		Stream<Recommendations<Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		Stream<Recommendations<? extends Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
 		MetricResults result = incMetric.evaluate(recommendationsStream, context);
 		double expectedGeoMean = 1.8171205928321d;
 		assertEquals(expectedGeoMean, result.geometricMean(), 0.000001d);

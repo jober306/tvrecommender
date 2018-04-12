@@ -1,13 +1,16 @@
 package evaluator.result;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
 
 import scala.Tuple2;
 
-public class MetricResults {
-	
+public class MetricResults implements Serializable{
+
+	private static final long serialVersionUID = 1L;
+
 	static final Tuple2<Integer, Double> DEFAULT_GEOMETRIC_MEAN_RESULT = new Tuple2<Integer, Double>(1, 0.0d);
 	
 	final String metricName;

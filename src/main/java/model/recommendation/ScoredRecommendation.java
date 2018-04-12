@@ -3,7 +3,7 @@ package model.recommendation;
 import data.TVProgram;
 
 
-public class ScoredRecommendation extends AbstractRecommendation{
+public class ScoredRecommendation extends Recommendation{
 	
 	double score;
 	

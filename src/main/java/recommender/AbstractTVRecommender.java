@@ -11,10 +11,10 @@ import data.TVEvent;
 import data.TVProgram;
 import evaluator.information.Informative;
 import model.RecommendFunction;
-import model.recommendation.AbstractRecommendation;
+import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
-public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEvent, R extends AbstractRecommendation> implements Informative{
+public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEvent, R extends Recommendation> implements Informative{
 	
 	abstract protected Recommendations<R> recommendNormally(int userId, List<T> tvPrograms);
 

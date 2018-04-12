@@ -2,7 +2,7 @@ package evaluator.metric;
 
 import java.util.List;
 
-import model.recommendation.AbstractRecommendation;
+import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
 /**
@@ -12,10 +12,10 @@ import model.recommendation.Recommendations;
  *
  * @param <R> The type of the recommendation.
  */
-public class OneMetric<R extends AbstractRecommendation> implements EvaluationMetric<R>{
+public class OneMetric<R extends Recommendation> implements EvaluationMetric<R>{
 
 	@Override
-	public double evaluate(Recommendations<R> recommendations, List<Integer> groundTruth) {
+	public double evaluate(Recommendations<? extends R> recommendations, List<Integer> groundTruth) {
 		return 1.0d;
 	}
 

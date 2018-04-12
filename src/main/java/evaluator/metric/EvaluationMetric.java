@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import data.EvaluationContext;
 import evaluator.result.MetricResults;
-import model.recommendation.AbstractRecommendation;
+import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import util.collections.StreamUtilities;
 
@@ -17,7 +17,7 @@ import util.collections.StreamUtilities;
  *
  * @param <R> The type of recommendation.
  */
-public interface EvaluationMetric<R extends AbstractRecommendation> {
+public interface EvaluationMetric<R extends Recommendation> {
 	
 	public String name();
 	
@@ -27,8 +27,8 @@ public interface EvaluationMetric<R extends AbstractRecommendation> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return A stream containing the evaluation results. The results are ordered in the same way the recommendations are.
 	 */
-	default public MetricResults evaluate(Stream<Recommendations<R>> recommendationsStream, EvaluationContext<?, ?> context){
-		Map<Integer, Double> userScores = StreamUtilities.toMapAverage(recommendationsStream, Recommendations::userId, recommendations -> evaluate(recommendations, context));
+	default public MetricResults evaluate(Stream<Recommendations<? extends R>> recommendationsStream, EvaluationContext<?, ?> context){
+		Map<Integer, Double> userScores = StreamUtilities.toMapAverage(recommendationsStream, Recommendations::userId, recommendation -> evaluate(recommendation, context));
 		return new MetricResults(name(), userScores);
 	}
 	
@@ -38,7 +38,7 @@ public interface EvaluationMetric<R extends AbstractRecommendation> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return The evaluation result
 	 */
-	default public double evaluate(Recommendations<R> recommendations, EvaluationContext<?,?> context) {
+	default public double evaluate(Recommendations<? extends R> recommendations, EvaluationContext<?,?> context) {
 		List<Integer> groundTruth = context.getGroundTruth().get(recommendations.userId());
 		return evaluate(recommendations, groundTruth);
 	}
@@ -49,5 +49,5 @@ public interface EvaluationMetric<R extends AbstractRecommendation> {
 	 * @param groundTruth The list of program id actually relevant.
 	 * @return The evaluation result
 	 */
-	public double evaluate(Recommendations<R> recommendations, List<Integer> groundTruth);
+	public double evaluate(Recommendations<? extends R> recommendations, List<Integer> groundTruth);
 }

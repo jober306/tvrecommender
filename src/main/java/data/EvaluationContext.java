@@ -96,6 +96,6 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 	@Override
 	public void close() {
 		super.close();
-		trainingSet.close();
+		testSet.close();
 	}
 }

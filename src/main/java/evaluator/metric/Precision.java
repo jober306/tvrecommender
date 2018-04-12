@@ -27,7 +27,7 @@ public class Precision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<Recommendation> recommendations, List<Integer> groundTruth) {
+	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<Integer> groundTruth) {
 		int truePositive = (int) recommendations.stream()
 				.limit(cutoff)
 				.map(Recommendation::tvProgram)

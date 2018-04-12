@@ -24,7 +24,7 @@ import util.collections.ListUtilities;
 
 public class EvaluationVisualisator {
 	
-	public static void plotTimeSeries(Set<EvaluationResult> results){
+	public static void plotTimeSeries(Set<EvaluationResult> results, String outputDir){
 	      Map<String, TimeSeries> metricTimeSeries = new HashMap<String, TimeSeries>();
 	      List<String> allSharedMetrics = results.stream()
 	    		  .map(EvaluationResult::metricsResults)
@@ -48,7 +48,7 @@ public class EvaluationVisualisator {
 	      }
 	      final XYDataset dataset=( XYDataset ) series;
 	      JFreeChart timechart = ChartFactory.createTimeSeriesChart(
-	         "Top Channel Recommender One Month Training", 
+	         "Space Alignment Recommender One Month Training", 
 	         "", 
 	         "Score", 
 	         dataset,
@@ -57,7 +57,7 @@ public class EvaluationVisualisator {
 	         false);
 	      int width = 560;   /* Width of the image */
 	      int height = 370;  /* Height of the image */ 
-	      File timeChart = new File( "TimeChart.jpeg" );
+	      File timeChart = new File( outputDir + "evaluation.jpeg" );
 	      try {
 			ChartUtils.saveChartAsJPEG(timeChart, timechart, width, height );
 		} catch (IOException e) {

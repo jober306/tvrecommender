@@ -29,7 +29,7 @@ public class Recall implements EvaluationMetric<Recommendation>{
 	}
 
 	@Override
-	public double evaluate(Recommendations<Recommendation> recommendations,
+	public double evaluate(Recommendations<? extends Recommendation> recommendations,
 			List<Integer> groundTruth) {
 		List<Integer> distinctGroundTruth = groundTruth.stream()
 				.distinct()
