@@ -13,4 +13,9 @@ public class Recommendation {
 	public TVProgram tvProgram(){
 		return tvProgram;
 	}
+	
+	@Override
+	public String toString() {
+		return Integer.toString(tvProgram.programId());
+	}
 }

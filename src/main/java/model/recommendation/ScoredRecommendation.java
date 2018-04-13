@@ -15,4 +15,9 @@ public class ScoredRecommendation extends Recommendation{
 	public double score(){
 		return score;
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + super.toString() + ", " + score + ")";
+	}
 }

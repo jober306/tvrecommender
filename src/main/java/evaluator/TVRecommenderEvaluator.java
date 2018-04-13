@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaSparkContext;
+import org.spark_project.guava.base.Functions;
 
 import data.EPG;
 import data.EvaluationContext;
@@ -102,6 +103,9 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	 */
 	public EvaluationResult evaluate() {
 		EvaluationContext<T,U> context = (EvaluationContext<T,U>) recommender.getContext();
+		System.out.println("--------------------------------------------------------------------------------------------------");
+		context.getTestPrograms().stream().distinct().map(T::programId).collect(Collectors.groupingBy(t -> t, Collectors.counting())).entrySet().stream().forEach(System.out::println);
+		System.out.println("--------------------------------------------------------------------------------------------------");
 		List<Recommendations<R>> testedUserRecommendations = context.getTestSet().getAllUserIds().stream()
 			.map(testedUser -> recommender.recommend(testedUser, context.getTestPrograms()))
 			.collect(Collectors.toList());
@@ -135,7 +139,6 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 		recommender.train();
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		EvaluationResult result = evaluator.evaluate();
-		System.out.println(result.asString());
 		result.toFile("src/main/resources/" + result.generateFileName());
 	}
 	
