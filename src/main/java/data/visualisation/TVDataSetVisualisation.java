@@ -1,5 +1,6 @@
 package data.visualisation;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,8 +18,10 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import util.visualisation.VisualisationUtilities;
 
-public class TVDataSetVisualisation {
+public class TVDataSetVisualisation implements Serializable{
 	
+	private static final long serialVersionUID = 1L;
+
 	public static void createAndSaveSortedProgramCountChart(TVDataSet<? extends TVProgram, ? extends TVEvent> dataset, String outputDir){
 		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getProgramId, dataset, "Program Count");
 		String plotTitle = "Sorted Program Watches Count";
@@ -49,9 +52,9 @@ public class TVDataSetVisualisation {
 	    VisualisationUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
-	public static <U extends TVEvent> XYSeries getSortedCountSeriesOf(Function<U, ?> tvEventKeyMapper, TVDataSet<?, U> dataset, String seriesName){
+	public static <U extends TVEvent, R> XYSeries getSortedCountSeriesOf(Function<U, R>  tvEventKeyMapper, TVDataSet<?, U> dataset, String seriesName){
 		Map<?, Long> programCount = dataset.getEventsData()
-	  	     .map(tvEventKeyMapper::apply)
+	  	     .map(((Function<U, R> & Serializable) tvEventKeyMapper)::apply)
 	  	     .countByValue();
 		List<Long> sortedProgramCount = programCount.entrySet().stream()
 	  	  	 .map(Entry::getValue)

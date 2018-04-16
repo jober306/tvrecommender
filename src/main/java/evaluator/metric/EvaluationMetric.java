@@ -2,9 +2,11 @@ package evaluator.metric;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import data.EvaluationContext;
+import data.TVProgram;
 import evaluator.result.MetricResults;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
@@ -38,8 +40,8 @@ public interface EvaluationMetric<R extends Recommendation> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return The evaluation result
 	 */
-	default public double evaluate(Recommendations<? extends R> recommendations, EvaluationContext<?,?> context) {
-		List<Integer> groundTruth = context.getGroundTruth().get(recommendations.userId());
+	default public double evaluate(Recommendations<? extends R> recommendations, EvaluationContext<? extends TVProgram,?> context) {
+		List<? extends TVProgram> groundTruth = context.getTestPrograms().stream().distinct().collect(Collectors.toList());
 		return evaluate(recommendations, groundTruth);
 	}
 	
@@ -49,5 +51,5 @@ public interface EvaluationMetric<R extends Recommendation> {
 	 * @param groundTruth The list of program id actually relevant.
 	 * @return The evaluation result
 	 */
-	public double evaluate(Recommendations<? extends R> recommendations, List<Integer> groundTruth);
+	public double evaluate(Recommendations<? extends R> recommendations, List<? extends TVProgram> groundTruth);
 }

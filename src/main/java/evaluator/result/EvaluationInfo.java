@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 import data.EvaluationContext;
 import data.TVDataSetInfo;
 import evaluator.information.Information;
-import recommender.AbstractTVRecommender;
+import recommender.TVRecommender;
 import recommender.RecommenderInfo;
 
 public class EvaluationInfo implements Information, Serializable{
@@ -35,7 +35,7 @@ public class EvaluationInfo implements Information, Serializable{
 		this.testEndTime = testEndTime;
 	}
 	
-	public EvaluationInfo(AbstractTVRecommender<?,?,?> recommender, EvaluationContext<?, ?> context){
+	public EvaluationInfo(TVRecommender<?,?,?> recommender, EvaluationContext<?, ?> context){
 		this(recommender.info(), context.getTrainingSet().info(), context.getTestSet().info(), context.getTrainingStartTime(), context.getTrainingEndTime(), context.testStartTime(), context.testEndTime());
 	}
 

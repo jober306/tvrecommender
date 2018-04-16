@@ -46,7 +46,7 @@ import util.spark.mllib.MllibUtilities;
  * @author Jonathan Bergeron
  */
 public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
-		extends AbstractTVRecommender<T, U, ScoredRecommendation> {
+		extends TVRecommender<T, U, ScoredRecommendation> {
 	
 	/**
 	 * The spark context.

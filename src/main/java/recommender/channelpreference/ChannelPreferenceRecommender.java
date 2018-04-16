@@ -23,11 +23,11 @@ import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCollection;
-import recommender.AbstractTVRecommender;
+import recommender.TVRecommender;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public abstract class ChannelPreferenceRecommender extends AbstractTVRecommender<RecsysTVProgram, RecsysTVEvent, Recommendation> {
+public abstract class ChannelPreferenceRecommender extends TVRecommender<RecsysTVProgram, RecsysTVEvent, Recommendation> {
 		
 	protected UserPreferenceTensorCollection userPreferenceCollection;
 	

@@ -27,11 +27,10 @@ public class Precision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<Integer> groundTruth) {
+	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<? extends TVProgram> groundTruth) {
 		int truePositive = (int) recommendations.stream()
 				.limit(cutoff)
 				.map(Recommendation::tvProgram)
-				.map(TVProgram::programId)
 				.filter(groundTruth::contains)
 				.count();
 			return (double) truePositive / Math.min(cutoff, recommendations.size());

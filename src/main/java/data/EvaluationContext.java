@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import scala.Tuple4;
 
@@ -90,7 +91,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 	}
 	
 	private List<T> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){
-		return getEPG().getListProgramsBetweenTimes(testStartTime, testEndTime);
+		return getEPG().getListProgramsBetweenTimes(testStartTime, testEndTime).stream().distinct().collect(Collectors.toList());
 	}
 	
 	@Override

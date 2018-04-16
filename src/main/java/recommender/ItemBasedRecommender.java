@@ -26,7 +26,7 @@ import scala.Tuple2;
  *
  */
 public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent>
-		extends AbstractTVRecommender<T, U, ScoredRecommendation> {
+		extends TVRecommender<T, U, ScoredRecommendation> {
 
 	/**
 	 * The electronic programming guide used by this recommender.

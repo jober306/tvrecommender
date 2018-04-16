@@ -3,7 +3,6 @@ package evaluator.metric;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -39,28 +38,23 @@ public class AveragePrecision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<Integer> groundTruth) {
-		List<Integer> recommendedTVShowIndexes = recommendations.stream()
+	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<? extends TVProgram> groundTruth) {
+		List<? extends TVProgram> recommendedTVShowIndexes = recommendations.stream()
 				.map(Recommendation::tvProgram)
-				.map(TVProgram::programId)
-				.distinct()
 				.collect(toList());
-		List<Integer> distinctGroundTruth = groundTruth.stream()
-				.distinct()
-				.collect(Collectors.toList());
-		return calculateAveragePrecision(cutoff, recommendedTVShowIndexes, distinctGroundTruth);
+		return calculateAveragePrecision(cutoff, recommendedTVShowIndexes, groundTruth);
 	}
 
-	private double calculateAveragePrecision(int cutoff, List<Integer> recommendedTVShowIndexes, List<Integer> distinctGroundTruth) {
+	private double calculateAveragePrecision(int cutoff, List<? extends TVProgram> recommendedTVShows, List<? extends TVProgram> groundTruth) {
 		double averagePrecision = 0.0d;
 		double truePositiveRecommendedTVShow = 0;
-		for (int k = 1; k <= Math.min(recommendedTVShowIndexes.size(), cutoff); k++) {
-			int recommendedTVShowIndex = recommendedTVShowIndexes.get(k - 1);
-			if (distinctGroundTruth.contains(recommendedTVShowIndex)) {
+		for (int k = 1; k <= Math.min(recommendedTVShows.size(), cutoff); k++) {
+			TVProgram recommendation = recommendedTVShows.get(k-1);
+			if (groundTruth.contains(recommendation)) {
 				truePositiveRecommendedTVShow++;
 				averagePrecision += truePositiveRecommendedTVShow / k;
 			}
 		}
-		return distinctGroundTruth.size() == 0 ? 0.0d : averagePrecision / distinctGroundTruth.size();
+		return groundTruth.size() == 0 ? 0.0d : averagePrecision / groundTruth.size();
 	}
 }

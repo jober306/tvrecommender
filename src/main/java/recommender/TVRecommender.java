@@ -14,7 +14,7 @@ import model.RecommendFunction;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
-public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEvent, R extends Recommendation> implements Informative{
+public abstract class TVRecommender<T extends TVProgram, U extends TVEvent, R extends Recommendation> implements Informative{
 	
 	abstract protected Recommendations<R> recommendNormally(int userId, List<T> tvPrograms);
 
@@ -40,11 +40,11 @@ public abstract class AbstractTVRecommender<T extends TVProgram, U extends TVEve
 	
 	protected int numberOfRecommendations;
 	
-	public AbstractTVRecommender(int numberOfRecommendations){
+	public TVRecommender(int numberOfRecommendations){
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
 
-	public AbstractTVRecommender(Context<T, U> context, int numberOfRecommendations) {
+	public TVRecommender(Context<T, U> context, int numberOfRecommendations) {
 		this.setContext(context);
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
