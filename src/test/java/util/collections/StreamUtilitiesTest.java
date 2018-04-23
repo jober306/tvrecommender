@@ -1,10 +1,11 @@
-package util.stream;
+package util.collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,8 +13,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Maps;
+
+import scala.Tuple2;
 import scala.Tuple3;
-import util.collections.StreamUtilities;
 
 public class StreamUtilitiesTest {
 
@@ -89,6 +92,48 @@ public class StreamUtilitiesTest {
 	public void testZipWithOneEmptyStream(){
 		List<String> actualStream = StreamUtilities.zip(streamA, Stream.of(), (a, b) -> a + b).collect(Collectors.toList());
 		assertTrue(actualStream.isEmpty());
+	}
+	
+	@Test
+	public void testZipWithIndexEmptyStream() {
+		Stream<Integer> emptyStream = Stream.empty();
+		List<Tuple2<Integer, Integer>> indexedEmptyStream = StreamUtilities.zipWithIndex(emptyStream).collect(Collectors.toList());
+		assertTrue(indexedEmptyStream.isEmpty());
+	}
+	
+	@Test
+	public void testZipWithIndexNormalStream() {
+		List<Tuple2<Integer, Integer>> expectedStream = Arrays.asList(new Tuple2<>(1,0), new Tuple2<>(2,1), new Tuple2<>(3,2));
+		List<Tuple2<Integer, Integer>> actualStream = StreamUtilities.zipWithIndex(streamC).collect(Collectors.toList());
+		assertEquals(expectedStream, actualStream);
+	}
+	
+	@Test
+	public void testToMapAverageEmptyStream() {
+		Stream<Double> emptyStream = Stream.empty();
+		Map<Double, Double> emptyStreamMapAverage = StreamUtilities.toMapAverage(emptyStream, v -> v, v -> v);
+		assertTrue(emptyStreamMapAverage.isEmpty());
+	}
+	
+	@Test
+	public void testToMapAverageNoDuplicateStream() {
+		Map<Integer, Double> actualMapAverage = StreamUtilities.toMapAverage(streamC, v -> v, Double::new);
+		Map<Integer, Double> expectedMapAverage = Maps.newHashMap();
+		expectedMapAverage.put(1, 1.0d);
+		expectedMapAverage.put(2, 2.0d);
+		expectedMapAverage.put(3, 3.0d);
+		assertEquals(expectedMapAverage, actualMapAverage);
+	}
+	
+	@Test
+	public void testToMapAverageWithDuplicateStream() {
+		Stream<Tuple2<Integer, Double>> keyScoreStream = Stream.of(new Tuple2<>(1, 1.0d), new Tuple2<>(1, 2.0d), new Tuple2<>(2, 2.0d), new Tuple2<>(2,5.0d), new Tuple2<>(3, 1.0d));
+		Map<Integer, Double> actualMapAverage = StreamUtilities.toMapAverage(keyScoreStream, Tuple2::_1, Tuple2::_2);
+		Map<Integer, Double> expectedMapAverage = Maps.newHashMap();
+		expectedMapAverage.put(1, 1.5d);
+		expectedMapAverage.put(2, 3.5d);
+		expectedMapAverage.put(3, 1.0d);
+		assertEquals(expectedMapAverage, actualMapAverage);
 	}
 	
 	@After
