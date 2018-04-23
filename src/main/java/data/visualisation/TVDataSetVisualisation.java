@@ -12,7 +12,6 @@ import org.jfree.data.xy.XYSeries;
 
 import data.AbstractTVEvent;
 import data.TVDataSet;
-import data.TVEvent;
 import data.TVProgram;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.loader.RecsysTVDataSetLoader;

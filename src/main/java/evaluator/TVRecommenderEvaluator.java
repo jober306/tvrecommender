@@ -5,9 +5,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.Period;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,12 +34,11 @@ import evaluator.metric.Recall;
 import evaluator.result.EvaluationInfo;
 import evaluator.result.EvaluationResult;
 import evaluator.result.MetricResults;
-import evaluator.visualisation.EvaluationVisualisator;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
-import recommender.TVRecommender;
 import recommender.SpaceAlignmentRecommender;
+import recommender.TVRecommender;
 import recommender.channelpreference.ChannelPreferenceRecommender;
 import recommender.channelpreference.TopChannelPerUserPerSlotRecommender;
 import recommender.channelpreference.TopChannelPerUserRecommender;
@@ -245,7 +242,7 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends AbstractTVEve
 
 	private static TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> spaceAlignementEvaluator(JavaSparkContext sc, RecsysEPG epg) {
 		Set<EvaluationMetric<? super ScoredRecommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
-		int rank = 20;
+		int rank = 50;
 		int neighbourhoodSize = 10;
 		SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, new RecsysBooleanFeatureExtractor(epg), rank, neighbourhoodSize, sc);
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);

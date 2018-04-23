@@ -147,8 +147,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends AbstractTV
 	}
 	
 	private Map<T, List<Double>> initializeNewTVShowSimilarities(List<T> tvPrograms){
-		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
-		return newTvShows.entrySet().stream().collect(toMap(Entry::getKey, entry -> calculateNewTVShowSimilarities(entry.getValue())));
+		return tvPrograms.stream().collect(toMap(Function.identity(), t -> calculateNewTVShowSimilarities(extractor.extractFeaturesFromProgram(t))));
 	}
 	
 	private List<Double> calculateNewTVShowSimilarities(Vector coldStartItemContent) {
