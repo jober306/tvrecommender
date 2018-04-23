@@ -46,7 +46,7 @@ public class MetricResultsTest {
 		sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		data = loader.loadDataSet();
-		context = new EvaluationContext<>(data._1(), data._2(), RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME);
+		context = new EvaluationContext<>(data._1(), data._2(), RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME);
 	}
 	
 	@Before

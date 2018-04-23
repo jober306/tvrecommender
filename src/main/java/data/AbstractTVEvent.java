@@ -6,6 +6,12 @@ import java.time.LocalDateTime;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+/**
+ * A class that represents an abstract tv event.
+ * @author Jonathan Bergeron 
+ *
+ * @param <T> The type of the tv program watched.
+ */
 public abstract class AbstractTVEvent<T extends TVProgram> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
