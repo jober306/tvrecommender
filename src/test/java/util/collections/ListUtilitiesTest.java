@@ -21,9 +21,6 @@ import org.junit.Test;
 
 import scala.Tuple2;
 import scala.Tuple3;
-import util.collections.CartesianProduct2;
-import util.collections.CartesianProduct3;
-import util.collections.ListUtilities;
 
 public class ListUtilitiesTest {
 
@@ -139,17 +136,6 @@ public class ListUtilitiesTest {
 		List<String> list1 = Arrays.asList("hoho", "haha");
 		List<Integer> list2 = Arrays.asList(1, 2);
 		List<Tuple2<String, Integer>> cartesianProduct = new CartesianProduct2<String, Integer>(list1, list2).generate().collect(toList());
-		int expectedSize = list1.size() * list2.size();
-		List<Tuple2<String, Integer>> expectedResult = Arrays.asList(new Tuple2<String, Integer>("hoho", 1),new Tuple2<String, Integer>("hoho", 2),new Tuple2<String, Integer>("haha", 1),new Tuple2<String, Integer>("haha", 2));
-		assertEquals(expectedSize, cartesianProduct.size());
-		assertEquals(expectedResult, cartesianProduct);
-	}
-	
-	@Test
-	public void cartesianProduct2Streams(){
-		List<String> list1 = Arrays.asList("hoho", "haha");
-		List<Integer> list2 = Arrays.asList(1, 2);
-		List<Tuple2<String, Integer>> cartesianProduct = ListUtilities.cartesianProductStream(list1, list2).collect(toList());
 		int expectedSize = list1.size() * list2.size();
 		List<Tuple2<String, Integer>> expectedResult = Arrays.asList(new Tuple2<String, Integer>("hoho", 1),new Tuple2<String, Integer>("hoho", 2),new Tuple2<String, Integer>("haha", 1),new Tuple2<String, Integer>("haha", 2));
 		assertEquals(expectedSize, cartesianProduct.size());

@@ -122,10 +122,6 @@ public class ListUtilities {
 		return listA.stream().<Tuple2<A, B>>flatMap(a -> listB.stream().map(b -> new Tuple2<A,B>(a, b))).collect(Collectors.toList());
 	}
 	
-	public static <A, B> Stream<Tuple2<A, B>> cartesianProductStream(List<A> listA, List<B> listB){
-		return listA.stream().flatMap(a -> listB.stream().map(b -> new Tuple2<A,B>(a, b)));
-	}
-	
 	/**
 	 * Method that computes the cartesian product between three lists.
 	 * @param listA The first list
