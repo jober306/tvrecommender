@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+/**
+ * Iterator of java 8 local date time.
+ * @author Jonathan Bergeron
+ *
+ */
 public class DateTimeRange implements Iterator<LocalDateTime>, Iterable<LocalDateTime>{
 	
 	final LocalDateTime startTime;
@@ -14,14 +19,24 @@ public class DateTimeRange implements Iterator<LocalDateTime>, Iterable<LocalDat
 	
 	LocalDateTime current;
 	
-	public DateTimeRange(LocalDateTime startTime, LocalDateTime endTime, Duration duration) {
+	/**
+	 * Main constructor of the class. 
+	 * @param startTime The start time of the iterator inclusive.
+	 * @param endTime The end time of the iterator inclusive
+	 * @param iterationDuration The duration of one iteration.
+	 */
+	public DateTimeRange(LocalDateTime startTime, LocalDateTime endTime, Duration iterationDuration) {
 		this.startTime = startTime;
 		this.endTime = endTime;
-		this.iterationDuration = duration;
+		this.iterationDuration = iterationDuration;
 		this.periodIsNegative = iterationDuration.isNegative();
 		this.current = startTime.minus(iterationDuration);
 	}
 	
+	/**
+	 * Method that returns the stream of this iterator.
+	 * @return The stream of this iterator.
+	 */
 	public Stream<LocalDateTime> stream(){
 		Duration totalDuration = Duration.between(startTime, endTime);
 		if(iterationDuration.getSeconds() == 0){
@@ -58,6 +73,11 @@ public class DateTimeRange implements Iterator<LocalDateTime>, Iterable<LocalDat
 		return localDateTimeIterator;
 	}
 
+	/**
+	 * Method that checks if a given time is before end time. 
+	 * @param current The time to check
+	 * @return True if it is before, false otherwise.
+	 */
 	public boolean hasNext(LocalDateTime current) {
 		if(periodIsNegative) {
 			return !endTime.isAfter(current);
