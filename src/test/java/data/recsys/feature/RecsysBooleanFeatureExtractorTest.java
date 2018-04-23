@@ -36,12 +36,11 @@ public class RecsysBooleanFeatureExtractorTest {
 	public void mapSizeTest() {
 		int expectedGenreSize = 8;
 		int expectedSubgenreSize = 114;
-		assertThat(data._2.getAllChannelIds().size(), equalTo(featureExtractor
-				.getChannelIDMap().size()));
-		assertThat(expectedGenreSize, equalTo(featureExtractor.getGenreIDMap()
-				.size()));
-		assertThat(expectedSubgenreSize, equalTo(featureExtractor
-				.getSubgenreIDMap().size()));
+		int expectedSlotSize = 168;
+		assertThat(data._2.getAllChannelIds().size(), equalTo(featureExtractor.getChannelIDMap().size()));
+		assertThat(expectedSlotSize, equalTo(featureExtractor.getSlotIDMap().size()));
+		assertThat(expectedGenreSize, equalTo(featureExtractor.getGenreIDMap().size()));
+		assertThat(expectedSubgenreSize, equalTo(featureExtractor.getSubgenreIDMap().size()));
 	}
 
 	@Test
@@ -49,18 +48,16 @@ public class RecsysBooleanFeatureExtractorTest {
 		int channelID = 175;
 		byte genreID = 3;
 		byte subgenreID = 26;
-		RecsysTVProgram program = new RecsysTVProgram((short) 1, (short) 0,
-				channelID, 3, genreID, subgenreID);
+		short slot = 2;
+		RecsysTVProgram program = new RecsysTVProgram((short) 1, slot, channelID, 3, genreID, subgenreID);
 		Vector features = featureExtractor.extractFeaturesFromProgram(program);
-		int mappedChannelIndex = featureExtractor.getChannelIDMap().get(
-				channelID);
+		int mappedChannelIndex = featureExtractor.getChannelIDMap().get(channelID);
+		int mappedSlotIndex = featureExtractor.getSlotIDMap().get(slot);
 		int mappedGenreIndex = featureExtractor.getGenreIDMap().get(genreID);
-		int mappedSubgenreIndex = featureExtractor.getSubgenreIDMap().get(
-				subgenreID);
+		int mappedSubgenreIndex = featureExtractor.getSubgenreIDMap().get(subgenreID);
 		for (int i = 0; i < features.size(); i++) {
 			double expectedValue = 0.0d;
-			if (i == mappedChannelIndex || i == mappedGenreIndex
-					|| i == mappedSubgenreIndex) {
+			if (i == mappedChannelIndex || i == mappedGenreIndex || i == mappedSubgenreIndex || i == mappedSlotIndex) {
 				expectedValue = 1;
 			}
 			assertThat(expectedValue, equalTo(features.apply(i)));
@@ -70,20 +67,19 @@ public class RecsysBooleanFeatureExtractorTest {
 	@Test
 	public void extractFeaturesFromEventTest() {
 		int channelID = 175;
+		short slot = 2;
 		byte genreID = 3;
 		byte subgenreID = 26;
-		RecsysTVEvent event = new RecsysTVEvent(channelID, (short) 0, (byte) 0,
-				genreID, subgenreID, 100, 200, 34, 23);
+		RecsysTVEvent event = new RecsysTVEvent(channelID, slot, (byte) 0, genreID, subgenreID, 100, 200, 34, 23);
 		Vector features = featureExtractor.extractFeaturesFromEvent(event);
-		int mappedChannelIndex = featureExtractor.getChannelIDMap().get(
-				channelID);
+		int mappedChannelIndex = featureExtractor.getChannelIDMap().get(channelID);
+		int mappedSlotIndex = featureExtractor.getSlotIDMap().get(slot);
 		int mappedGenreIndex = featureExtractor.getGenreIDMap().get(genreID);
 		int mappedSubgenreIndex = featureExtractor.getSubgenreIDMap().get(
 				subgenreID);
 		for (int i = 0; i < features.size(); i++) {
 			double expectedValue = 0.0d;
-			if (i == mappedChannelIndex || i == mappedGenreIndex
-					|| i == mappedSubgenreIndex) {
+			if (i == mappedChannelIndex || i == mappedGenreIndex || i == mappedSubgenreIndex || i == mappedSlotIndex) {
 				expectedValue = 1;
 			}
 			assertThat(expectedValue, equalTo(features.apply(i)));

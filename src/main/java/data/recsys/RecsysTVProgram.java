@@ -58,11 +58,6 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 		this.subGenreId = subGenreId;
 		this.slot = slot;
 	}
-	
-	public RecsysTVProgram(RecsysTVEvent event) {
-		this(event.getWeek(), event.getSlot(), event.getChannelId(), 
-				event.getProgramId(), event.getGenreID(), event.getSubgenreID());
-	}
 
 	/**
 	 * @return the genreId
@@ -88,9 +83,17 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder s = new StringBuilder(super.toString());
-		s.append("Genre: " + RecsysUtilities.getGenreName(genreId) + "\n");
-		s.append("Subgenre: "
-				+ RecsysUtilities.getSubgenreName(genreId, subGenreId) + "\n");
+		s.append("Program ID: ");
+		s.append(programId());
+		s.append("\nBroadcast Time: ");
+		s.append(startTime());
+		s.append(" to ");
+		s.append(endTime());
+		s.append("\nGenre: ");
+		s.append(RecsysUtilities.getGenreName(genreId));
+		s.append("\nSubgenre: ");
+		s.append(RecsysUtilities.getSubgenreName(genreId, subGenreId));
+		s.append("\n");
 		return s.toString();
 	}
 }

@@ -119,7 +119,7 @@ public class TVProgram implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder(17, 37).append(channelId).append(programId)
+		return new HashCodeBuilder(17, 37).append(channelId).append(programId).append(startTime).append(endTime)
 				.toHashCode();
 	}
 

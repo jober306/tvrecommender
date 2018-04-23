@@ -107,12 +107,12 @@ public class TVDataSetFixture {
 	
 	private static void initializeTVEvents(){
 		//watch time/program id/channel id/user id/event/duration
-		event1 = new TVEvent(baseTime, 1, 1, 1, 0, 5);
-		event2 = new TVEvent(baseTime.plusHours(1), 1, 1, 2, 1, 10);
-		event3 = new TVEvent(baseTime.plusMinutes(30), 2, 5, 2, 2, 15);
-		event4 = new TVEvent(baseTime.plusHours(2), 2, 5, 2, 3, 15);
-		event5 = new TVEvent(baseTime.plusMinutes(90), 3, 1, 3, 4, 5);
-		event6 = new TVEvent(baseTime, 2,1,1,5, 15);
+		event1 = new TVEvent(baseTime.plusMinutes(15), program11, 1, 0, 5);
+		event2 = new TVEvent(baseTime.plusMinutes(110), program12, 2, 1, 10);
+		event3 = new TVEvent(baseTime.plusMinutes(105), program25, 2, 2, 15);
+		event4 = new TVEvent(baseTime.plusHours(1), program34, 2, 3, 15);
+		event5 = new TVEvent(baseTime.plusMinutes(135), program45, 3, 4, 5);
+		event6 = new TVEvent(baseTime, program23,1,5, 15);
 	}
 	
 	

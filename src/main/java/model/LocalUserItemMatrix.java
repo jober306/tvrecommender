@@ -1,11 +1,19 @@
 package model;
 
+import scala.Tuple2;
+import scala.Tuple3;
+import scala.collection.JavaConverters;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import model.similarity.SimilarityMeasure;
 
@@ -14,8 +22,7 @@ import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
-import scala.Tuple3;
-import scala.collection.Iterator;
+import util.collections.StreamUtilities;
 import util.spark.mllib.MllibUtilities;
 
 import com.google.common.primitives.Ints;
@@ -38,6 +45,8 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 */
 	Matrix R;
 	
+	final Map<Integer, List<Integer>> indexesSeenByUsers;
+	
 	/**
 	 * Construct a dense matrix with numRow and numCol with all the specified values.
 	 * @param numRow The matrix number of row.
@@ -46,6 +55,7 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 */
 	public LocalUserItemMatrix(int numRow, int numCol, double[] values){
 		this.R = Matrices.dense(numRow, numCol, values);
+		this.indexesSeenByUsers = createIndexesSeenByUsersMap();
 	}
 	
 
@@ -66,6 +76,14 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 */
 	public LocalUserItemMatrix(int numRow, int numCol, int[] colPtrs, int[] rowIndices, double[] values){
 		this.R = Matrices.sparse(numRow, numCol, colPtrs, rowIndices, values);
+		this.indexesSeenByUsers = createIndexesSeenByUsersMap();
+	}
+	
+	private Map<Integer, List<Integer>> createIndexesSeenByUsersMap(){
+		Iterator<Vector> rowIterator = JavaConverters.asJavaIteratorConverter(R.rowIter()).asJava();
+		Iterable<Vector> rowIterable = () -> rowIterator;
+		Stream<Vector> rowStream = StreamSupport.stream(rowIterable.spliterator(), false);
+		return StreamUtilities.zipWithIndex(rowStream).collect(Collectors.toMap(Tuple2::_2, rowIndex -> Ints.asList(rowIndex._1().toSparse().indices())));
 	}
 	
 	/**
@@ -107,7 +125,7 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 * @return The array of item indexes seen by the user.
 	 */
 	public List<Integer> getItemIndexesSeenByUser(int userIndex) {
-		return userIndex >= R.numRows() ? new ArrayList<Integer>() : Ints.asList(getRow(userIndex).toSparse().indices());
+		return indexesSeenByUsers.getOrDefault(userIndex, Collections.emptyList());
 	}
 	
 	/**
@@ -118,7 +136,7 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	 * @return The Indexed Row corresponding to rowIndex.
 	 */
 	public Vector getRow(int rowIndex) {
-		Iterator<Vector> rows = R.rowIter();
+		scala.collection.Iterator<Vector> rows = R.rowIter();
 		int currentRow = 0;
 		while(currentRow != rowIndex && rows.hasNext()){
 			rows.next();
@@ -168,7 +186,7 @@ public class LocalUserItemMatrix extends UserItemMatrix implements Serializable{
 	
 	private Map<Integer, Vector> createColumnVectorMap(){
 		Map<Integer, Vector> vectors = new HashMap<Integer, Vector>();
-		Iterator<Vector> it = R.colIter();
+		scala.collection.Iterator<Vector> it = R.colIter();
 		int index = 0;
 		while(it.hasNext()){
 			vectors.put(index, it.next());

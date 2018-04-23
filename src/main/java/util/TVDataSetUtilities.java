@@ -8,8 +8,8 @@ import java.time.LocalTime;
 
 import org.apache.spark.api.java.JavaRDD;
 
+import data.AbstractTVEvent;
 import data.TVDataSet;
-import data.TVEvent;
 import data.TVProgram;
 
 /**
@@ -29,7 +29,7 @@ public class TVDataSetUtilities {
 	 * @return A JavaRDD of recsys tv events that have been viewed at least
 	 *         minTimeView time.
 	 */
-	public static <T extends TVEvent> JavaRDD<T> filterByMinDuration(
+	public static <T extends AbstractTVEvent<?>> JavaRDD<T> filterByMinDuration(
 			JavaRDD<T> events, int minTimeView) {
 		return events.filter(tvEvent -> tvEvent.getDuration() >= minTimeView);
 	}
@@ -46,7 +46,7 @@ public class TVDataSetUtilities {
 	 *            The end time.
 	 * @return The tv events between startTime and endTime.
 	 */
-	public static <T extends TVEvent> JavaRDD<T> filterByDateTime(
+	public static <T extends AbstractTVEvent<?>> JavaRDD<T> filterByDateTime(
 			JavaRDD<T> events, LocalDateTime startTime, LocalDateTime endTime) {
 		return events.filter(tvEvent -> isDateTimeBetween(startTime, endTime,
 				tvEvent.getWatchTime()));
@@ -66,7 +66,7 @@ public class TVDataSetUtilities {
 	 *            The end time.
 	 * @return The tv events between startTime and endTime.
 	 */
-	public static <T extends TVEvent> JavaRDD<T> filterByTime(
+	public static <T extends AbstractTVEvent<?>> JavaRDD<T> filterByTime(
 			JavaRDD<T> events, LocalTime startTime, LocalTime endTime) {
 		return events.filter(tvEvent -> isTimeBetween(startTime, endTime,
 				tvEvent.getWatchTime().toLocalTime()));
@@ -77,7 +77,7 @@ public class TVDataSetUtilities {
 	 * @param startTime
 	 * @param endTime
 	 */
-	public static <T extends TVProgram, U extends TVEvent> TVDataSet<T, U> createSubDataSet(TVDataSet<T, U> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
+	public static <T extends TVProgram, U extends AbstractTVEvent<T>> TVDataSet<T, U> createSubDataSet(TVDataSet<T, U> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
 		return dataSet.newInstance(
 				filterByDateTime(dataSet.getEventsData(), startTime, endTime),
 				dataSet.getJavaSparkContext());

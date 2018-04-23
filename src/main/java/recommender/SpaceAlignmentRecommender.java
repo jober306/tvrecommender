@@ -1,6 +1,7 @@
 package recommender;
 
 import static java.lang.Math.toIntExact;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static util.spark.mllib.MllibUtilities.invertVector;
@@ -8,6 +9,7 @@ import static util.spark.mllib.MllibUtilities.scalarProduct;
 import static util.spark.mllib.MllibUtilities.toDenseLocalVectors;
 import static util.spark.mllib.MllibUtilities.vectorToCoordinateMatrix;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -25,9 +27,9 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.BlockMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
+import data.AbstractTVEvent;
 import data.Context;
 import data.EvaluationContext;
-import data.TVEvent;
 import data.TVProgram;
 import data.feature.FeatureExtractor;
 import model.UserItemMatrix;
@@ -45,7 +47,7 @@ import util.spark.mllib.MllibUtilities;
  * 
  * @author Jonathan Bergeron
  */
-public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
+public class SpaceAlignmentRecommender<T extends TVProgram, U extends AbstractTVEvent<T>>
 		extends TVRecommender<T, U, ScoredRecommendation> {
 	
 	/**
@@ -152,7 +154,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 	}
 	
 	private List<Double> calculateNewTVShowSimilarities(Vector coldStartItemContent) {
-		int numberOfItems = (int) context.getTrainingSet().getNumberOfTvShows();
+		int numberOfItems = (int) context.getTrainingSet().getNumberOfTvShowIndexes();
 		return IntStream.range(0, numberOfItems).mapToDouble(index -> calculateItemsSimilarity(coldStartItemContent, index)).boxed().collect(toList());
 	}
 
@@ -244,7 +246,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent>
 		BlockMatrix S = context.getTrainingSet().convertToDistUserItemMatrix().getItemSimilarities(sc).toBlockMatrix();
 		IndexedRowMatrix intermediateMat = leftMat.multiply(S).multiply(rightMat).toIndexedRowMatrix();		
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat.computeSVD(r, false, 0.0d);
-		//Casting the V matrix of svd to dense matrix because Spark 2.2.0 always return a dense matrix and it is needed to multiply.
+		//Casting the V matrix of svd to dense matrix because Spark 2.2.0 always return a dense matrix and it is needed to do matrix multiplication.
 		DenseMatrix Q = (DenseMatrix) intMatsvd.V();
 		Matrix lambda = MllibUtilities.vectorToDenseMatrix(intMatsvd.s());
 		DenseMatrix hardThresholdedIntMat = Q.multiply(lambda.multiply(Q.transpose()));

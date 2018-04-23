@@ -50,6 +50,11 @@ public class StreamUtilities {
 		: StreamSupport.stream(split, false);
 	}
 	
+	public static <A> Stream<Tuple2<A, Integer>> zipWithIndex(Stream<? extends A> a){
+		Stream<Integer> indexStream = Stream.generate(new IndexesSupplier());
+		return zip(a, indexStream);
+	}
+	
 	public static<A, B> Stream<Tuple2<A, B>> zip(Stream<? extends A> a, Stream<? extends B> b){
 		return zip(a, b, (c, d) -> new Tuple2<>(c, d));
 	}

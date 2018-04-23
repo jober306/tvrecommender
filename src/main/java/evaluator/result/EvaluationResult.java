@@ -1,8 +1,5 @@
 package evaluator.result;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -66,18 +63,5 @@ public class EvaluationResult implements Information, Serializable{
 			sb.append("\n");
 		}
 		return sb.toString();
-	}
-	
-	public static EvaluationResult fromFile(String evaluationResultPath){
-		EvaluationResult result = null;
-		try {
-			FileInputStream fis = new FileInputStream(evaluationResultPath);
-			ObjectInputStream oos = new ObjectInputStream(fis);
-		    result = (EvaluationResult) oos.readObject();
-		    oos.close();
-		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		return result;
 	}
 }

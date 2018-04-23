@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import org.apache.spark.mllib.linalg.Vector;
 
-import data.TVEvent;
+import data.AbstractTVEvent;
 import data.TVProgram;
 
 /**
@@ -18,7 +18,7 @@ import data.TVProgram;
  * @param <U>
  *            The tv event class from which the features will be extracted.
  */
-public abstract class FeatureExtractor<T extends TVProgram, U extends TVEvent>
+public abstract class FeatureExtractor<T extends TVProgram, U extends AbstractTVEvent<T>>
 		implements Serializable {
 
 	private static final long serialVersionUID = 1L;

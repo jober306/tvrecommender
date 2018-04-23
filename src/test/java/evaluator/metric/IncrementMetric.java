@@ -1,6 +1,6 @@
 package evaluator.metric;
 
-import java.util.List;
+import java.util.Set;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -18,7 +18,7 @@ public class IncrementMetric<R extends Recommendation> implements EvaluationMetr
 	int currentValue = 1;
 	
 	@Override
-	public double evaluate(Recommendations<? extends R> recommendations, List<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<? extends R> recommendations, Set<? extends TVProgram> groundTruth) {
 		return currentValue++;
 	}
 	

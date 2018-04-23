@@ -3,9 +3,9 @@ package recommender;
 import java.io.Serializable;
 import java.util.Map;
 
-import evaluator.information.Information;
+import evaluator.information.AbstractInformation;
 
-public final class RecommenderInfo implements Information, Serializable{
+public final class RecommenderInfo extends AbstractInformation implements Serializable{
 	
 
 	private static final long serialVersionUID = 1L;

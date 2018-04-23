@@ -1,6 +1,6 @@
 package evaluator.metric;
 
-import java.util.List;
+import java.util.Set;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -27,7 +27,7 @@ public class Precision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
 		int truePositive = (int) recommendations.stream()
 				.limit(cutoff)
 				.map(Recommendation::tvProgram)

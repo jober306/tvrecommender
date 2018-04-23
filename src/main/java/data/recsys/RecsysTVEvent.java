@@ -9,7 +9,8 @@ import java.util.List;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import data.TVEvent;
+import data.AbstractTVEvent;
+import data.recsys.utility.RecsysUtilities;
 
 /**
  * Class modeling a tv event of the recsys dataset.
@@ -17,7 +18,7 @@ import data.TVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVEvent extends TVEvent implements Serializable {
+public class RecsysTVEvent extends AbstractTVEvent<RecsysTVProgram> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -60,11 +61,9 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	 * this class for param documentation. The watch time is initialized
 	 * implicitly, considering the recsys tv events data set started
 	 */
-	public RecsysTVEvent(int channelID, short slot, byte week, byte genreID,
-			byte subgenreID, int userID, int programID, int eventID,
-			int duration) {
-		super(getStartTimeFromWeekAndSlot(week, slot), programID, channelID,
-				userID, eventID, duration);
+	public RecsysTVEvent(int channelID, short slot, short week, byte genreID,
+			byte subgenreID, int userID, int programID, int eventID, int duration) {
+		super(getStartTimeFromWeekAndSlot(week, slot), new RecsysTVProgram(week, slot, channelID, programID, genreID, subgenreID), userID, eventID, duration);
 		this.slot = slot;
 		this.week = week;
 		this.genreID = genreID;
@@ -120,13 +119,13 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 		if (!(other instanceof RecsysTVEvent))
 			return false;
 		RecsysTVEvent tvEvent = (RecsysTVEvent) other;
-		return new EqualsBuilder().append(channelId, tvEvent.getChannelId())
+		return new EqualsBuilder().append(getChannelId(), tvEvent.getChannelId())
 				.append(slot, tvEvent.getSlot())
 				.append(week, tvEvent.getWeek())
 				.append(genreID, tvEvent.getGenreID())
 				.append(subgenreID, tvEvent.getSubgenreID())
 				.append(userID, tvEvent.getUserID())
-				.append(programId, tvEvent.getProgramId())
+				.append(program, tvEvent.getProgram())
 				.append(eventID, tvEvent.getEventID())
 				.append(duration, tvEvent.getDuration()).isEquals();
 	}
@@ -147,11 +146,11 @@ public class RecsysTVEvent extends TVEvent implements Serializable {
 	@Override
 	public String toString() {
 		String tvEventStr = "";
-		tvEventStr += "Channel ID: " + channelId + "\n";
+		tvEventStr += "Channel ID: " + getChannelId() + "\n";
 		tvEventStr += "Slot: " + slot + "\n";
 		tvEventStr += "Week: " + week + "\n";
-		tvEventStr += "Genre ID: " + genreID + "\n";
-		tvEventStr += "Subgenre ID" + subgenreID + "\n";
+		tvEventStr += "Genre ID: " + RecsysUtilities.getGenreName(genreID) + "\n";
+		tvEventStr += "Subgenre ID" + RecsysUtilities.getSubgenreName(genreID, subgenreID) + "\n";
 		tvEventStr += "User ID: " + userID + "\n";
 		tvEventStr += "Event ID: " + eventID + "\n";
 		tvEventStr += "Duration: " + duration + "\n";

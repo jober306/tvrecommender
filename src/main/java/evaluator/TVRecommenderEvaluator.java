@@ -1,19 +1,28 @@
 package evaluator;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.spark.api.java.JavaSparkContext;
 
+import com.google.common.collect.Sets;
+
+import data.AbstractTVEvent;
 import data.EPG;
 import data.EvaluationContext;
 import data.TVDataSet;
-import data.TVEvent;
 import data.TVProgram;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
@@ -21,7 +30,6 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.feature.RecsysBooleanFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
-import data.visualisation.TVDataSetVisualisation;
 import evaluator.metric.EvaluationMetric;
 import evaluator.metric.Precision;
 import evaluator.metric.Recall;
@@ -35,6 +43,7 @@ import model.recommendation.ScoredRecommendation;
 import recommender.TVRecommender;
 import recommender.SpaceAlignmentRecommender;
 import recommender.channelpreference.ChannelPreferenceRecommender;
+import recommender.channelpreference.TopChannelPerUserPerSlotRecommender;
 import recommender.channelpreference.TopChannelPerUserRecommender;
 import recommender.channelpreference.TopChannelRecommender;
 import scala.Tuple2;
@@ -53,8 +62,10 @@ import util.time.DateTimeRange;
  * @param <U>
  *            A class extending TVProgram on which the data set and the tv
  *            recommender is built.
+ * @param <R>
+ * 			  The type of recommendations made by the recommender.
  */
-public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R extends Recommendation> {
+public class TVRecommenderEvaluator<T extends TVProgram, U extends AbstractTVEvent<T>, R extends Recommendation> {
 
 	/**
 	 * The tv recommender to evaluate.
@@ -64,22 +75,64 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	/**
 	 * The array of measures on which evaluation will be based.
 	 */
-	final List<EvaluationMetric<? super R>> metrics;
+	final Set<EvaluationMetric<? super R>> metrics;
+	
+	/**
+	 * A boolean indicating if the evaluation info must be generated. Can take some times.
+	 */
+	boolean evaluationInfoGenerated;
 
+	public boolean isEvaluationInfoGenerated() {
+		return evaluationInfoGenerated;
+	}
+
+	public void setEvaluationInfoGenerated(boolean EvaluationInfoGenerated) {
+		this.evaluationInfoGenerated = EvaluationInfoGenerated;
+	}
 
 	/**
-	 * Constructor of a tv recommender evaluator. It assumes the recommender lives in an evaluation context.
+	 * Constructor of a tv recommender evaluator. The generation of evaluation information is set to false.
 	 * @param recommender The recommender to be evaluated.
 	 * @param metrics The measures with respect to the recommender will be tested.
 	 */
-	public TVRecommenderEvaluator(TVRecommender<T, U, R> recommender, List<EvaluationMetric<? super R>> metrics) {
+	public TVRecommenderEvaluator(TVRecommender<T, U, R> recommender, Set<EvaluationMetric<? super R>> metrics) {
 		this.metrics = metrics;
 		this.recommender = recommender;
+		this.evaluationInfoGenerated = false;
 	}
 	
-	public Set<EvaluationResult> evaluateTimeSeries(EPG<T> epg, TVDataSet<T, U> events, DateTimeRange trainingStartTime, DateTimeRange trainingEndTime, DateTimeRange testingStartTime, DateTimeRange testingEndTime){
-		return StreamUtilities.zip(trainingStartTime.stream(), trainingEndTime.stream(), testingStartTime.stream(), testingEndTime.stream())
-			.map(dateTimes -> new EvaluationContext<T,U>(epg, events, dateTimes))
+	public TVRecommenderEvaluator(TVRecommender<T, U, R> recommender, Set<EvaluationMetric<? super R>> metrics, boolean evaluationInfoGenerated){
+		this.metrics = metrics;
+		this.recommender = recommender;
+		this.evaluationInfoGenerated = evaluationInfoGenerated;
+	}
+	
+	public Set<EvaluationResult> evaluateWithIncreasingTrainingSize(EPG<T> epg, TVDataSet<T, U> events, LocalDateTime startTime, LocalDateTime endTime){
+		DateTimeRange trainingStartTimes = new DateTimeRange(startTime, startTime, Duration.ZERO);
+		DateTimeRange trainingEndTimes = new DateTimeRange(startTime.plusDays(1), endTime.minusDays(1), Duration.ofDays(1));
+		DateTimeRange testingStartTimes = new DateTimeRange(startTime.plusDays(1), endTime.minusDays(1), Duration.ofDays(1));
+		DateTimeRange testingEndTimes = new DateTimeRange(startTime.plusDays(2), endTime.minusDays(1), Duration.ofDays(1));
+		return evaluateTimeSeries(epg, events, trainingStartTimes, trainingEndTimes, testingStartTimes, testingEndTimes);
+	}
+	
+	public Set<EvaluationResult> evaluateMovingTimeWindow(EPG<T> epg, TVDataSet<T, U> events, LocalDateTime startTime, Period window, LocalDateTime endTime){
+		DateTimeRange trainingStartTimes = new DateTimeRange(startTime, endTime.minus(window).minusDays(1), Duration.ofDays(1));
+		DateTimeRange trainingEndTimes = new DateTimeRange(startTime.plus(window), endTime.minusDays(1), Duration.ofDays(1));
+		DateTimeRange testingStartTimes = new DateTimeRange(startTime.plus(window), endTime.minusDays(1), Duration.ofDays(1));
+		DateTimeRange testingEndTimes = new DateTimeRange(startTime.plus(window).plusDays(1), endTime, Duration.ofDays(1));
+		return evaluateTimeSeries(epg, events, trainingStartTimes, trainingEndTimes, testingStartTimes, testingEndTimes);
+	}
+	
+	public Set<EvaluationResult> evaluateTimeSeries(EPG<T> epg, TVDataSet<T, U> events, DateTimeRange trainingStartTimes, DateTimeRange trainingEndTimes, DateTimeRange testingStartTimes, DateTimeRange testingEndTimes){
+		return StreamUtilities.zip(trainingStartTimes.stream(), trainingEndTimes.stream(), testingStartTimes.stream(), testingEndTimes.stream())
+			.map(dateTimes -> {
+				System.out.print("Creating evaluation context...");
+				Instant evalContextStartTime = Instant.now();
+				EvaluationContext<T, U> evalContext =  new EvaluationContext<>(epg, events, dateTimes);
+				Instant evalContextEndTime = Instant.now();
+				System.out.println("Done in " + SECONDS.between(evalContextStartTime, evalContextEndTime) + " seconds!");
+				return evalContext;
+			})
 			.map(this::evaluateAndCloseContext)
 			.collect(Collectors.toSet());
 	}
@@ -91,10 +144,22 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	}
 	
 	public EvaluationResult evaluateAndCloseContext(EvaluationContext<T, U> context){
+		System.out.print("Setting context...");
+		Instant settingStartTime = Instant.now();
 		recommender.setContext(context);
+		Instant settingEndTime = Instant.now();
+		System.out.println("Done in " + SECONDS.between(settingStartTime, settingEndTime) + " seconds!");
+		System.out.print("Training recommender...");
+		Instant trainingStartTime = Instant.now();
 		recommender.train();
+		Instant trainingEndTime = Instant.now();
+		System.out.println("Done in " + SECONDS.between(trainingStartTime, trainingEndTime) + " seconds!");
 		EvaluationResult result = evaluate();
+		System.out.print("Closing context...");
+		Instant closeStartTime = Instant.now();
 		recommender.closeContextDatasets();
+		Instant closeEndTime = Instant.now();
+		System.out.println("Done in " + SECONDS.between(closeStartTime, closeEndTime) + " seconds!\n");
 		return result;
 	}
 	
@@ -104,18 +169,30 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	 */
 	public EvaluationResult evaluate() {
 		EvaluationContext<T,U> context = (EvaluationContext<T,U>) recommender.getContext();
-		System.out.print("Plotting test set...");
-		TVDataSetVisualisation.createAndSaveSortedProgramCountChart(context.getTestSet(), "Testset.jpeg");
-		System.out.println("Done!");
+		Instant recommendingStartTime = Instant.now();
+		System.out.print("Recommending for tested users...");
 		List<Recommendations<R>> testedUserRecommendations = context.getTestSet().getAllUserIds().stream()
 			.map(testedUser -> recommender.recommend(testedUser, context.getTestPrograms()))
 			.collect(Collectors.toList());
+		Instant recommendingEndTime = Instant.now();
+		System.out.println("Done in " + SECONDS.between(recommendingStartTime, recommendingEndTime) + " seconds!");
+		Instant metricStartTime = Instant.now();
+		System.out.print("Evaluating metrics...");
 		List<MetricResults> results = metrics.stream().map(metric -> {
 				Map<Integer, Double> userScores = StreamUtilities.toMapAverage(testedUserRecommendations.stream(), Recommendations::userId, recommendation -> metric.evaluate(recommendation, context));
 				return new MetricResults(metric.name(), userScores);
 			}
 			).collect(Collectors.toList());
-		EvaluationInfo evaluationInfo = new EvaluationInfo(recommender, (EvaluationContext<T,U>)recommender.getContext());
+		Instant metricEndTime = Instant.now();
+		System.out.println("Done in " + SECONDS.between(metricStartTime, metricEndTime) + " seconds!");
+		Instant infoStartTime = Instant.now();
+		EvaluationInfo evaluationInfo = null;
+		if(isEvaluationInfoGenerated()){
+			System.out.print("Creating evaluation info...");
+			evaluationInfo = new EvaluationInfo(recommender, (EvaluationContext<T,U>)recommender.getContext());
+			Instant infoEndTime = Instant.now();
+			System.out.println("Done in " + SECONDS.between(infoStartTime, infoEndTime) + " seconds!");
+		}
 		return new EvaluationResult(results, evaluationInfo);
 	}
 
@@ -135,8 +212,8 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 		RecsysEPG epg = data._1;
 		RecsysTVDataSet events = data._2;
 		EvaluationContext<RecsysTVProgram, RecsysTVEvent> evalContext = new EvaluationContext<>(epg, events, trainingStartTimes, trainingEndTimes, testingStartTimes, testingEndTimes);
-		List<EvaluationMetric<? super Recommendation>> measures = Arrays.asList(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
-		ChannelPreferenceRecommender recommender = new TopChannelPerUserRecommender(evalContext, 10);
+		Set<EvaluationMetric<? super Recommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
+		ChannelPreferenceRecommender recommender = new TopChannelRecommender(evalContext, 10);
 		recommender.train();
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		EvaluationResult result = evaluator.evaluate();
@@ -144,37 +221,54 @@ public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent, R ex
 	}
 	
 	public static void evaluateTimeWindow(){
-		DateTimeRange trainingStartTimes = new DateTimeRange(RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME, Duration.ZERO);
-		DateTimeRange trainingEndTimes = new DateTimeRange(RecsysTVDataSet.START_TIME.plusDays(1), RecsysTVDataSet.START_TIME.plusDays(30), Duration.ofDays(1));
-		DateTimeRange testingStartTimes = new DateTimeRange(RecsysTVDataSet.START_TIME.plusDays(1), RecsysTVDataSet.START_TIME.plusDays(30), Duration.ofDays(1));
-		DateTimeRange testingEndTimes = new DateTimeRange(RecsysTVDataSet.START_TIME.plusDays(2), RecsysTVDataSet.START_TIME.plusDays(31), Duration.ofDays(1));
+		LocalDateTime startTime = RecsysTVDataSet.START_TIME;
+		Period window = Period.ofWeeks(1);
+		LocalDateTime endTime = RecsysTVDataSet.START_TIME.plusMonths(1);
 		JavaSparkContext sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		int minDuration = 5;
+		System.out.print("Loading data...");
 		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet(minDuration);
+		System.out.println("Done!");
 		RecsysEPG epg = data._1;
 		RecsysTVDataSet events = data._2;
-		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = topChannelEvaluator();
-		Set<EvaluationResult> results = evaluator.evaluateTimeSeries(epg, events, trainingStartTimes, trainingEndTimes, testingStartTimes, testingEndTimes);
-		final String outputDir = "src/main/resources/results/topchannel/onemonth/";
-		EvaluationVisualisator.plotTimeSeries(results, outputDir);
-		results.stream().forEach(result -> result.serialize(outputDir + result.generateFileName() + ".ser"));
+		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> evaluator = spaceAlignementEvaluator(sc, epg);
+		Set<EvaluationResult> results = evaluator.evaluateMovingTimeWindow(epg, events, startTime, window, endTime);
+		Stream<MetricResults> metricResults = results.stream().map(EvaluationResult::metricsResults).flatMap(List::stream);
+		Map<String, Double> averagePerMetric = StreamUtilities.toMapAverage(metricResults, MetricResults::metricName, MetricResults::mean);
+		System.out.println(averagePerMetric.entrySet().stream().map(Entry::toString).collect(Collectors.joining(", ", "[", "]")));
+//		final String outputDir = "src/main/resources/results/topchannel/onemonth/";
+//		EvaluationVisualisator.plotTimeSeries(results, outputDir);
+//		results.stream().forEach(result -> result.serialize(outputDir + result.generateFileName() + ".ser"));
 		sc.close();
 	}
 
-	private static TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> spaceAlignementEvaluator(
-			JavaSparkContext sc, RecsysEPG epg) {
-		List<EvaluationMetric<? super ScoredRecommendation>> measures = Arrays.asList(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
-		int rank = 5;
-		int neighbourhoodSize = 50;
+	private static TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> spaceAlignementEvaluator(JavaSparkContext sc, RecsysEPG epg) {
+		Set<EvaluationMetric<? super ScoredRecommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
+		int rank = 20;
+		int neighbourhoodSize = 10;
 		SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, new RecsysBooleanFeatureExtractor(epg), rank, neighbourhoodSize, sc);
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		return evaluator;
 	}
 	
 	private static TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> topChannelEvaluator() {
-		List<EvaluationMetric<? super Recommendation>> measures = Arrays.asList(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
-		TopChannelRecommender recommender = new TopChannelRecommender(10);
+		Set<EvaluationMetric<? super Recommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
+		ChannelPreferenceRecommender recommender = new TopChannelRecommender(10);
+		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
+		return evaluator;
+	}
+	
+	private static TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> topChannelPerUserEvaluator() {
+		Set<EvaluationMetric<? super Recommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
+		ChannelPreferenceRecommender recommender = new TopChannelPerUserRecommender(10);
+		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
+		return evaluator;
+	}
+	
+	private static TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> topChannelPerUserPerSlotEvaluator() {
+		Set<EvaluationMetric<? super Recommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
+		ChannelPreferenceRecommender recommender = new TopChannelPerUserPerSlotRecommender(10);
 		TVRecommenderEvaluator<RecsysTVProgram, RecsysTVEvent, Recommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		return evaluator;
 	}

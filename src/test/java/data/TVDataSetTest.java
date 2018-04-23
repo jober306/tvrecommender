@@ -32,7 +32,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void containsDeepCopyOfEventTest(){
-		TVEvent deepCopyEvent1 = new TVEvent(event1.getWatchTime(), event1.getProgramId(), event1.getChannelId(), event1.getUserID(), event1.getEventID(), event1.getDuration());
+		TVEvent deepCopyEvent1 = new TVEvent(event1.getWatchTime(), event1.getProgram(), event1.getUserID(), event1.getEventID(), event1.getDuration());
 		assertTrue(dataset.contains(deepCopyEvent1));
 	}
 	
@@ -42,15 +42,22 @@ public class TVDataSetTest extends TVDataSetFixture{
 	}
 	
 	@Test
-	public void getProgramSeenByExistingUserOnValidDatasetTest(){
-		Set<Integer> expectedIndexSeenUser1 = Sets.newHashSet(Arrays.asList(1,2));
-		Set<Integer> actualIndexSeenUser1 = dataset.getTvProgramSeenByUser(1);
+	public void getProgramIndexesSeenByExistingUserOnValidDatasetTest(){
+		Set<Integer> expectedIndexSeenUser1 = Sets.newHashSet(Arrays.asList(1,3));
+		Set<Integer> actualIndexSeenUser1 = dataset.getTvProgramIndexesSeenByUser(1);
 		assertEquals(expectedIndexSeenUser1, actualIndexSeenUser1);
 	}
 	
 	@Test
+	public void getProgramSeenByExistingUserOnValidDatasetTest(){
+		Set<TVProgram> expectedProgramSeenUser1 = Sets.newHashSet(program11, program23);
+		Set<TVProgram> actualProgramSeenUser1 = dataset.getTVProgramSeenByUser(1);
+		assertEquals(expectedProgramSeenUser1, actualProgramSeenUser1);
+	}
+	
+	@Test
 	public void programSeenByNonExistingUserShouldBeEmptyTest(){
-		Set<Integer> actualSet = dataset.getTvProgramSeenByUser(10);
+		Set<Integer> actualSet = dataset.getTvProgramIndexesSeenByUser(10);
 		assertTrue(actualSet.isEmpty());
 	}
 	
@@ -110,7 +117,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allTVProgramIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,2,3));
+		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,2,3,4,5));
 		Set<Integer> actualSet = dataset.getAllProgramIds();
 		assertEquals(expectedSet, actualSet);
 	}
@@ -136,7 +143,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allChannelIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,5));
+		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1, 2, 3, 4));
 		Set<Integer> actualSet = dataset.getAllChannelIds();
 		assertEquals(expectedSet, actualSet);
 	}
@@ -162,16 +169,30 @@ public class TVDataSetTest extends TVDataSetFixture{
 	}
 	
 	@Test
-	public void numberOfTvProgramsOnValideDatasetTest(){
-		int expectedNumberOfTVPrograms = 3;
+	public void numberOfTvShowsOnValideDatasetTest(){
+		int expectedNumberOfTVPrograms = 6;
 		int actualNumberOfTvPrograms = dataset.getNumberOfTvShows();
 		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
 	}
 	
 	@Test
-	public void numberOfTVProgramsOnEmptyDatasetTest(){
+	public void numberOfTVShowsOnEmptyDatasetTest(){
 		int expectedNumberOfTVPrograms = 0;
 		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvShows();
+		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
+	}
+	
+	@Test
+	public void numberOfTvShowIndexesOnValideDatasetTest(){
+		int expectedNumberOfTVPrograms = 5;
+		int actualNumberOfTvPrograms = dataset.getNumberOfTvShowIndexes();
+		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
+	}
+	
+	@Test
+	public void numberOfTVShowIndexesOnEmptyDatasetTest(){
+		int expectedNumberOfTVPrograms = 0;
+		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvShowIndexes();
 		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
 	}
 	
@@ -198,7 +219,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void validDatasetEndTimeTest(){
-		LocalDateTime expectedEndTime = baseTime.plusHours(2);
+		LocalDateTime expectedEndTime = baseTime.plusMinutes(135);
 		LocalDateTime actualEndTime = dataset.endTime();
 		assertEquals(expectedEndTime, actualEndTime);
 	}

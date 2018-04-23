@@ -32,6 +32,7 @@ public class RecsysBooleanFeatureExtractor extends
 	private static final long serialVersionUID = 5644373733120859321L;
 
 	Map<Integer, Integer> channelIDMap;
+	Map<Short, Integer> slotIDMap;
 	Map<Byte, Integer> genreIDMap;
 	Map<Byte, Integer> subgenreIDMap;
 	
@@ -51,9 +52,10 @@ public class RecsysBooleanFeatureExtractor extends
 	public RecsysBooleanFeatureExtractor(RecsysEPG epg) {
 		this.mappedID = 0;
 		initializeChannelIDMap(epg);
+		initializeSlotIDMap();
 		initializeGenreIDMap();
 		initializeSubgenreIDMap();
-		this.extractedVectorSize = channelIDMap.size() + genreIDMap.size() + subgenreIDMap.size();
+		this.extractedVectorSize = channelIDMap.size() + slotIDMap.size() + genreIDMap.size() + subgenreIDMap.size();
 	}
 
 	private void initializeChannelIDMap(RecsysEPG epg) {
@@ -65,6 +67,15 @@ public class RecsysBooleanFeatureExtractor extends
 			mappedID++;
 		}
 		this.channelIDMap = Collections.unmodifiableMap(tempMap);
+	}
+	
+	private void initializeSlotIDMap(){
+		Map<Short, Integer> tempMap = new HashMap<Short, Integer>();
+		for(short slotID = 1; slotID <= 168; slotID++){
+			tempMap.put(slotID, mappedID);
+			mappedID++;
+		}
+		this.slotIDMap = Collections.unmodifiableMap(tempMap);
 	}
 
 	private void initializeGenreIDMap() {
@@ -92,6 +103,10 @@ public class RecsysBooleanFeatureExtractor extends
 	 */
 	public Map<Integer, Integer> getChannelIDMap() {
 		return channelIDMap;
+	}
+	
+	public Map<Short, Integer> getSlotIDMap(){
+		return this.slotIDMap;
 	}
 
 	/**
@@ -125,9 +140,10 @@ public class RecsysBooleanFeatureExtractor extends
 	@Override
 	public Vector extractFeaturesFromProgram(RecsysTVProgram tvProgram) {
 		int channelID = tvProgram.channelId();
+		short slot = tvProgram.slot();
 		byte genreID = tvProgram.genreId();
 		byte subgenreID = tvProgram.subGenreId();
-		return createBooleanFeatureVector(channelID, genreID, subgenreID);
+		return createBooleanFeatureVector(channelID, slot, genreID, subgenreID);
 	}
 
 	/**
@@ -143,19 +159,19 @@ public class RecsysBooleanFeatureExtractor extends
 	@Override
 	public Vector extractFeaturesFromEvent(RecsysTVEvent tvEvent) {
 		int channelID = tvEvent.getChannelId();
+		short slot = tvEvent.getSlot();
 		byte genreID = tvEvent.getGenreID();
 		byte subgenreID = tvEvent.getSubgenreID();
-		return createBooleanFeatureVector(channelID, genreID, subgenreID);
+		return createBooleanFeatureVector(channelID, slot, genreID, subgenreID);
 	}
 
-	private Vector createBooleanFeatureVector(int channelID, byte genreID,
-			byte subgenreID) {
+	private Vector createBooleanFeatureVector(int channelID, short slot, byte genreID, byte subgenreID) {
 		List<Tuple2<Integer, Double>> features = new ArrayList<Tuple2<Integer, Double>>();
 		features.add(new Tuple2<Integer, Double>(channelIDMap.get(channelID),
 				1.0d));
+		features.add(new Tuple2<Integer, Double>(slotIDMap.get(slot), 1.0d));
 		features.add(new Tuple2<Integer, Double>(genreIDMap.get(genreID), 1.0d));
-		features.add(new Tuple2<Integer, Double>(subgenreIDMap.get(subgenreID),
-				1.0d));
+		features.add(new Tuple2<Integer, Double>(subgenreIDMap.get(subgenreID), 1.0d));
 		return Vectors.sparse(mappedID, features);
 	}
 	

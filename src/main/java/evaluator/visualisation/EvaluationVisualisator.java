@@ -48,7 +48,7 @@ public class EvaluationVisualisator {
 	      }
 	      final XYDataset dataset=( XYDataset ) series;
 	      JFreeChart timechart = ChartFactory.createTimeSeriesChart(
-	         "Space Alignment Recommender One Month Training", 
+	         "Top Channel Recommender One Month Training", 
 	         "", 
 	         "Score", 
 	         dataset,

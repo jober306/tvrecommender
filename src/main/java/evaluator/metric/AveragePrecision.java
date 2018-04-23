@@ -3,6 +3,7 @@ package evaluator.metric;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
+import java.util.Set;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -38,14 +39,14 @@ public class AveragePrecision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<? extends Recommendation> recommendations, List<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
 		List<? extends TVProgram> recommendedTVShowIndexes = recommendations.stream()
 				.map(Recommendation::tvProgram)
 				.collect(toList());
 		return calculateAveragePrecision(cutoff, recommendedTVShowIndexes, groundTruth);
 	}
 
-	private double calculateAveragePrecision(int cutoff, List<? extends TVProgram> recommendedTVShows, List<? extends TVProgram> groundTruth) {
+	private double calculateAveragePrecision(int cutoff, List<? extends TVProgram> recommendedTVShows, Set<? extends TVProgram> groundTruth) {
 		double averagePrecision = 0.0d;
 		double truePositiveRecommendedTVShow = 0;
 		for (int k = 1; k <= Math.min(recommendedTVShows.size(), cutoff); k++) {

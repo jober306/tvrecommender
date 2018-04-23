@@ -1,6 +1,6 @@
 package evaluator.metric;
 
-import java.util.List;
+import java.util.Set;
 
 import data.TVProgram;
 import model.recommendation.Recommendation;
@@ -16,7 +16,7 @@ import model.recommendation.Recommendations;
 public class OneMetric<R extends Recommendation> implements EvaluationMetric<R>{
 
 	@Override
-	public double evaluate(Recommendations<? extends R> recommendations, List<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<? extends R> recommendations, Set<? extends TVProgram> groundTruth) {
 		return 1.0d;
 	}
 

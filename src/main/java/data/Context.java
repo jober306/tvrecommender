@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * @author Jonathan Bergeron
  *
  */
-public class Context<T extends TVProgram, U extends TVEvent>{
+public class Context<T extends TVProgram, U extends AbstractTVEvent<T>>{
 	
 	/**
 	 * The electronic programming guide.

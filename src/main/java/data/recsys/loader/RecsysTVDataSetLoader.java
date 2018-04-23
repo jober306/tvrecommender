@@ -137,8 +137,7 @@ public class RecsysTVDataSetLoader {
 	 * @return a JavaRDD of <class>String</class>.
 	 */
 	private JavaRDD<String> loadLinesFromDataSet() {
-		String path_s = RecsysTVDataSetLoader.class.getResource(pathToDataSet)
-				.getPath();
+		String path_s = RecsysTVDataSetLoader.class.getResource(pathToDataSet).getPath();
 		return sc.textFile(path_s);
 	}
 
@@ -153,18 +152,16 @@ public class RecsysTVDataSetLoader {
 	 *            The tv events.
 	 * @return The program implicitly created from the events.
 	 */
-	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(
-			JavaRDD<RecsysTVEvent> events) {
-		return events
-				.map(RecsysTVProgram::new)
-				.distinct();
+	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(JavaRDD<RecsysTVEvent> events) {
+		return events.map(RecsysTVEvent::getProgram).distinct();
 	}
 
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader l = new RecsysTVDataSetLoader();
-		Tuple2<RecsysEPG, RecsysTVDataSet> data = l.loadDataSet();
-		System.out.println(RecsysTVDataSet.START_TIME);
-		System.out.println(data._2.startTime());
-		System.out.println(data._2.endTime());
+		RecsysTVDataSet data = l.loadDataSet()._2();
+		//System.out.println("Dataset length: " + Duration.between(data.startTime(), data.endTime()).toDays());
+		System.out.println("Users: " + data.getNumberOfUsers());
+		System.out.println("Programs: " + data.getNumberOfTvShows());
+		//System.out.println("Events: " + data.getEventsData().map(RecsysTVEvent::getEventID).distinct().count());
 	}
 }

@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -35,7 +36,7 @@ import util.time.LocalDateTimeDTO;
  *            A child class of the abstract class TVEvent. The RDD will be of
  *            this class.
  */
-public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implements Serializable, Informative {
+public abstract class TVDataSet<T extends TVProgram, U extends AbstractTVEvent<T>> implements Serializable, Informative {
 	
 	abstract public void close();
 	
@@ -73,6 +74,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	 */
 	transient Supplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
 	transient Supplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
+	transient Supplier<Integer> numberOfTvShowIndexes = lazily(() -> numberOfTvShowIndexes = value(initNumberOfTVShowIndexes()));
 	transient Supplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(eventsData.count()));
 	transient Supplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
 	transient Supplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
@@ -144,9 +146,20 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 		return !intersection.isEmpty();
 	}
 	
-	public Set<Integer> getTvProgramSeenByUser(int userIndex) {
-		return Sets.newHashSet(eventsData.filter(tvEvent -> tvEvent.getUserID() == userIndex)
-				.map(tvEvent -> tvEvent.getProgramId()).distinct().collect());
+	public Set<Integer> getTvProgramIndexesSeenByUser(int userIndex) {
+		return Sets.newHashSet(eventsData
+				.filter(tvEvent -> tvEvent.getUserID() == userIndex)
+				.map(U::getProgram)
+				.map(T::programId)
+				.collect());
+	}
+	
+	public Set<T> getTVProgramSeenByUser(int userIndex){
+		List<T> tvShowsSeenByUser = eventsData
+				.filter(tvEvent -> tvEvent.getUserID() == userIndex)
+				.map(U::getProgram)
+				.collect();
+		return Sets.newHashSet(tvShowsSeenByUser);
 	}
 
 	/**
@@ -193,15 +206,15 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	}
 	
 	private Set<Integer> initAllUserIds(){
-		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getUserID()).distinct().collect());
+		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getUserID).distinct().collect());
 	}
 
 	public Set<Integer> getAllProgramIds() {
-		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().collect());
+		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getProgramID).distinct().collect());
 	}
 	
 	private Set<Integer> initAllProgramIds(){
-		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().collect());
+		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getProgramID).distinct().collect());
 	}
 
 	public Set<Integer> getAllEventIds() {
@@ -209,7 +222,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	}
 	
 	public Set<Integer> initAllEventIds(){
-		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getEventID()).distinct().collect());
+		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getEventID).distinct().collect());
 	}
 
 	public Set<Integer> getAllChannelIds() {
@@ -217,20 +230,24 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	}
 	
 	public Set<Integer> initAllChannelIds(){
-		return Sets.newHashSet(eventsData.map(tvEvent -> tvEvent.getChannelId()).distinct().collect());
+		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getChannelId).distinct().collect());
 	}
 
 	private int initNumberOfUsers(){
-		return (int)eventsData.map(tvEvent -> tvEvent.getUserID()).distinct().count();
+		return (int)eventsData.map(AbstractTVEvent::getUserID).distinct().count();
 	}
 
 	private int initNumberOfTVShows(){
-		return (int)eventsData.map(tvEvent -> tvEvent.getProgramId()).distinct().count();
+		return (int)eventsData.map(AbstractTVEvent::getProgram).distinct().count();
+	}
+	
+	private int initNumberOfTVShowIndexes(){
+		return (int) eventsData.map(AbstractTVEvent::getProgramID).distinct().count();
 	}
 	
 	private LocalDateTime initStartTime(){
 		return eventsData
-				.map(TVEvent::getWatchTime)
+				.map(AbstractTVEvent::getWatchTime)
 				.map(LocalDateTimeDTO::new)
 				.reduce(LocalDateTimeDTO::min)
 				.toLocalDateTime();
@@ -238,7 +255,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	
 	private LocalDateTime initEndTime(){
 		return eventsData
-				.map(TVEvent::getWatchTime)
+				.map(AbstractTVEvent::getWatchTime)
 				.map(LocalDateTimeDTO::new)
 				.reduce(LocalDateTimeDTO::max)
 				.toLocalDateTime();
@@ -250,6 +267,10 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent> implemen
 	
 	public int getNumberOfTvShows(){
 		return numberOfTvShows.get();
+	}
+	
+	public int getNumberOfTvShowIndexes(){
+		return numberOfTvShowIndexes.get();
 	}
 	
 	public long numberOfTvEvents(){

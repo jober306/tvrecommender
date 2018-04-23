@@ -89,7 +89,7 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void convertToDistributedMatrixTest() {
 		DistributedUserItemMatrix R = dataSet.convertToDistUserItemMatrix();
-		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getMappedUserID(event.getUserID()), dataSet.getMappedProgramID(event.getProgramId()))).collect(Collectors.toSet());
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getMappedUserID(event.getUserID()), dataSet.getMappedProgramID(event.getProgramID()))).collect(Collectors.toSet());
 		for (int row = 0; row < R.getNumRows(); row++) {
 			for(int col = 0; col < R.getNumCols(); col++){
 				double actualValue = R.getValue(row, col);
@@ -108,7 +108,7 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void convertToLocalMatrixTest(){
 		LocalUserItemMatrix R = dataSet.convertToLocalUserItemMatrix();
-		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getMappedUserID(event.getUserID()), dataSet.getMappedProgramID(event.getProgramId()))).collect(Collectors.toSet());
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getMappedUserID(event.getUserID()), dataSet.getMappedProgramID(event.getProgramID()))).collect(Collectors.toSet());
 		for (int row = 0; row < R.getNumRows(); row++) {
 			for(int col = 0; col < R.getNumCols(); col++){
 				double actualValue = R.getValue(row, col);

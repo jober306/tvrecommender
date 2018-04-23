@@ -5,16 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import data.AbstractTVEvent;
 import data.Context;
 import data.EvaluationContext;
-import data.TVEvent;
 import data.TVProgram;
 import evaluator.information.Informative;
 import model.RecommendFunction;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
-public abstract class TVRecommender<T extends TVProgram, U extends TVEvent, R extends Recommendation> implements Informative{
+public abstract class TVRecommender<T extends TVProgram, U extends AbstractTVEvent<T>, R extends Recommendation> implements Informative{
 	
 	abstract protected Recommendations<R> recommendNormally(int userId, List<T> tvPrograms);
 

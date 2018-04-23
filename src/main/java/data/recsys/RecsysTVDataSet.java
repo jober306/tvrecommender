@@ -102,7 +102,7 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 	 */
 	public JavaRDD<Rating> convertToMLlibRatings() {
 		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(event
-				.getUserID(), event.getProgramId(), 1.0));
+				.getUserID(), event.getProgram().programId(), 1.0));
 		return ratings;
 	}
 
@@ -113,7 +113,7 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 	 *         to this data set.
 	 */
 	public DistributedUserItemMatrix convertToDistUserItemMatrix() {
-		final int numberOfTvShows = (int) getNumberOfTvShows();
+		final int numberOfTvShows = (int) getNumberOfTvShowIndexes();
 		JavaRDD<IndexedRow> ratingMatrix = eventsData
 				.mapToPair(
 						event -> new Tuple2<Integer, RecsysTVEvent>(
@@ -125,7 +125,7 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 							list.add(new Tuple2<Integer, Double>(
 									broadcastedIdMap.getValue()
 											.getProgramIDtoIDMap()
-											.get(event.getProgramId()), 1.0d));
+											.get(event.getProgram().programId()), 1.0d));
 							return list;
 						}, (list1, list2) -> {
 							list1.addAll(list2);
@@ -140,8 +140,8 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 	@Override
 	public LocalUserItemMatrix convertToLocalUserItemMatrix() {
 		final int numberOfUsers = (int)getNumberOfUsers();
-		final int numberOfTvShows = (int)getNumberOfTvShows();
-		List<MatrixEntry> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new MatrixEntry(broadcastedIdMap.getValue().getUserIDToIdMap().get(tvEvent.getUserID()), broadcastedIdMap.getValue().getProgramIDtoIDMap().get(tvEvent.getProgramId()), 1.0d)).distinct().collect();
+		final int numberOfTvShows = (int)getNumberOfTvShowIndexes();
+		List<MatrixEntry> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new MatrixEntry(broadcastedIdMap.getValue().getUserIDToIdMap().get(tvEvent.getUserID()), broadcastedIdMap.getValue().getProgramIDtoIDMap().get(tvEvent.getProgram().programId()), 1.0d)).distinct().collect();
 		Tuple3<int[], int[], double[]> matrixData = sparseMatrixFormatToCSCMatrixFormat(numberOfTvShows, tvShowIdUserIdEvent);
 		return new LocalUserItemMatrix(numberOfUsers, numberOfTvShows, matrixData._1(), matrixData._2(), matrixData._3());
 	}
@@ -155,12 +155,12 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 		JavaRDD<IndexedRow> contentMatrix = eventsData
 				.mapToPair(
 						tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent
-								.getProgramId(), tvEvent))
+								.getProgram().programId(), tvEvent))
 				.reduceByKey((tvEvent1, tvEvent2) -> tvEvent1)
 				.map(pair -> {
 					RecsysTVEvent event = pair._2();
 					int programIndex = broadcastedIdMap.value()
-							.getProgramIDtoIDMap().get(event.getProgramId());
+							.getProgramIDtoIDMap().get(event.getProgram().programId());
 					return new IndexedRow(programIndex, extractor
 							.extractFeaturesFromEvent(event));
 				});

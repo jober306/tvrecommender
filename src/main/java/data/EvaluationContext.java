@@ -3,10 +3,11 @@ package data;
 import static util.TVDataSetUtilities.createSubDataSet;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import scala.Tuple4;
@@ -17,14 +18,14 @@ import scala.Tuple4;
  * @author Jonathan Bergeron
  *
  */
-public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends Context<T, U>{
+public class EvaluationContext<T extends TVProgram, U extends AbstractTVEvent<T>> extends Context<T, U>{
 	
 	final LocalDateTime testStartTime;
 	final LocalDateTime testEndTime;
 	final TVDataSet<T, U> testSet;
 	final List<T> testPrograms;
 	
-	final Map<Integer, List<Integer>> groundTruth;
+	final Map<Integer, Set<T>> groundTruth;
 	
 	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events,
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
@@ -68,26 +69,26 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent> extends C
 		return this.testPrograms;
 	}
 	
-	public Map<Integer, List<Integer>> getGroundTruth(){
+	public Map<Integer, Set<T>> getGroundTruth(){
 		return this.groundTruth;
 	}
 	
-	private Map<Integer, List<Integer>> createGroundTruth(){
-		Map<Integer, List<Integer>> groundTruth = initializeGroundTruth();
+	private Map<Integer, Set<T>> createGroundTruth(){
+		Map<Integer, Set<T>> groundTruth = initializeGroundTruth();
 		testSet.getEventsData().collect().stream().forEach(event -> addEvent(groundTruth, event));
 		return groundTruth;
 	}
 	
-	private Map<Integer, List<Integer>> initializeGroundTruth(){
-		Map<Integer, List<Integer>> groundTruth = new HashMap<Integer, List<Integer>>();
+	private Map<Integer, Set<T>> initializeGroundTruth(){
+		Map<Integer, Set<T>> groundTruth = new HashMap<Integer, Set<T>>();
 		for(int userId : testSet.getAllUserIds()){
-			groundTruth.put(userId, new ArrayList<Integer>());
+			groundTruth.put(userId, new HashSet<T>());
 		}
 		return groundTruth;
 	}
 	
-	private void addEvent(Map<Integer, List<Integer>> groundTruth, TVEvent event){
-		groundTruth.get(event.getUserID()).add(event.getProgramId());
+	private void addEvent(Map<Integer, Set<T>> groundTruth, U event){
+		groundTruth.get(event.getUserID()).add(event.getProgram());
 	}
 	
 	private List<T> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){

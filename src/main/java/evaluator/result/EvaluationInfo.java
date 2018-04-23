@@ -6,11 +6,11 @@ import java.time.format.DateTimeFormatter;
 
 import data.EvaluationContext;
 import data.TVDataSetInfo;
-import evaluator.information.Information;
+import evaluator.information.AbstractInformation;
 import recommender.TVRecommender;
 import recommender.RecommenderInfo;
 
-public class EvaluationInfo implements Information, Serializable{
+public class EvaluationInfo extends AbstractInformation implements Serializable{
 	 
 	private static final long serialVersionUID = 1L;
 

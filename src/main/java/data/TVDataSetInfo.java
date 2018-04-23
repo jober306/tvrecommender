@@ -2,9 +2,9 @@ package data;
 
 import java.io.Serializable;
 
-import evaluator.information.Information;
+import evaluator.information.AbstractInformation;
 
-public class TVDataSetInfo implements Information, Serializable{
+public class TVDataSetInfo extends AbstractInformation implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	
