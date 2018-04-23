@@ -1,4 +1,4 @@
-package util.visualisation;
+package util.jfreechart;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import org.jfree.data.xy.XYSeriesCollection;
  * @author Jonathan Bergeron
  *
  */
-public class VisualisationUtilities {
+public class JFreeChartUtilities {
 	
 	/**
 	 * Method that creates a XYChart and saves it as jpeg.

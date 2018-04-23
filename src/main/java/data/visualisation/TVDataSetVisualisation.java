@@ -17,7 +17,7 @@ import data.TVProgram;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import util.function.SerializableFunction;
-import util.visualisation.VisualisationUtilities;
+import util.jfreechart.JFreeChartUtilities;
 
 public class TVDataSetVisualisation implements Serializable{
 	
@@ -30,7 +30,7 @@ public class TVDataSetVisualisation implements Serializable{
 		int width = 560;
 		int height = 370;
 		String outputPath = outputDir + "programCount.jpeg";
-	    VisualisationUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
+	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
 	public static void createAndSaveSortedChannelCountChart(TVDataSet<? extends TVProgram, ? extends AbstractTVEvent<?>> dataset, String outputDir){
@@ -40,7 +40,7 @@ public class TVDataSetVisualisation implements Serializable{
 		int width = 560;
 		int height = 370;
 		String outputPath = outputDir + "channelCount.jpeg";
-	    VisualisationUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
+	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
 	public static void createAndSaveSortedUserCountChart(TVDataSet<? extends TVProgram, ? extends AbstractTVEvent<?>> dataset, String outputDir){
@@ -50,7 +50,7 @@ public class TVDataSetVisualisation implements Serializable{
 		int width = 560;
 		int height = 370;
 		String outputPath = outputDir + "userCount.jpeg";
-	    VisualisationUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
+	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
 	public static <U extends AbstractTVEvent<?>> XYSeries getSortedCountSeriesOf(SerializableFunction<U, ?>  tvEventKeyMapper, TVDataSet<?, U> dataset, String seriesName){
