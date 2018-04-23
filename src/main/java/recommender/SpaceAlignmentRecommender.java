@@ -1,7 +1,6 @@
 package recommender;
 
 import static java.lang.Math.toIntExact;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static util.spark.mllib.MllibUtilities.invertVector;
@@ -9,7 +8,6 @@ import static util.spark.mllib.MllibUtilities.scalarProduct;
 import static util.spark.mllib.MllibUtilities.toDenseLocalVectors;
 import static util.spark.mllib.MllibUtilities.vectorToCoordinateMatrix;
 
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -171,7 +169,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends AbstractTV
 	
 	@Override
 	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<T> tvPrograms) {
-		List<Integer> itemIndexesSeenByUser = R.getItemIndexesSeenByUser(userId);
+		List<Integer> itemIndexesSeenByUser = ((EvaluationContext<T, U>) context).getGroundTruth().get(userId).stream().map(T::programId).collect(toList());
 		List<ScoredRecommendation> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
 				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed())
