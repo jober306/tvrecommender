@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.time.LocalTime;
 import java.time.chrono.ChronoLocalDateTime;
 
+/**
+ * Class that offers time utilities methods related to java 8 time.
+ * @author Jonathan Bergeron
+ *
+ */
 public class TimeUtilities implements Serializable{
 	
 	/**
