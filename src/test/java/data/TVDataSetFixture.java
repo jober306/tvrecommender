@@ -11,6 +11,8 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import model.data.TVEvent;
+import model.data.TVProgram;
 import util.spark.SparkUtilities;
 
 public class TVDataSetFixture {
@@ -18,7 +20,7 @@ public class TVDataSetFixture {
 	static protected JavaSparkContext sc;
 	
 	static protected JavaRDD<TVProgram> tvProgramsRDD;
-	static protected JavaRDD<TVEvent> tvEventsRDD;
+	static protected JavaRDD<TVEvent<TVProgram>> tvEventsRDD;
 	
 	static protected EPG<TVProgram> epg;
 	static protected EPG<TVProgram> emptyEPG;
@@ -44,12 +46,12 @@ public class TVDataSetFixture {
 	static protected TVProgram program46;
 	static protected TVProgram program45;
 	
-	static protected TVEvent event1;
-	static protected TVEvent event2;
-	static protected TVEvent event3;
-	static protected TVEvent event4;
-	static protected TVEvent event5;
-	static protected TVEvent event6;
+	static protected TVEvent<TVProgram> event1;
+	static protected TVEvent<TVProgram> event2;
+	static protected TVEvent<TVProgram> event3;
+	static protected TVEvent<TVProgram> event4;
+	static protected TVEvent<TVProgram> event5;
+	static protected TVEvent<TVProgram> event6;
 	
 	@BeforeClass
 	public static void createDatatSet() {
@@ -107,17 +109,17 @@ public class TVDataSetFixture {
 	
 	private static void initializeTVEvents(){
 		//watch time/program id/channel id/user id/event/duration
-		event1 = new TVEvent(baseTime.plusMinutes(15), program11, 1, 0, 5);
-		event2 = new TVEvent(baseTime.plusMinutes(110), program12, 2, 1, 10);
-		event3 = new TVEvent(baseTime.plusMinutes(105), program25, 2, 2, 15);
-		event4 = new TVEvent(baseTime.plusHours(1), program34, 2, 3, 15);
-		event5 = new TVEvent(baseTime.plusMinutes(135), program45, 3, 4, 5);
-		event6 = new TVEvent(baseTime, program23,1,5, 15);
+		event1 = new TVEvent<>(baseTime.plusMinutes(15), program11, 1, 0, 5);
+		event2 = new TVEvent<>(baseTime.plusMinutes(110), program12, 2, 1, 10);
+		event3 = new TVEvent<>(baseTime.plusMinutes(105), program25, 2, 2, 15);
+		event4 = new TVEvent<>(baseTime.plusHours(1), program34, 2, 3, 15);
+		event5 = new TVEvent<>(baseTime.plusMinutes(135), program45, 3, 4, 5);
+		event6 = new TVEvent<>(baseTime, program23,1,5, 15);
 	}
 	
 	
 	static void initializeTVEventsRDD() {
-		List<TVEvent> tvPrograms = Arrays.asList(event1, event2, event3, event4, event5, event6);
+		List<TVEvent<TVProgram>> tvPrograms = Arrays.asList(event1, event2, event3, event4, event5, event6);
 		tvEventsRDD = SparkUtilities.elementsToJavaRDD(tvPrograms, sc);
 	}
 	

@@ -1,4 +1,4 @@
-package evaluator.information;
+package model.information;
 
 public interface Informative {
 	

@@ -9,6 +9,8 @@ import java.util.List;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
+import model.data.TVProgram;
+
 /**
  * Abstract class that represents an electronic programming guide (EPG). It
  * contains a JavaRDD of the given TVProgram child class.

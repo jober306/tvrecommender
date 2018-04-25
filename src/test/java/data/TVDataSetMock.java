@@ -6,15 +6,17 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
-import data.feature.FeatureExtractor;
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
+import model.data.TVEvent;
+import model.data.TVProgram;
+import model.feature.FeatureExtractor;
+import model.matrix.DistributedUserItemMatrix;
+import model.matrix.LocalUserItemMatrix;
 
-public class TVDataSetMock extends TVDataSet<TVProgram, TVEvent> {
+public class TVDataSetMock extends TVDataSet<TVProgram, TVEvent<TVProgram>> {
 
 	private static final long serialVersionUID = 1L;
 
-	public TVDataSetMock(JavaRDD<TVEvent> eventsData, JavaSparkContext sc) {
+	public TVDataSetMock(JavaRDD<TVEvent<TVProgram>> eventsData, JavaSparkContext sc) {
 		super(eventsData, sc);
 	}
 
@@ -37,7 +39,7 @@ public class TVDataSetMock extends TVDataSet<TVProgram, TVEvent> {
 	}
 
 	@Override
-	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? extends TVProgram, TVEvent> extractor) {
+	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? extends TVProgram, TVEvent<TVProgram>> extractor) {
 		// TODO Auto-generated method stub
 		return null;
 	}

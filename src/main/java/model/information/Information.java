@@ -1,4 +1,4 @@
-package evaluator.information;
+package model.information;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;

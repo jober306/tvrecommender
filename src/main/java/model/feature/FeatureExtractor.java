@@ -1,11 +1,11 @@
-package data.feature;
+package model.feature;
 
 import java.io.Serializable;
 
 import org.apache.spark.mllib.linalg.Vector;
 
-import data.AbstractTVEvent;
-import data.TVProgram;
+import model.data.TVEvent;
+import model.data.TVProgram;
 
 /**
  * Abstract class that represents a feature extractor, the class extending it
@@ -18,7 +18,7 @@ import data.TVProgram;
  * @param <U>
  *            The tv event class from which the features will be extracted.
  */
-public abstract class FeatureExtractor<T extends TVProgram, U extends AbstractTVEvent<T>>
+public abstract class FeatureExtractor<T extends TVProgram, U extends TVEvent<?>>
 		implements Serializable {
 
 	private static final long serialVersionUID = 1L;

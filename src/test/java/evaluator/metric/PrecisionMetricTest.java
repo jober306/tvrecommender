@@ -9,7 +9,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.spark_project.guava.collect.Sets;
 
-import data.TVProgram;
+import model.data.TVProgram;
 
 public class PrecisionMetricTest extends RecommendationsFixture{
 

@@ -1,11 +1,11 @@
 package model.tensor;
 
-import data.AbstractTVEvent;
 import data.TVDataSet;
-import data.TVProgram;
-import data.feature.FeatureExtractor;
+import model.data.TVEvent;
+import model.data.TVProgram;
+import model.feature.FeatureExtractor;
 
-public abstract class UserPreferenceTensorCalculator<T extends TVProgram, U extends AbstractTVEvent<T>> {
+public abstract class UserPreferenceTensorCalculator<T extends TVProgram, U extends TVEvent<T>> {
 	
-	abstract public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<T, U> dataSet, FeatureExtractor<T,U> extractor, boolean anyUser, boolean anyProgram, boolean anySlot);
+	abstract public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<T, U> dataSet, FeatureExtractor<? super T, ? super U> extractor, boolean anyUser, boolean anyProgram, boolean anySlot);
 }

@@ -17,11 +17,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import com.google.common.collect.Sets;
 
-import data.AbstractTVEvent;
 import data.EPG;
 import data.EvaluationContext;
 import data.TVDataSet;
-import data.TVProgram;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -34,6 +32,8 @@ import evaluator.metric.Recall;
 import evaluator.result.EvaluationInfo;
 import evaluator.result.EvaluationResult;
 import evaluator.result.MetricResults;
+import model.data.TVEvent;
+import model.data.TVProgram;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
@@ -62,7 +62,7 @@ import util.time.DateTimeRange;
  * @param <R>
  * 			  The type of recommendations made by the recommender.
  */
-public class TVRecommenderEvaluator<T extends TVProgram, U extends AbstractTVEvent<T>, R extends Recommendation> {
+public class TVRecommenderEvaluator<T extends TVProgram, U extends TVEvent<T>, R extends Recommendation> {
 
 	/**
 	 * The tv recommender to evaluate.

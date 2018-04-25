@@ -4,12 +4,15 @@ import static util.TVDataSetUtilities.createSubDataSet;
 
 import java.time.LocalDateTime;
 
+import model.data.TVEvent;
+import model.data.TVProgram;
+
 /**
  * Class that represents a context in which a recommender lives.
  * @author Jonathan Bergeron
  *
  */
-public class Context<T extends TVProgram, U extends AbstractTVEvent<T>>{
+public class Context<T extends TVProgram, U extends TVEvent<T>>{
 	
 	/**
 	 * The electronic programming guide.

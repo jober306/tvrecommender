@@ -1,10 +1,8 @@
-package model;
+package model.recommendation;
 
 import java.util.List;
 
-import data.TVProgram;
-import model.recommendation.Recommendation;
-import model.recommendation.Recommendations;
+import model.data.TVProgram;
 
 @FunctionalInterface
 public interface RecommendFunction<T extends TVProgram, R extends Recommendation> {

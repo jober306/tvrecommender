@@ -2,7 +2,7 @@ package evaluator.metric;
 
 import java.util.Set;
 
-import data.TVProgram;
+import model.data.TVProgram;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 

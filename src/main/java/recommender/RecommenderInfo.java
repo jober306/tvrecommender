@@ -3,7 +3,7 @@ package recommender;
 import java.io.Serializable;
 import java.util.Map;
 
-import evaluator.information.AbstractInformation;
+import model.information.AbstractInformation;
 
 public final class RecommenderInfo extends AbstractInformation implements Serializable{
 	

@@ -1,4 +1,4 @@
-package evaluator.information;
+package model.information;
 
 import java.io.FileInputStream;
 import java.io.IOException;

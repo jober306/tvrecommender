@@ -12,6 +12,9 @@ import org.junit.Test;
 
 import com.google.common.collect.Sets;
 
+import model.data.TVEvent;
+import model.data.TVProgram;
+
 
 public class TVDataSetTest extends TVDataSetFixture{
 	
@@ -32,7 +35,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void containsDeepCopyOfEventTest(){
-		TVEvent deepCopyEvent1 = new TVEvent(event1.getWatchTime(), event1.getProgram(), event1.getUserID(), event1.getEventID(), event1.getDuration());
+		TVEvent<TVProgram> deepCopyEvent1 = new TVEvent<>(event1.getWatchTime(), event1.getProgram(), event1.getUserID(), event1.getEventID(), event1.getDuration());
 		assertTrue(dataset.contains(deepCopyEvent1));
 	}
 	
@@ -78,26 +81,26 @@ public class TVDataSetTest extends TVDataSetFixture{
 	@Test
 	public void splitValidDatasetIntersectionIsEmptyTest(){
 		double[] ratios = { 0.17, 0.43, 0.40 };
-		Set<TVDataSet<TVProgram, TVEvent>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
-		JavaRDD<TVEvent> intersection = splittedDataSet.stream().map(TVDataSet::getEventsData).reduce(JavaRDD::intersection).get();
+		Set<TVDataSet<TVProgram, TVEvent<TVProgram>>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
+		JavaRDD<TVEvent<TVProgram>> intersection = splittedDataSet.stream().map(TVDataSet::getEventsData).reduce(JavaRDD::intersection).get();
 		assertTrue(intersection.isEmpty());
 	}
 	
 	@Test
 	public void splitValidDatasetUnionIsOriginalDatasetTest(){
 		double[] ratios = { 0.17, 0.43, 0.40 };
-		Set<TVDataSet<TVProgram, TVEvent>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
-		JavaRDD<TVEvent> unions = splittedDataSet.stream().map(TVDataSet::getEventsData).reduce(JavaRDD::union).get();
-		Set<TVEvent> expectedTVEvents = Sets.newHashSet(Arrays.asList(event1, event2, event3, event4, event5, event6));
-		Set<TVEvent> actualTVEvents = Sets.newHashSet(unions.collect());
+		Set<TVDataSet<TVProgram, TVEvent<TVProgram>>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
+		JavaRDD<TVEvent<TVProgram>> unions = splittedDataSet.stream().map(TVDataSet::getEventsData).reduce(JavaRDD::union).get();
+		Set<TVEvent<TVProgram>> expectedTVEvents = Sets.newHashSet(Arrays.asList(event1, event2, event3, event4, event5, event6));
+		Set<TVEvent<TVProgram>> actualTVEvents = Sets.newHashSet(unions.collect());
 		assertEquals(expectedTVEvents, actualTVEvents);
 	}
 	
 	@Test
 	public void splitEmptyDatasetAllShouldBeEmptyTest(){
 		double[] ratios = { 0.1, 0.5, 0.4 };
-		Set<TVDataSet<TVProgram, TVEvent>> splittedDataSets = emptyDataset.splitTVEventsRandomly(ratios);
-		for(TVDataSet<TVProgram, TVEvent> splittedDataset : splittedDataSets){
+		Set<TVDataSet<TVProgram, TVEvent<TVProgram>>> splittedDataSets = emptyDataset.splitTVEventsRandomly(ratios);
+		for(TVDataSet<TVProgram, TVEvent<TVProgram>> splittedDataset : splittedDataSets){
 			assertTrue(splittedDataset.isEmpty());
 		}
 	}

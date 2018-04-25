@@ -1,4 +1,4 @@
-package data;
+package model.data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  *
  * @param <T> The type of the tv program watched.
  */
-public abstract class AbstractTVEvent<T extends TVProgram> implements Serializable{
+public class TVEvent<T extends TVProgram> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 
@@ -42,7 +42,7 @@ public abstract class AbstractTVEvent<T extends TVProgram> implements Serializab
 	 */
 	protected final int duration;
 
-	public AbstractTVEvent(LocalDateTime watchTime, T program, int userID, int eventId, int duration) {
+	public TVEvent(LocalDateTime watchTime, T program, int userID, int eventId, int duration) {
 		this.watchTime = watchTime;
 		this.program = program;
 		this.userID = userID;
@@ -109,10 +109,10 @@ public abstract class AbstractTVEvent<T extends TVProgram> implements Serializab
 		if (this == other) {
 			return true;
 		}
-		if (!(other instanceof AbstractTVEvent<?>)) {
+		if (!(other instanceof TVEvent<?>)) {
 			return false;
 		}
-		AbstractTVEvent<?> tvEvent = (AbstractTVEvent<?>) other;
+		TVEvent<?> tvEvent = (TVEvent<?>) other;
 		return new EqualsBuilder().append(eventID, tvEvent.eventID).isEquals();
 	}
 

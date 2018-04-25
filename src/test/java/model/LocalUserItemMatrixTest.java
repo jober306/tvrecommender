@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
+import model.matrix.LocalUserItemMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 
 import org.apache.spark.mllib.linalg.Matrix;

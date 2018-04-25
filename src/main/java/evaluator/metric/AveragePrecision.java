@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.List;
 import java.util.Set;
 
-import data.TVProgram;
+import model.data.TVProgram;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 

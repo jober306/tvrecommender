@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import model.data.TVProgram;
+
 public class EPGTest extends TVDataSetFixture{
 
 	@Test

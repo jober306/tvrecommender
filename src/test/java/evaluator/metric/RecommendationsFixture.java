@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 
-import data.TVProgram;
+import model.data.TVProgram;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 

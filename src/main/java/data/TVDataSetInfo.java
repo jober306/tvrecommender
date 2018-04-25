@@ -2,7 +2,7 @@ package data;
 
 import java.io.Serializable;
 
-import evaluator.information.AbstractInformation;
+import model.information.AbstractInformation;
 
 public class TVDataSetInfo extends AbstractInformation implements Serializable{
 	

@@ -18,10 +18,12 @@ import org.apache.spark.mllib.recommendation.Rating;
 
 import com.google.common.collect.Sets;
 
-import data.feature.FeatureExtractor;
-import evaluator.information.Informative;
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
+import model.data.TVEvent;
+import model.data.TVProgram;
+import model.feature.FeatureExtractor;
+import model.information.Informative;
+import model.matrix.DistributedUserItemMatrix;
+import model.matrix.LocalUserItemMatrix;
 import util.Lazy;
 import util.spark.SparkUtilities;
 import util.time.LocalDateTimeDTO;
@@ -36,7 +38,7 @@ import util.time.LocalDateTimeDTO;
  *            A child class of the abstract class TVEvent. The RDD will be of
  *            this class.
  */
-public abstract class TVDataSet<T extends TVProgram, U extends AbstractTVEvent<T>> implements Serializable, Informative {
+public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> implements Serializable, Informative {
 	
 	abstract public void close();
 	
@@ -206,15 +208,15 @@ public abstract class TVDataSet<T extends TVProgram, U extends AbstractTVEvent<T
 	}
 	
 	private Set<Integer> initAllUserIds(){
-		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getUserID).distinct().collect());
+		return Sets.newHashSet(eventsData.map(TVEvent::getUserID).distinct().collect());
 	}
 
 	public Set<Integer> getAllProgramIds() {
-		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getProgramID).distinct().collect());
+		return Sets.newHashSet(eventsData.map(TVEvent::getProgramID).distinct().collect());
 	}
 	
 	private Set<Integer> initAllProgramIds(){
-		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getProgramID).distinct().collect());
+		return Sets.newHashSet(eventsData.map(TVEvent::getProgramID).distinct().collect());
 	}
 
 	public Set<Integer> getAllEventIds() {
@@ -222,7 +224,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends AbstractTVEvent<T
 	}
 	
 	public Set<Integer> initAllEventIds(){
-		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getEventID).distinct().collect());
+		return Sets.newHashSet(eventsData.map(TVEvent::getEventID).distinct().collect());
 	}
 
 	public Set<Integer> getAllChannelIds() {
@@ -230,24 +232,24 @@ public abstract class TVDataSet<T extends TVProgram, U extends AbstractTVEvent<T
 	}
 	
 	public Set<Integer> initAllChannelIds(){
-		return Sets.newHashSet(eventsData.map(AbstractTVEvent::getChannelId).distinct().collect());
+		return Sets.newHashSet(eventsData.map(TVEvent::getChannelId).distinct().collect());
 	}
 
 	private int initNumberOfUsers(){
-		return (int)eventsData.map(AbstractTVEvent::getUserID).distinct().count();
+		return (int)eventsData.map(TVEvent::getUserID).distinct().count();
 	}
 
 	private int initNumberOfTVShows(){
-		return (int)eventsData.map(AbstractTVEvent::getProgram).distinct().count();
+		return (int)eventsData.map(TVEvent::getProgram).distinct().count();
 	}
 	
 	private int initNumberOfTVShowIndexes(){
-		return (int) eventsData.map(AbstractTVEvent::getProgramID).distinct().count();
+		return (int) eventsData.map(TVEvent::getProgramID).distinct().count();
 	}
 	
 	private LocalDateTime initStartTime(){
 		return eventsData
-				.map(AbstractTVEvent::getWatchTime)
+				.map(TVEvent::getWatchTime)
 				.map(LocalDateTimeDTO::new)
 				.reduce(LocalDateTimeDTO::min)
 				.toLocalDateTime();
@@ -255,7 +257,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends AbstractTVEvent<T
 	
 	private LocalDateTime initEndTime(){
 		return eventsData
-				.map(AbstractTVEvent::getWatchTime)
+				.map(TVEvent::getWatchTime)
 				.map(LocalDateTimeDTO::new)
 				.reduce(LocalDateTimeDTO::max)
 				.toLocalDateTime();

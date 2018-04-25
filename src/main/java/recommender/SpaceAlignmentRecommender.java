@@ -25,12 +25,12 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.distributed.BlockMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 
-import data.AbstractTVEvent;
 import data.Context;
 import data.EvaluationContext;
-import data.TVProgram;
-import data.feature.FeatureExtractor;
-import model.UserItemMatrix;
+import model.data.TVEvent;
+import model.data.TVProgram;
+import model.feature.FeatureExtractor;
+import model.matrix.UserItemMatrix;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
 import util.spark.mllib.MllibUtilities;
@@ -45,7 +45,7 @@ import util.spark.mllib.MllibUtilities;
  * 
  * @author Jonathan Bergeron
  */
-public class SpaceAlignmentRecommender<T extends TVProgram, U extends AbstractTVEvent<T>>
+public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>>
 		extends TVRecommender<T, U, ScoredRecommendation> {
 	
 	/**

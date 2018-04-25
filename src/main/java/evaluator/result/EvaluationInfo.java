@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 
 import data.EvaluationContext;
 import data.TVDataSetInfo;
-import evaluator.information.AbstractInformation;
+import model.information.AbstractInformation;
 import recommender.TVRecommender;
 import recommender.RecommenderInfo;
 

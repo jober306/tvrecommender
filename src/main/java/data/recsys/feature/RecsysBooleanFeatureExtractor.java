@@ -11,10 +11,10 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 import scala.Tuple2;
-import data.feature.FeatureExtractor;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.feature.FeatureExtractor;
 
 /**
  * A feature extractor for the recsys data set. It transforms a tv program or tv

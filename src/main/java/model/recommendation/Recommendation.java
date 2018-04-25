@@ -1,6 +1,6 @@
 package model.recommendation;
 
-import data.TVProgram;
+import model.data.TVProgram;
 
 /**
  * Class that represents a recommendation made by a recommender.

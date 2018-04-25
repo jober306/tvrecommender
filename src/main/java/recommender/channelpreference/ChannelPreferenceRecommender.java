@@ -15,10 +15,10 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 import data.Context;
-import data.feature.ChannelFeatureExtractor;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.tensor.RecsysUserPreferenceTensorCalculator;
+import model.feature.ChannelFeatureExtractor;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
@@ -56,7 +56,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<RecsysT
 	}
 	
 	private UserPreferenceTensorCollection calculateUserPrefCollection(){
-		ChannelFeatureExtractor<RecsysTVProgram, RecsysTVEvent> channelExtractor = new ChannelFeatureExtractor<>();
+		ChannelFeatureExtractor channelExtractor = new ChannelFeatureExtractor();
 		RecsysUserPreferenceTensorCalculator userPrefCalculator = new RecsysUserPreferenceTensorCalculator();
 		return userPrefCalculator.calculateUserPreferenceTensorForDataSet(context.getTrainingSet(), channelExtractor, anyUsers, false, anySlots);		
 	}

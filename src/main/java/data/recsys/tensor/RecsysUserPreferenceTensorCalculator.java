@@ -4,9 +4,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import data.TVDataSet;
-import data.feature.FeatureExtractor;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.feature.FeatureExtractor;
 import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensor;
 import model.tensor.UserPreferenceTensorCalculator;
@@ -27,7 +27,7 @@ public class RecsysUserPreferenceTensorCalculator extends UserPreferenceTensorCa
 	 * @param dataSet A tv data set of given tv envent type.
 	 * @return The user preference tensor collection.
 	 */
-	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<RecsysTVProgram, RecsysTVEvent> dataSet, FeatureExtractor<RecsysTVProgram,RecsysTVEvent> extractor, boolean anyUser, boolean anyProgram, boolean anySlot){
+	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<RecsysTVProgram, RecsysTVEvent> dataSet, FeatureExtractor<? super RecsysTVProgram, ? super RecsysTVEvent> extractor, boolean anyUser, boolean anyProgram, boolean anySlot){
 		UserPreferenceTensorCollectionAccumulator acc = new UserPreferenceTensorCollectionAccumulator(anyUser, anyProgram, extractor.extractedVectorSize(), anySlot);
 		JavaSparkContext.toSparkContext(dataSet.getJavaSparkContext()).register(acc);
 		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.getEventsData().map(event -> {

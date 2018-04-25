@@ -1,4 +1,4 @@
-package model;
+package model.matrix;
 
 import java.io.Serializable;
 import java.util.ArrayList;

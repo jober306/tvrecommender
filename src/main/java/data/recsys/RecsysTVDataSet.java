@@ -19,13 +19,13 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.apache.spark.mllib.recommendation.Rating;
 
 import data.TVDataSet;
-import data.TVProgram;
-import data.feature.FeatureExtractor;
 import data.recsys.mapper.MapID;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
+import model.data.TVProgram;
+import model.feature.FeatureExtractor;
+import model.matrix.DistributedUserItemMatrix;
+import model.matrix.LocalUserItemMatrix;
 import scala.Tuple2;
 import scala.Tuple3;
 

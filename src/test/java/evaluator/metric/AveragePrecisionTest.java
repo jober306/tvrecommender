@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import data.TVProgram;
 import jersey.repackaged.com.google.common.collect.Sets;
+import model.data.TVProgram;
 
 public class AveragePrecisionTest extends RecommendationsFixture{
 	

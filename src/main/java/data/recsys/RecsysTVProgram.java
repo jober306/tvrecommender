@@ -5,8 +5,8 @@ import static data.recsys.utility.RecsysUtilities.getStartTimeFromWeekAndSlot;
 
 import java.io.Serializable;
 
-import data.TVProgram;
 import data.recsys.utility.RecsysUtilities;
+import model.data.TVProgram;
 
 /**
  * Class that represents a tv program from the recsys data set.

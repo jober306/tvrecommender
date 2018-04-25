@@ -5,7 +5,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 
-import evaluator.information.Information;
+import model.information.Information;
 
 /**
  * Class that encapsulates results of an evaluation for a particular metric.

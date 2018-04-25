@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 import org.apache.spark.mllib.linalg.Matrix;
 
 import algorithm.QuickSelect;
-import data.AbstractTVEvent;
 import data.Context;
 import data.EPG;
 import data.TVDataSet;
-import data.TVProgram;
-import model.UserItemMatrix;
+import model.data.TVEvent;
+import model.data.TVProgram;
+import model.matrix.UserItemMatrix;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
 import model.similarity.NormalizedCosineSimilarity;
@@ -25,7 +25,7 @@ import scala.Tuple2;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender<T extends TVProgram, U extends AbstractTVEvent<T>>
+public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent<T>>
 		extends TVRecommender<T, U, ScoredRecommendation> {
 
 	/**

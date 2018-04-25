@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import model.matrix.DistributedUserItemMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 import util.spark.SparkUtilities;
 

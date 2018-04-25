@@ -5,8 +5,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import data.EvaluationContext;
-import data.TVProgram;
 import evaluator.result.MetricResults;
+import model.data.TVProgram;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import util.collections.StreamUtilities;

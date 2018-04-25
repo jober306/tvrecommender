@@ -9,8 +9,8 @@ import java.util.List;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import data.AbstractTVEvent;
 import data.recsys.utility.RecsysUtilities;
+import model.data.TVEvent;
 
 /**
  * Class modeling a tv event of the recsys dataset.
@@ -18,7 +18,7 @@ import data.recsys.utility.RecsysUtilities;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVEvent extends AbstractTVEvent<RecsysTVProgram> implements Serializable {
+public class RecsysTVEvent extends TVEvent<RecsysTVProgram> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

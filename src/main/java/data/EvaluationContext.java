@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import model.data.TVEvent;
+import model.data.TVProgram;
 import scala.Tuple4;
 
 /**
@@ -18,7 +20,7 @@ import scala.Tuple4;
  * @author Jonathan Bergeron
  *
  */
-public class EvaluationContext<T extends TVProgram, U extends AbstractTVEvent<T>> extends Context<T, U>{
+public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extends Context<T, U>{
 	
 	final LocalDateTime testStartTime;
 	final LocalDateTime testEndTime;

@@ -1,12 +1,12 @@
-package data.feature;
+package model.feature;
 
 import java.io.Serializable;
 
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
-import data.AbstractTVEvent;
-import data.TVProgram;
+import model.data.TVEvent;
+import model.data.TVProgram;
 
 /**
  * A feature extractor class that returns the channel as feature vector.
@@ -15,7 +15,7 @@ import data.TVProgram;
  * @param <T> A child class of the tv program class.
  * @param <U> A child class of the tv event class.
  */
-public class ChannelFeatureExtractor<T extends TVProgram, U extends AbstractTVEvent<T>> extends FeatureExtractor<T,U> implements Serializable{
+public class ChannelFeatureExtractor extends FeatureExtractor<TVProgram, TVEvent<?>> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -27,7 +27,7 @@ public class ChannelFeatureExtractor<T extends TVProgram, U extends AbstractTVEv
 	 * @return A vector containing the channel id. 
 	 */
 	@Override
-	public Vector extractFeaturesFromProgram(T program) {
+	public Vector extractFeaturesFromProgram(TVProgram program) {
 		return Vectors.dense(new double[]{program.channelId()});
 	}
 	
@@ -37,7 +37,7 @@ public class ChannelFeatureExtractor<T extends TVProgram, U extends AbstractTVEv
 	 * @return A vector containing the channel id. 
 	 */
 	@Override
-	public Vector extractFeaturesFromEvent(U event) {
+	public Vector extractFeaturesFromEvent(TVEvent<?> event) {
 		return Vectors.dense(new double[]{event.getChannelId()});
 	}
 	

@@ -22,8 +22,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import data.recsys.feature.RecsysFeatureExtractor;
-import model.DistributedUserItemMatrix;
-import model.LocalUserItemMatrix;
+import model.matrix.DistributedUserItemMatrix;
+import model.matrix.LocalUserItemMatrix;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
 
