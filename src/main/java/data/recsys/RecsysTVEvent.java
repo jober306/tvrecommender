@@ -11,6 +11,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import data.recsys.utility.RecsysUtilities;
 import model.data.TVEvent;
+import model.data.User;
 
 /**
  * Class modeling a tv event of the recsys dataset.
@@ -18,7 +19,7 @@ import model.data.TVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVEvent extends TVEvent<RecsysTVProgram> implements Serializable {
+public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -63,7 +64,7 @@ public class RecsysTVEvent extends TVEvent<RecsysTVProgram> implements Serializa
 	 */
 	public RecsysTVEvent(int channelID, short slot, short week, byte genreID,
 			byte subgenreID, int userID, int programID, int eventID, int duration) {
-		super(getStartTimeFromWeekAndSlot(week, slot), new RecsysTVProgram(week, slot, channelID, programID, genreID, subgenreID), userID, eventID, duration);
+		super(getStartTimeFromWeekAndSlot(week, slot), new RecsysTVProgram(week, slot, channelID, programID, genreID, subgenreID), new User(userID), eventID, duration);
 		this.slot = slot;
 		this.week = week;
 		this.genreID = genreID;
@@ -124,7 +125,7 @@ public class RecsysTVEvent extends TVEvent<RecsysTVProgram> implements Serializa
 				.append(week, tvEvent.getWeek())
 				.append(genreID, tvEvent.getGenreID())
 				.append(subgenreID, tvEvent.getSubgenreID())
-				.append(userID, tvEvent.getUserID())
+				.append(user.id(), tvEvent.getUserID())
 				.append(program, tvEvent.getProgram())
 				.append(eventID, tvEvent.getEventID())
 				.append(duration, tvEvent.getDuration()).isEquals();
@@ -136,7 +137,7 @@ public class RecsysTVEvent extends TVEvent<RecsysTVProgram> implements Serializa
 	 */
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(userID).append(eventID).hashCode();
+		return new HashCodeBuilder().append(user.id()).append(eventID).hashCode();
 	}
 
 	/**
@@ -151,7 +152,7 @@ public class RecsysTVEvent extends TVEvent<RecsysTVProgram> implements Serializa
 		tvEventStr += "Week: " + week + "\n";
 		tvEventStr += "Genre ID: " + RecsysUtilities.getGenreName(genreID) + "\n";
 		tvEventStr += "Subgenre ID" + RecsysUtilities.getSubgenreName(genreID, subgenreID) + "\n";
-		tvEventStr += "User ID: " + userID + "\n";
+		tvEventStr += "User ID: " + user.id() + "\n";
 		tvEventStr += "Event ID: " + eventID + "\n";
 		tvEventStr += "Duration: " + duration + "\n";
 		return tvEventStr;

@@ -14,7 +14,6 @@ import data.TVDataSet;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import model.data.TVEvent;
-import model.data.TVProgram;
 import util.function.SerializableFunction;
 import util.jfreechart.JFreeChartUtilities;
 
@@ -22,7 +21,7 @@ public class TVDataSetVisualisation implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 
-	public static void createAndSaveSortedProgramIdCountChart(TVDataSet<? extends TVProgram, ? extends TVEvent<?>> dataset, String outputDir){
+	public static <E extends TVEvent<?, ?>> void createAndSaveSortedProgramIdCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
 		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getProgramID, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Nombre de vues";
@@ -32,7 +31,7 @@ public class TVDataSetVisualisation implements Serializable{
 	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
-	public static void createAndSaveSortedChannelCountChart(TVDataSet<? extends TVProgram, ? extends TVEvent<?>> dataset, String outputDir){
+	public static <E extends TVEvent<?, ?>> void createAndSaveSortedChannelCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
 		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getChannelId, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Number of Views";
@@ -42,7 +41,7 @@ public class TVDataSetVisualisation implements Serializable{
 	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
-	public static void createAndSaveSortedUserCountChart(TVDataSet<? extends TVProgram, ? extends TVEvent<?>> dataset, String outputDir){
+	public static <E extends TVEvent<?, ?>> void createAndSaveSortedUserCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
 		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getUserID, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Number of Views";
@@ -52,7 +51,7 @@ public class TVDataSetVisualisation implements Serializable{
 	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
 	}
 	
-	public static <U extends TVEvent<?>> XYSeries getSortedCountSeriesOf(SerializableFunction<U, ?>  tvEventKeyMapper, TVDataSet<?, U> dataset, String seriesName){
+	public static <E extends TVEvent<?, ?>> XYSeries getSortedCountSeriesOf(SerializableFunction<? super E, ?>  tvEventKeyMapper, TVDataSet<?, ?, E> dataset, String seriesName){
 		Map<?, Long> programCount = dataset.getEventsData()
 	  	     .map(tvEventKeyMapper::apply)
 	  	     .countByValue();

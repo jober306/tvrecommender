@@ -12,6 +12,7 @@ import data.EPG;
 import data.TVDataSet;
 import model.data.TVEvent;
 import model.data.TVProgram;
+import model.data.User;
 import model.matrix.UserItemMatrix;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
@@ -25,18 +26,18 @@ import scala.Tuple2;
  * @author Jonathan Bergeron
  *
  */
-public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent<T>>
-		extends TVRecommender<T, U, ScoredRecommendation> {
+public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>>
+		extends TVRecommender<U, P, E, ScoredRecommendation> {
 
 	/**
 	 * The electronic programming guide used by this recommender.
 	 */
-	EPG<T> epg;
+	EPG<P> epg;
 
 	/**
 	 * The tv data set on which the matrix M prime will be build.
 	 */
-	TVDataSet<T, U> tvDataset;
+	TVDataSet<U, P, E> tvDataset;
 
 	/**
 	 * The user item matrix.
@@ -60,7 +61,7 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent<T>>
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(Context<T, U> context, int numberOfRecommendations) {
+	public ItemBasedRecommender(Context<U, P, E> context, int numberOfRecommendations) {
 		super(context, numberOfRecommendations);
 	}
 
@@ -116,13 +117,13 @@ public class ItemBasedRecommender<T extends TVProgram, U extends TVEvent<T>>
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<P> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<T> tvPrograms) {
+	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<P> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

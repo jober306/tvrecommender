@@ -10,9 +10,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * A class that represents an abstract tv event.
  * @author Jonathan Bergeron 
  *
- * @param <T> The type of the tv program watched.
+ * @param <P> The type of the tv program watched.
  */
-public class TVEvent<T extends TVProgram> implements Serializable{
+public class TVEvent<U extends User, P extends TVProgram> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 
@@ -22,14 +22,14 @@ public class TVEvent<T extends TVProgram> implements Serializable{
 	protected final LocalDateTime watchTime;
 
 	/**
-	 * The id of the watched program.
+	 * The watched program.
 	 */
-	protected final T program;
+	protected final P program;
 
 	/**
-	 * user ID: it is the id of the user.
+	 * The user associated with this event.
 	 */
-	protected final int userID;
+	protected final U user;
 
 	/**
 	 * event ID: it is the id of the particular instance of a program. It is
@@ -42,10 +42,10 @@ public class TVEvent<T extends TVProgram> implements Serializable{
 	 */
 	protected final int duration;
 
-	public TVEvent(LocalDateTime watchTime, T program, int userID, int eventId, int duration) {
+	public TVEvent(LocalDateTime watchTime, P program, U user, int eventId, int duration) {
 		this.watchTime = watchTime;
 		this.program = program;
-		this.userID = userID;
+		this.user = user;
 		this.eventID = eventId;
 		this.duration = duration;
 	}
@@ -62,7 +62,7 @@ public class TVEvent<T extends TVProgram> implements Serializable{
 	/**
 	 * @return the programId
 	 */
-	public T getProgram() {
+	public P getProgram() {
 		return program;
 	}
 	
@@ -76,14 +76,18 @@ public class TVEvent<T extends TVProgram> implements Serializable{
 	public int getChannelId() {
 		return program.channelId();
 	}
-
+	
+	public U getUser(){
+		return user;
+	}
+	
 	/**
 	 * Getter for the user parameter.
 	 * 
 	 * @return The user Id.
 	 */
 	public int getUserID() {
-		return userID;
+		return user.id();
 	}
 
 	/**
@@ -109,10 +113,10 @@ public class TVEvent<T extends TVProgram> implements Serializable{
 		if (this == other) {
 			return true;
 		}
-		if (!(other instanceof TVEvent<?>)) {
+		if (!(other instanceof TVEvent<?,?>)) {
 			return false;
 		}
-		TVEvent<?> tvEvent = (TVEvent<?>) other;
+		TVEvent<?,?> tvEvent = (TVEvent<?,?>) other;
 		return new EqualsBuilder().append(eventID, tvEvent.eventID).isEquals();
 	}
 

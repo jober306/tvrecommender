@@ -35,7 +35,7 @@ public class EvaluationInfo extends AbstractInformation implements Serializable{
 		this.testEndTime = testEndTime;
 	}
 	
-	public EvaluationInfo(TVRecommender<?,?,?> recommender, EvaluationContext<?, ?> context){
+	public EvaluationInfo(TVRecommender<?, ?, ?, ?> recommender, EvaluationContext<?, ?, ?> context){
 		this(recommender.info(), context.getTrainingSet().info(), context.getTestSet().info(), context.getTrainingStartTime(), context.getTrainingEndTime(), context.testStartTime(), context.testEndTime());
 	}
 

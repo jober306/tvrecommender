@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
+import model.data.User;
 import scala.Tuple4;
 
 /**
@@ -20,7 +21,7 @@ import scala.Tuple4;
  * @author Jonathan Bergeron
  *
  */
-public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extends Context<T, U>{
+public class EvaluationContext<U extends User, P extends TVProgram, E extends TVEvent<U, P>> extends Context<U, P, E>{
 	
 	final LocalDateTime testStartTime;
 	final LocalDateTime testEndTime;
@@ -28,17 +29,17 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extend
 	/**
 	 * The testing subset on which the recommender will be evaluated.
 	 */
-	final TVDataSet<T, U> testSet;
+	final TVDataSet<U, P, E> testSet;
 	
 	/**
 	 * All the tv programs occurring during the testing time. 
 	 */
-	final List<T> testPrograms;
+	final List<P> testPrograms;
 	
 	/**
 	 * The map containing the set of programs that each user watched.
 	 */
-	final Map<Integer, Set<T>> groundTruth;
+	final Map<Integer, Set<P>> groundTruth;
 	
 	/**
 	 * Constructor of this class
@@ -49,7 +50,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extend
 	 * @param testStartTime The testing start time.
 	 * @param testEndTime The testing end time.
 	 */
-	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events, 
+	public EvaluationContext(EPG<P> epg, TVDataSet<U, P, E> events, 
 			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime, 
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
 		super(epg, events, trainingStartTime, trainingEndTime);
@@ -66,7 +67,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extend
 	 * @param trainingStartTime The training start time.
 	 * @param trainingTestingTimes Tuple4 containing respectively: training start time, training end time, testing start time, testing end time.
 	 */
-	public EvaluationContext(EPG<T> epg, TVDataSet<T, U> events, 
+	public EvaluationContext(EPG<P> epg, TVDataSet<U, P, E> events, 
 			Tuple4<LocalDateTime, LocalDateTime, LocalDateTime, LocalDateTime> trainingTestingTimes){
 		this(epg, events, trainingTestingTimes._1(), trainingTestingTimes._2(), trainingTestingTimes._3(), trainingTestingTimes._4());
 	}
@@ -91,7 +92,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extend
 	 * Method that returns the subset used to to test.
 	 * @return The tv data set used to test.
 	 */
-	public TVDataSet<T, U> getTestSet(){
+	public TVDataSet<U, P, E> getTestSet(){
 		return this.testSet;
 	}
 	
@@ -99,7 +100,7 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extend
 	 * Method that returns the list of tv programs occurring during test time.
 	 * @return The list of tv programs occurring during test time.
 	 */
-	public List<T> getTestPrograms(){
+	public List<P> getTestPrograms(){
 		return this.testPrograms;
 	}
 	
@@ -107,29 +108,29 @@ public class EvaluationContext<T extends TVProgram, U extends TVEvent<T>> extend
 	 * Method that return the ground truth map.
 	 * @return A map containing, for each user, the set of tv program they watched.
 	 */
-	public Map<Integer, Set<T>> getGroundTruth(){
+	public Map<Integer, Set<P>> getGroundTruth(){
 		return this.groundTruth;
 	}
 
-	private Map<Integer, Set<T>> createGroundTruth(){
-		Map<Integer, Set<T>> groundTruth = initializeGroundTruth();
+	private Map<Integer, Set<P>> createGroundTruth(){
+		Map<Integer, Set<P>> groundTruth = initializeGroundTruth();
 		testSet.getEventsData().collect().stream().forEach(event -> addEvent(groundTruth, event));
 		return groundTruth;
 	}
 	
-	private Map<Integer, Set<T>> initializeGroundTruth(){
-		Map<Integer, Set<T>> groundTruth = new HashMap<Integer, Set<T>>();
+	private Map<Integer, Set<P>> initializeGroundTruth(){
+		Map<Integer, Set<P>> groundTruth = new HashMap<Integer, Set<P>>();
 		for(int userId : testSet.getAllUserIds()){
-			groundTruth.put(userId, new HashSet<T>());
+			groundTruth.put(userId, new HashSet<P>());
 		}
 		return groundTruth;
 	}
 	
-	private void addEvent(Map<Integer, Set<T>> groundTruth, U event){
+	private void addEvent(Map<Integer, Set<P>> groundTruth, E event){
 		groundTruth.get(event.getUserID()).add(event.getProgram());
 	}
 	
-	private List<T> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){
+	private List<P> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){
 		return getEPG().getListProgramsBetweenTimes(testStartTime, testEndTime).stream().distinct().collect(Collectors.toList());
 	}
 	

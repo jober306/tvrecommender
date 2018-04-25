@@ -22,6 +22,7 @@ import data.TVDataSet;
 import data.recsys.mapper.MapID;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
+import model.data.User;
 import model.feature.FeatureExtractor;
 import model.matrix.DistributedUserItemMatrix;
 import model.matrix.LocalUserItemMatrix;
@@ -36,7 +37,7 @@ import scala.Tuple3;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> implements
+public class RecsysTVDataSet extends TVDataSet<User, RecsysTVProgram, RecsysTVEvent> implements
 		Serializable, MapID {
 
 	/**

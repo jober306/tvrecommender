@@ -20,6 +20,7 @@ import com.google.common.collect.Sets;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
+import model.data.User;
 import model.feature.FeatureExtractor;
 import model.information.Informative;
 import model.matrix.DistributedUserItemMatrix;
@@ -34,11 +35,11 @@ import util.time.LocalDateTimeDTO;
  * 
  * @author Jonathan Bergeron
  *
- * @param <U>
+ * @param <E>
  *            A child class of the abstract class TVEvent. The RDD will be of
  *            this class.
  */
-public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> implements Serializable, Informative {
+public abstract class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U, P>> implements Serializable, Informative {
 	
 	abstract public void close();
 	
@@ -49,7 +50,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	
 	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
 
-	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super T, ? super U> extractor);
+	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super P, ? super E> extractor);
 	
 	private static final long serialVersionUID = 1L;
 	/**
@@ -61,7 +62,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	/**
 	 * The java rdd containing all the tv events.
 	 */
-	transient protected JavaRDD<U> eventsData;
+	transient protected JavaRDD<E> eventsData;
 
 	/**
 	 * The java spark context used to load the tv events.
@@ -92,7 +93,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	 * @param eventsData
 	 * @param sc
 	 */
-	public TVDataSet(JavaRDD<U> eventsData, JavaSparkContext sc) {
+	public TVDataSet(JavaRDD<E> eventsData, JavaSparkContext sc) {
 		this.eventsData = eventsData;
 		this.sc = sc;
 	}
@@ -107,9 +108,9 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public TVDataSet<T, U> newInstance(JavaRDD<U> eventsData, JavaSparkContext sc) {
+	public TVDataSet<U, P, E> newInstance(JavaRDD<E> eventsData, JavaSparkContext sc) {
 		try {
-			TVDataSet<T, U> newTvDataSet = this.getClass().getDeclaredConstructor(JavaRDD.class, JavaSparkContext.class).newInstance(eventsData, sc);
+			TVDataSet<U, P, E> newTvDataSet = this.getClass().getDeclaredConstructor(JavaRDD.class, JavaSparkContext.class).newInstance(eventsData, sc);
 			return newTvDataSet;
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException
@@ -141,25 +142,25 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	 *            The event to be tested if it is in the data set.
 	 * @return True if the event is in the data set, false otherwise.
 	 */
-	public boolean contains(U event) {
-		JavaRDD<U> eventRDD = SparkUtilities
-				.<U> elementToJavaRDD(event, sc);
-		JavaRDD<U> intersection = eventsData.intersection(eventRDD);
+	public boolean contains(E event) {
+		JavaRDD<E> eventRDD = SparkUtilities
+				.<E> elementToJavaRDD(event, sc);
+		JavaRDD<E> intersection = eventsData.intersection(eventRDD);
 		return !intersection.isEmpty();
 	}
 	
 	public Set<Integer> getTvProgramIndexesSeenByUser(int userIndex) {
 		return Sets.newHashSet(eventsData
 				.filter(tvEvent -> tvEvent.getUserID() == userIndex)
-				.map(U::getProgram)
-				.map(T::programId)
+				.map(E::getProgram)
+				.map(P::programId)
 				.collect());
 	}
 	
-	public Set<T> getTVProgramSeenByUser(int userIndex){
-		List<T> tvShowsSeenByUser = eventsData
+	public Set<P> getTVProgramSeenByUser(int userIndex){
+		List<P> tvShowsSeenByUser = eventsData
 				.filter(tvEvent -> tvEvent.getUserID() == userIndex)
-				.map(U::getProgram)
+				.map(E::getProgram)
 				.collect();
 		return Sets.newHashSet(tvShowsSeenByUser);
 	}
@@ -180,8 +181,8 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	 *            The ratio of Tv events there should be in each folder.
 	 * @return An array of RecsysTVDataSet.
 	 */
-	public Set<TVDataSet<T, U>> splitTVEventsRandomly(double[] ratios) {
-		JavaRDD<U>[] splittedEvents = eventsData.randomSplit(ratios);
+	public Set<TVDataSet<U, P, E>> splitTVEventsRandomly(double[] ratios) {
+		JavaRDD<E>[] splittedEvents = eventsData.randomSplit(ratios);
 		return Arrays.stream(splittedEvents).map(curry2(this::newInstance, sc)).collect(toSet());
 	}
 
@@ -190,7 +191,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	 * 
 	 * @return The java RDD containing all the recsys tv event.
 	 */
-	public JavaRDD<U> getEventsData() {
+	public JavaRDD<E> getEventsData() {
 		return eventsData;
 	}
 

@@ -18,6 +18,7 @@ import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.tensor.RecsysUserPreferenceTensorCalculator;
+import model.data.User;
 import model.feature.ChannelFeatureExtractor;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
@@ -27,7 +28,7 @@ import recommender.TVRecommender;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public abstract class ChannelPreferenceRecommender extends TVRecommender<RecsysTVProgram, RecsysTVEvent, Recommendation> {
+public abstract class ChannelPreferenceRecommender extends TVRecommender<User, RecsysTVProgram, RecsysTVEvent, Recommendation> {
 		
 	protected UserPreferenceTensorCollection userPreferenceCollection;
 	
@@ -44,7 +45,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<RecsysT
 		this.anySlots = anySlots;
 	}
 	
-	public ChannelPreferenceRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
+	public ChannelPreferenceRecommender(Context<User, RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
 		super(context, numberOfRecommendations);
 		this.anyUsers = anyUsers;
 		this.anySlots = anySlots;

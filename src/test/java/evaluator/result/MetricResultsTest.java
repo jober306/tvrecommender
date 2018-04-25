@@ -23,6 +23,7 @@ import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import evaluator.metric.IncrementMetric;
 import evaluator.metric.OneMetric;
+import model.data.User;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
@@ -34,7 +35,7 @@ public class MetricResultsTest {
 	
 	static JavaSparkContext sc;
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
-	static EvaluationContext<RecsysTVProgram, RecsysTVEvent> context;
+	static EvaluationContext<User, RecsysTVProgram, RecsysTVEvent> context;
 	
 	Map<Integer, Double> usersScore;
 	

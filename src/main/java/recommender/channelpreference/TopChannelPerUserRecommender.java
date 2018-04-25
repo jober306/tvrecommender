@@ -3,6 +3,7 @@ package recommender.channelpreference;
 import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.data.User;
 
 public class TopChannelPerUserRecommender extends ChannelPreferenceRecommender{
 	
@@ -10,7 +11,7 @@ public class TopChannelPerUserRecommender extends ChannelPreferenceRecommender{
 		super(numberOfRecommendations, false, true);
 	}
 	
-	public TopChannelPerUserRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
+	public TopChannelPerUserRecommender(Context<User, RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
 		super(context, numberOfRecommendations, false, true);
 	}
 }

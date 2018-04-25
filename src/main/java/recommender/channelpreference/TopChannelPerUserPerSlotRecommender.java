@@ -13,6 +13,7 @@ import org.apache.spark.mllib.linalg.Vectors;
 import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
+import model.data.User;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
@@ -25,7 +26,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 		super(numberOfRecommendations, false, false);
 	}
 	
-	public TopChannelPerUserPerSlotRecommender(Context<RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
+	public TopChannelPerUserPerSlotRecommender(Context<User, RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations) {
 		super(context, numberOfRecommendations, false, false);
 	}
 	

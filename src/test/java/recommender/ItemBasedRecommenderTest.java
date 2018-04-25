@@ -15,6 +15,7 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import model.data.User;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
 
@@ -23,14 +24,14 @@ public class ItemBasedRecommenderTest {
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	
 	static JavaSparkContext sc;
-	static ItemBasedRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
+	static ItemBasedRecommender<User, RecsysTVProgram, RecsysTVEvent> recommender;
 
 	@BeforeClass
 	public static void setUpOnce() {
 		sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
-		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
+		Context<User, RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		recommender = new ItemBasedRecommender<>(context, 10);
 		recommender.train();
 	}

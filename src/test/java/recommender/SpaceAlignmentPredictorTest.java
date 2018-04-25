@@ -15,6 +15,7 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.feature.RecsysBooleanFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import model.data.User;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
 import scala.Tuple2;
@@ -36,7 +37,7 @@ public class SpaceAlignmentPredictorTest {
 		sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
-		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
+		Context<User, RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		RecsysBooleanFeatureExtractor featureExtractor = new RecsysBooleanFeatureExtractor(data._1());
 		recommender = new SpaceAlignmentRecommender<>(context, numberOfResults, featureExtractor, r, neighbourhoodSize, loader.getJavaSparkContext());
 		recommender.train();

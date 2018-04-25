@@ -29,6 +29,7 @@ import data.Context;
 import data.EvaluationContext;
 import model.data.TVEvent;
 import model.data.TVProgram;
+import model.data.User;
 import model.feature.FeatureExtractor;
 import model.matrix.UserItemMatrix;
 import model.recommendation.Recommendations;
@@ -45,11 +46,11 @@ import util.spark.mllib.MllibUtilities;
  * 
  * @author Jonathan Bergeron
  */
-public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>>
-		extends TVRecommender<T, U, ScoredRecommendation> {
+public class SpaceAlignmentRecommender<P extends TVProgram, E extends TVEvent<User, P>>
+		extends TVRecommender<User, P, E, ScoredRecommendation> {
 	
 	/**
-	 * The spark context.
+	 * The java spark context. It is necessary to create matrix entries in the training process.
 	 */
 	JavaSparkContext sc;
 	
@@ -57,7 +58,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	 * The feature extractor that will be used to extract features when training
 	 * the model and when predicting.
 	 */
-	FeatureExtractor<? super T, ? super U> extractor;
+	FeatureExtractor<? super P, ? super E> extractor;
 
 	/**
 	 * The user item (or rating) matrix that represents the tv data set.
@@ -101,10 +102,17 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	 * Map used when evaluation context is used. It stores for each new program their similarities
 	 * with respect to the space alignment algorithm with each old tv shows.
 	 */
-	Map<T, List<Double>> newTVShowsSimilarities;
+	Map<P, List<Double>> newTVShowsSimilarities;
 	
-	
-	public SpaceAlignmentRecommender(int numberOfRecommendations, FeatureExtractor<? super T, ? super U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
+	/**
+	 * Constructor without a context of this class.
+	 * @param numberOfRecommendations The number of recommendations that will be made when recommending.
+	 * @param extractor The feature extractor used to train the recommender and transform new tv programs when recommending.
+	 * @param r The rank of the learned matrix.
+	 * @param neighbourhoddSize The neighbourhood size, i.e. the number of similar items used to compute recommendation score.
+	 * @param sc The java spark context.
+	 */
+	public SpaceAlignmentRecommender(int numberOfRecommendations, FeatureExtractor<? super P, ? super E> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
 		super(numberOfRecommendations);
 		this.extractor = extractor;
 		this.r = r;
@@ -113,16 +121,16 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	}
 	
 	/**
-	 * 
-	 * @param R
-	 *            The rating matrix.
-	 * @param r
-	 *            The maximum rank the matrix Mprime can have.
-	 * @param C
-	 *            The content matrix of all the items.
+	 * Main constructor of this class.
+	 * @param context The context in which the recommender will live.
+	 * @param numberOfRecommendations The number of recommendations that will be made when recommending.
+	 * @param extractor The feature extractor used to train the recommender and transform new tv programs when recommending.
+	 * @param r The rank of the learned matrix.
+	 * @param neighbourhoddSize The neighbourhood size, i.e. the number of similar items used to compute recommendation score.
+	 * @param sc The java spark context.
 	 */
-	public SpaceAlignmentRecommender(Context<T, U> context, int numberOfRecommendations,
-			FeatureExtractor<? super T, ? super U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
+	public SpaceAlignmentRecommender(Context<User, P, E> context, int numberOfRecommendations,
+			FeatureExtractor<? super P, ? super E> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
 		super(context, numberOfRecommendations);
 		this.extractor = extractor;
 		this.r = r;
@@ -136,7 +144,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 		this.localC = toDenseLocalVectors(C);
 		calculateMprime();
 		if (context instanceof EvaluationContext) {
-			EvaluationContext<T,U> evalContext = (EvaluationContext<T,U>) context;
+			EvaluationContext<User, P, E> evalContext = (EvaluationContext<User, P, E>) context;
 			this.newTVShowsSimilarities = initializeNewTVShowSimilarities(evalContext.getTestPrograms());
 		}
 	}
@@ -145,7 +153,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 		System.out.println(Mprime.toString());
 	}
 	
-	private Map<T, List<Double>> initializeNewTVShowSimilarities(List<T> tvPrograms){
+	private Map<P, List<Double>> initializeNewTVShowSimilarities(List<P> tvPrograms){
 		return tvPrograms.stream().collect(toMap(Function.identity(), t -> calculateNewTVShowSimilarities(extractor.extractFeaturesFromProgram(t))));
 	}
 	
@@ -155,8 +163,8 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<T> tvPrograms) {
-		Map<T, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
+	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<P> tvPrograms) {
+		Map<P, Vector> newTvShows = tvPrograms.stream().collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
 		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream()
 				.map(entry -> scoreTVProgram(userId, entry))
 				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed())
@@ -166,8 +174,8 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	}
 	
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<T> tvPrograms) {
-		List<Integer> itemIndexesSeenByUser = ((EvaluationContext<T, U>) context).getGroundTruth().get(userId).stream().map(T::programId).collect(toList());
+	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<P> tvPrograms) {
+		List<Integer> itemIndexesSeenByUser = ((EvaluationContext<User, P, E>) context).getGroundTruth().get(userId).stream().map(P::programId).collect(toList());
 		List<ScoredRecommendation> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
 				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed())
@@ -186,13 +194,13 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 		return parameters;
 	}
 	
-	private ScoredRecommendation scoreTVProgram(int userId, Entry<T, Vector> programWithFeatures) {
-		T program = programWithFeatures.getKey();
+	private ScoredRecommendation scoreTVProgram(int userId, Entry<P, Vector> programWithFeatures) {
+		P program = programWithFeatures.getKey();
 		Vector programFeatures = programWithFeatures.getValue();
 		return new ScoredRecommendation(program, calculateScore(userId, programFeatures));
 	}
 	
-	private ScoredRecommendation scoreTVProgram(List<Integer> itemIndexesSeenByUser, T tvProgram){
+	private ScoredRecommendation scoreTVProgram(List<Integer> itemIndexesSeenByUser, P tvProgram){
 		return new ScoredRecommendation(tvProgram, getScore(itemIndexesSeenByUser, tvProgram));
 	}
 
@@ -200,7 +208,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 		return calculateNeighboursScore(calculateNewItemNeighborhoodSimilaritiesForUser(vector, userId));
 	}
 	
-	private double getScore(List<Integer> itemIndexesSeenByUser, T program){
+	private double getScore(List<Integer> itemIndexesSeenByUser, P program){
 		return calculateNeighboursScore(getNewItemNeighborhoodSimilaritiesForUser(itemIndexesSeenByUser, program));
 	}
 	
@@ -218,7 +226,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 		return sortedFilteredSimilarities.subList(0, Math.min(neighbourhoodSize, sortedFilteredSimilarities.size()));
 	}
 	
-	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(List<Integer> itemIndexesSeenByUser, T tvShow){
+	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(List<Integer> itemIndexesSeenByUser, P tvShow){
 		List<Double> similarities = newTVShowsSimilarities.get(tvShow);
 		Stream<Double> filteredSimilarities = itemIndexesSeenByUser.stream().map(similarities::get);
 		List<Double> sorteredFilteredSimilarities = filteredSimilarities.sorted(Comparator.<Double>naturalOrder().reversed()).collect(toList());

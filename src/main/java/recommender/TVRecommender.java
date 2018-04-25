@@ -9,34 +9,55 @@ import data.Context;
 import data.EvaluationContext;
 import model.data.TVEvent;
 import model.data.TVProgram;
+import model.data.User;
 import model.information.Informative;
 import model.recommendation.RecommendFunction;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
-public abstract class TVRecommender<T extends TVProgram, U extends TVEvent<T>, R extends Recommendation> implements Informative{
+/**
+ * An abstract class representing a TV recommender.
+ * @author Jonathan Bergeron
+ *
+ * @param <P> The type of tv program the dataset contains.
+ * @param <E> The type of 
+ * @param <R>
+ */
+public abstract class TVRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>, R extends Recommendation> implements Informative{
 	
-	abstract protected Recommendations<R> recommendNormally(int userId, List<T> tvPrograms);
-
-	abstract protected Recommendations<R> recommendForTesting(int userId, List<T> tvPrograms);
+	/**
+	 * Method to recommend in a normal setting, i.e. when the instance of context is Context.
+	 * @param userId The user for whom the recommendations are made
+	 * @param tvPrograms The list of tv programs that can be recommended.
+	 * @return
+	 */
+	abstract protected Recommendations<R> recommendNormally(int userId, List<P> tvPrograms);
 	
+	/**
+	 * Method to recommend in a test setting, i.e. when the instance of context is EvaluationContext.
+	 * @param userId The user for whom the recommendations are made
+	 * @param tvPrograms The list of tv programs that can be recommended.
+	 * @return
+	 */
+	abstract protected Recommendations<R> recommendForTesting(int userId, List<P> tvPrograms);
+	
+	/**
+	 * 
+	 * @return
+	 */
 	abstract protected Map<String, String> additionalParameters();
 	
-	public Map<String, String> parameters(){
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("Number of Recommendations", Integer.toString(numberOfRecommendations));
-		parameters.putAll(additionalParameters());
-		return parameters;
-	}
-	
+	/**
+	 * 
+	 */
 	abstract public void train();
 	
 	/**
 	 * The context of this recommender;
 	 */
-	protected Context<T, U> context;
+	protected Context<U, P, E> context;
 
-	RecommendFunction<T, R> recommendFunctionRef;
+	RecommendFunction<P, R> recommendFunctionRef;
 	
 	protected int numberOfRecommendations;
 	
@@ -44,12 +65,23 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent<T>, R
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
 
-	public TVRecommender(Context<T, U> context, int numberOfRecommendations) {
+	public TVRecommender(Context<U, P, E> context, int numberOfRecommendations) {
 		this.setContext(context);
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
 	
-	public void setContext(Context<T, U> context){
+	/**
+	 * 
+	 * @return
+	 */
+	public Map<String, String> parameters(){
+		Map<String, String> parameters = new HashMap<String, String>();
+		parameters.put("Number of Recommendations", Integer.toString(numberOfRecommendations));
+		parameters.putAll(additionalParameters());
+		return parameters;
+	}
+	
+	public void setContext(Context<U, P, E> context){
 		this.context = context;
 		if (context instanceof EvaluationContext) {
 			recommendFunctionRef = this::recommendForTesting;
@@ -66,7 +98,7 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent<T>, R
 		return new RecommenderInfo(this.getClass().getSimpleName(), parameters());
 	}
 	
-	public Context<T, U> getContext() {
+	public Context<? extends U, P, E> getContext() {
 		return this.context;
 	}
 	
@@ -93,7 +125,7 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent<T>, R
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
 	public Recommendations<R> recommend(int userId, LocalDateTime targetWatchTime) {
-		List<T> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
+		List<P> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
 				targetWatchTime);
 		return recommend(userId, tvPrograms);
 	}
@@ -118,15 +150,12 @@ public abstract class TVRecommender<T extends TVProgram, U extends TVEvent<T>, R
 	 */
 	public Recommendations<R> recommend(int userId, LocalDateTime startTargetTime,
 			LocalDateTime endTargetTime) {
-		List<T> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
+		List<P> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
 				startTargetTime, endTargetTime);
 		return recommend(userId, tvPrograms);
 	}
 
-	public Recommendations<R> recommend(int userId, List<T> tvProrams) {
+	public Recommendations<R> recommend(int userId, List<P> tvProrams) {
 		return recommendFunctionRef.recommend(userId, tvProrams);
 	}
-	
-	
-	
 }

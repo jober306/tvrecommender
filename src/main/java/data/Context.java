@@ -6,23 +6,24 @@ import java.time.LocalDateTime;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
+import model.data.User;
 
 /**
  * Class that represents a context in which a recommender lives.
  * @author Jonathan Bergeron
  *
  */
-public class Context<T extends TVProgram, U extends TVEvent<T>>{
+public class Context<U extends User, P extends TVProgram, E extends TVEvent<U, P>>{
 	
 	/**
 	 * The electronic programming guide.
 	 */
-	final EPG<T> epg;
+	final EPG<P> epg;
 	
 	/**
 	 * The whole data set of events.
 	 */
-	final TVDataSet<T, U> events;
+	final TVDataSet<U, P, E> events;
 	
 	
 	final LocalDateTime trainingStartTime;
@@ -30,14 +31,14 @@ public class Context<T extends TVProgram, U extends TVEvent<T>>{
 	/**
 	 * The training subset on which the recommender will be trained.
 	 */
-	final TVDataSet<T, U> trainingSet;
+	final TVDataSet<U, P, E> trainingSet;
 	
 	/**
 	 * Constructor of the class, the training time are set to be the whole tv dataset.
 	 * @param epg The electronic programming guide.
 	 * @param events The tv events that occurred in the epg. 
 	 */
-	public Context(EPG<T> epg, TVDataSet<T, U> events){
+	public Context(EPG<P> epg, TVDataSet<U, P, E> events){
 		this.epg = epg;
 		this.events = events;
 		this.trainingStartTime = events.startTime();
@@ -52,7 +53,7 @@ public class Context<T extends TVProgram, U extends TVEvent<T>>{
 	 * @param trainingStartTime The training start time.
 	 * @param trainingEndTime The training end time.
 	 */
-	public Context(EPG<T> epg, TVDataSet<T, U> events, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
+	public Context(EPG<P> epg, TVDataSet<U, P, E> events, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
 		this.epg = epg;
 		this.events = events;
 		this.trainingStartTime = trainingStartTime;
@@ -64,7 +65,7 @@ public class Context<T extends TVProgram, U extends TVEvent<T>>{
 	 * Method that returns the epg.
 	 * @return The epg.
 	 */
-	public EPG<T> getEPG(){
+	public EPG<P> getEPG(){
 		return epg;
 	}
 	
@@ -72,7 +73,7 @@ public class Context<T extends TVProgram, U extends TVEvent<T>>{
 	 * Method that returns the whole tv events dataset.
 	 * @return The tv events dataset.
 	 */
-	public TVDataSet<T, U> getTvDataSet(){
+	public TVDataSet<U, P, E> getTvDataSet(){
 		return events;
 	}
 	
@@ -80,7 +81,7 @@ public class Context<T extends TVProgram, U extends TVEvent<T>>{
 	 * Method that returns the training dataset.
 	 * @return The tv dataset used to train.
 	 */
-	public TVDataSet<T, U> getTrainingSet(){
+	public TVDataSet<U, P, E> getTrainingSet(){
 		return trainingSet;
 	}
 

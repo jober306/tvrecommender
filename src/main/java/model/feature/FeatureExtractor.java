@@ -13,19 +13,19 @@ import model.data.TVProgram;
  * 
  * @author Jonathan Bergeron
  *
- * @param <T>
+ * @param <P>
  *            The tv program class from which the features will be extracted.
- * @param <U>
+ * @param <E>
  *            The tv event class from which the features will be extracted.
  */
-public abstract class FeatureExtractor<T extends TVProgram, U extends TVEvent<?>>
+public abstract class FeatureExtractor<P extends TVProgram, E extends TVEvent<?, ?>>
 		implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	abstract public Vector extractFeaturesFromProgram(T tvProgram);
+	abstract public Vector extractFeaturesFromProgram(P tvProgram);
 
-	abstract public Vector extractFeaturesFromEvent(U tvEvent);
+	abstract public Vector extractFeaturesFromEvent(E tvEvent);
 	
 	abstract public int extractedVectorSize();
 }

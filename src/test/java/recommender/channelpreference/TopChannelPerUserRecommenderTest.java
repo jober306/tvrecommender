@@ -16,6 +16,7 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import model.data.User;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
@@ -33,7 +34,7 @@ public class TopChannelPerUserRecommenderTest {
 		sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
-		Context<RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
+		Context<User, RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
 		recommender = new TopChannelPerUserRecommender(context, 10);
 		recommender.train();
 	}

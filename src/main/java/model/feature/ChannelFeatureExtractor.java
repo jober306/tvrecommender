@@ -15,7 +15,7 @@ import model.data.TVProgram;
  * @param <T> A child class of the tv program class.
  * @param <U> A child class of the tv event class.
  */
-public class ChannelFeatureExtractor extends FeatureExtractor<TVProgram, TVEvent<?>> implements Serializable{
+public class ChannelFeatureExtractor extends FeatureExtractor<TVProgram, TVEvent<?, ?>> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -37,7 +37,7 @@ public class ChannelFeatureExtractor extends FeatureExtractor<TVProgram, TVEvent
 	 * @return A vector containing the channel id. 
 	 */
 	@Override
-	public Vector extractFeaturesFromEvent(TVEvent<?> event) {
+	public Vector extractFeaturesFromEvent(TVEvent<?, ?> event) {
 		return Vectors.dense(new double[]{event.getChannelId()});
 	}
 	
