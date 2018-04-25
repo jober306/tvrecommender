@@ -39,7 +39,7 @@ public class TVDataSetMock extends TVDataSet<TVProgram, TVEvent<TVProgram>> {
 	}
 
 	@Override
-	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? extends TVProgram, TVEvent<TVProgram>> extractor) {
+	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super TVProgram, ? super TVEvent<TVProgram>> extractor) {
 		// TODO Auto-generated method stub
 		return null;
 	}

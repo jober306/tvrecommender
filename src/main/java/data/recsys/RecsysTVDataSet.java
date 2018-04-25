@@ -22,7 +22,6 @@ import data.TVDataSet;
 import data.recsys.mapper.MapID;
 import data.recsys.mapper.RecSysMapCreator;
 import data.recsys.mapper.RecSysMapReader;
-import model.data.TVProgram;
 import model.feature.FeatureExtractor;
 import model.matrix.DistributedUserItemMatrix;
 import model.matrix.LocalUserItemMatrix;
@@ -150,8 +149,7 @@ public class RecsysTVDataSet extends TVDataSet<RecsysTVProgram, RecsysTVEvent> i
 	 * Method that returns the content matrix of each tv show.
 	 */
 	@Override
-	public IndexedRowMatrix getContentMatrix(
-			FeatureExtractor<? extends TVProgram, RecsysTVEvent> extractor) {
+	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super RecsysTVProgram, ? super RecsysTVEvent> extractor) {
 		JavaRDD<IndexedRow> contentMatrix = eventsData
 				.mapToPair(
 						tvEvent -> new Tuple2<Integer, RecsysTVEvent>(tvEvent

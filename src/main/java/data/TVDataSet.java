@@ -49,7 +49,7 @@ public abstract class TVDataSet<T extends TVProgram, U extends TVEvent<T>> imple
 	
 	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
 
-	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<? extends TVProgram, U> extractor);
+	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super T, ? super U> extractor);
 	
 	private static final long serialVersionUID = 1L;
 	/**

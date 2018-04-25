@@ -57,7 +57,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	 * The feature extractor that will be used to extract features when training
 	 * the model and when predicting.
 	 */
-	FeatureExtractor<T, U> extractor;
+	FeatureExtractor<? super T, ? super U> extractor;
 
 	/**
 	 * The user item (or rating) matrix that represents the tv data set.
@@ -104,8 +104,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	Map<T, List<Double>> newTVShowsSimilarities;
 	
 	
-	public SpaceAlignmentRecommender(int numberOfRecommendations,
-			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
+	public SpaceAlignmentRecommender(int numberOfRecommendations, FeatureExtractor<? super T, ? super U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
 		super(numberOfRecommendations);
 		this.extractor = extractor;
 		this.r = r;
@@ -123,7 +122,7 @@ public class SpaceAlignmentRecommender<T extends TVProgram, U extends TVEvent<T>
 	 *            The content matrix of all the items.
 	 */
 	public SpaceAlignmentRecommender(Context<T, U> context, int numberOfRecommendations,
-			FeatureExtractor<T, U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
+			FeatureExtractor<? super T, ? super U> extractor, int r, int neighbourhoddSize, JavaSparkContext sc) {
 		super(context, numberOfRecommendations);
 		this.extractor = extractor;
 		this.r = r;
