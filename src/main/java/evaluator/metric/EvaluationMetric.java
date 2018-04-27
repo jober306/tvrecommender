@@ -28,7 +28,7 @@ public interface EvaluationMetric<R extends Recommendation> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return A stream containing the evaluation results. The results are ordered in the same way the recommendations are.
 	 */
-	default public MetricResults evaluate(Stream<Recommendations<? extends R>> recommendationsStream, EvaluationContext<?, ?, ?> context){
+	default public MetricResults evaluate(Stream<? extends Recommendations<?,? extends R>> recommendationsStream, EvaluationContext<?, ?, ?> context){
 		Map<Integer, Double> userScores = StreamUtilities.toMapAverage(recommendationsStream, Recommendations::userId, recommendation -> evaluate(recommendation, context));
 		return new MetricResults(name(), userScores);
 	}
@@ -39,7 +39,7 @@ public interface EvaluationMetric<R extends Recommendation> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return The evaluation result
 	 */
-	default public double evaluate(Recommendations<? extends R> recommendations, EvaluationContext<?, ? extends TVProgram,?> context) {
+	default public double evaluate(Recommendations<?, ? extends R> recommendations, EvaluationContext<?, ? extends TVProgram,?> context) {
 		Set<? extends TVProgram> groundTruth = context.getGroundTruth().get(recommendations.userId());
 		return evaluate(recommendations, groundTruth);
 	}
@@ -50,5 +50,5 @@ public interface EvaluationMetric<R extends Recommendation> {
 	 * @param groundTruth The list of program id actually relevant.
 	 * @return The evaluation result
 	 */
-	public double evaluate(Recommendations<? extends R> recommendations, Set<? extends TVProgram> groundTruth);
+	public double evaluate(Recommendations<?, ? extends R> recommendations, Set<? extends TVProgram> groundTruth);
 }

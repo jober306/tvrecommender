@@ -1,4 +1,4 @@
-package model.feature;
+package model.data.feature;
 
 import java.io.Serializable;
 

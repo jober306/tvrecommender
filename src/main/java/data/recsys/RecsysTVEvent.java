@@ -19,7 +19,7 @@ import model.data.User;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implements Serializable {
+final public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

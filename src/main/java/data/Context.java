@@ -102,12 +102,4 @@ public class Context<U extends User, P extends TVProgram, E extends TVEvent<U, P
 	public LocalDateTime getTrainingEndTime() {
 		return trainingEndTime;
 	}
-	
-	/**
-	 * Method that closes all resources held by this context.
-	 */
-	public void close(){
-		events.close();
-		trainingSet.close();
-	}
 }

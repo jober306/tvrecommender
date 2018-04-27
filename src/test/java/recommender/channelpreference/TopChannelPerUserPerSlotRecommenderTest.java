@@ -42,7 +42,7 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 	
 	@Test
 	public void testRecommendMostWatchedProgramButNotInGoodSlotUser1(){
-		int user = 1;
+		User user = new User(1);
 		int expectedProgramId = 10;
 		RecsysTVProgram mostWatchedChannelTVProgramNotInSlot = new RecsysTVProgram((short)0, (short)0, 46, expectedProgramId, (byte) 0, (byte) 0);
 		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, 1, 1, (byte) 0, (byte) 0);
@@ -51,13 +51,13 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 0;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 	}
 	
 	@Test
 	public void testRecommendMostWatchedProgramUser1(){
-		int user = 1;
+		User user = new User(1);
 		int expectedProgramId = 10;
 		RecsysTVProgram mostWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)19, 46, expectedProgramId, (byte) 0, (byte) 0);
 		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, 1, 1, (byte) 0, (byte) 0);
@@ -66,21 +66,21 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().programId());
 	}
 	
 	@Test
 	public void testRecommendMosWatchedProgramPerSlotUser1(){
-		int user = 1;
+		User user = new User(1);
 		RecsysTVProgram mostWatchedChannelAndSlotTVProgram = new RecsysTVProgram((short)0, (short)20, 46, 2345, (byte) 0, (byte) 0);
 		RecsysTVProgram secondMostWatchedChannelAndSlotTVProgram = new RecsysTVProgram((short)0, (short)19, 46, 1234, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelAndSlotTVProgram, secondMostWatchedChannelAndSlotTVProgram);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 2;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(mostWatchedChannelAndSlotTVProgram.programId(), recommendations.get(0).tvProgram().programId());
 		assertEquals(secondMostWatchedChannelAndSlotTVProgram.programId(), recommendations.get(1).tvProgram().programId());
@@ -88,7 +88,6 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 	
 	@AfterClass
 	public static void tearDownOnce() {
-		recommender.closeContextDatasets();
 		sc.close();
 	}
 }

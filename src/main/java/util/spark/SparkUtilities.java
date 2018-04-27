@@ -20,7 +20,7 @@ public class SparkUtilities {
 	 * @param sc The java spark context in which the element will be loaded.
 	 * @return The RDD associated with this element.
 	 */
-	public static <T> JavaRDD<T> elementToJavaRDD( T element, JavaSparkContext sc){
+	public static <T> JavaRDD<T> elementToJavaRDD(T element, JavaSparkContext sc){
 		JavaRDD<T> elementRDD = sc.parallelize(Arrays.asList(element));
 		return elementRDD;
 	}

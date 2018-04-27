@@ -16,12 +16,27 @@ import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
 /**
- * An abstract class representing a TV recommender.
+ * An abstract class representing a TV recommender. When extending this class, use wisely
+ * the generic types definition. Follow those three simple rules:
+ * 
+ * 1. If the type doesn't matter, use the highest class in the hierarchy of this type. 
+ *    For example, if the user class doesn't matter for the recommender use the 
+ *    User class as type definition.
+ *    
+ * 2. If the type only depends on a child class, use this class to define this type. For example,
+ *    my recommender depends on a user child class (let's say UserGender) that contains gender information.
+ *    UserGender should be used as type definition.
+ *    
+ * 2. If the type can be anything, make your class generic for that type. 
+ *    For example, if your recommender depends on feature extractors and feature extractor depend on type of TVProgram.
+ *    Use generic public class MyRecommender<P extends TVProgram> extends TVRecommender<..., P, ..., ...>
+ * 
  * @author Jonathan Bergeron
  *
- * @param <P> The type of tv program the dataset contains.
- * @param <E> The type of 
- * @param <R>
+ * @param <U> The type of user.
+ * @param <P> The type of tv program.
+ * @param <E> The type of tv event.
+ * @param <R> The type of recommendations made by this recommender.
  */
 public abstract class TVRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>, R extends Recommendation> implements Informative{
 	
@@ -31,7 +46,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 * @param tvPrograms The list of tv programs that can be recommended.
 	 * @return
 	 */
-	abstract protected Recommendations<R> recommendNormally(int userId, List<P> tvPrograms);
+	abstract protected Recommendations<U, R> recommendNormally(U user, List<? extends P> tvPrograms);
 	
 	/**
 	 * Method to recommend in a test setting, i.e. when the instance of context is EvaluationContext.
@@ -39,7 +54,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 * @param tvPrograms The list of tv programs that can be recommended.
 	 * @return
 	 */
-	abstract protected Recommendations<R> recommendForTesting(int userId, List<P> tvPrograms);
+	abstract protected Recommendations<U, R> recommendForTesting(U user, List<? extends P> tvPrograms);
 	
 	/**
 	 * 
@@ -55,9 +70,9 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	/**
 	 * The context of this recommender;
 	 */
-	protected Context<U, P, E> context;
+	protected Context<? extends U, ? extends P, ? extends E> context;
 
-	RecommendFunction<P, R> recommendFunctionRef;
+	RecommendFunction<U, P, R> recommendFunctionRef;
 	
 	protected int numberOfRecommendations;
 	
@@ -65,7 +80,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
 
-	public TVRecommender(Context<U, P, E> context, int numberOfRecommendations) {
+	public TVRecommender(Context<? extends U, ? extends P, ? extends E> context, int numberOfRecommendations) {
 		this.setContext(context);
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
@@ -81,7 +96,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 		return parameters;
 	}
 	
-	public void setContext(Context<U, P, E> context){
+	public void setContext(Context<? extends U, ? extends P, ? extends E> context){
 		this.context = context;
 		if (context instanceof EvaluationContext) {
 			recommendFunctionRef = this::recommendForTesting;
@@ -90,15 +105,11 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 		}
 	}
 	
-	public void closeContextDatasets(){
-		context.close();
-	}
-	
 	public RecommenderInfo info(){
 		return new RecommenderInfo(this.getClass().getSimpleName(), parameters());
 	}
 	
-	public Context<? extends U, P, E> getContext() {
+	public Context<? extends U, ? extends P, ? extends E> getContext() {
 		return this.context;
 	}
 	
@@ -124,10 +135,10 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 *            The number of results that will be returned.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public Recommendations<R> recommend(int userId, LocalDateTime targetWatchTime) {
-		List<P> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
+	public Recommendations<U, R> recommend(U user, LocalDateTime targetWatchTime) {
+		List<? extends P> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
 				targetWatchTime);
-		return recommend(userId, tvPrograms);
+		return recommend(user, tvPrograms);
 	}
 
 	/**
@@ -148,14 +159,14 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 *            The number of results that will be returned.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public Recommendations<R> recommend(int userId, LocalDateTime startTargetTime,
+	public Recommendations<U, R> recommend(U user, LocalDateTime startTargetTime,
 			LocalDateTime endTargetTime) {
-		List<P> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
+		List<? extends P> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
 				startTargetTime, endTargetTime);
-		return recommend(userId, tvPrograms);
+		return recommend(user, tvPrograms);
 	}
 
-	public Recommendations<R> recommend(int userId, List<P> tvProrams) {
-		return recommendFunctionRef.recommend(userId, tvProrams);
+	public Recommendations<U, R> recommend(U user, List<? extends P> tvProrams) {
+		return recommendFunctionRef.recommend(user, tvProrams);
 	}
 }

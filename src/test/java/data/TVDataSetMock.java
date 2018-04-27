@@ -9,9 +9,9 @@ import org.apache.spark.mllib.recommendation.Rating;
 import model.data.TVEvent;
 import model.data.TVProgram;
 import model.data.User;
-import model.feature.FeatureExtractor;
-import model.matrix.DistributedUserItemMatrix;
-import model.matrix.LocalUserItemMatrix;
+import model.data.feature.FeatureExtractor;
+import model.matrix.DistributedUserTVProgramMatrix;
+import model.matrix.LocalUserTVProgramMatrix;
 
 public class TVDataSetMock extends TVDataSet<User, TVProgram, TVEvent<User, TVProgram>> {
 
@@ -28,13 +28,13 @@ public class TVDataSetMock extends TVDataSet<User, TVProgram, TVEvent<User, TVPr
 	}
 
 	@Override
-	public DistributedUserItemMatrix convertToDistUserItemMatrix() {
+	public DistributedUserTVProgramMatrix<User, TVProgram> convertToDistUserItemMatrix() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public LocalUserItemMatrix convertToLocalUserItemMatrix() {
+	public LocalUserTVProgramMatrix<User, TVProgram> convertToLocalUserItemMatrix() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -43,11 +43,6 @@ public class TVDataSetMock extends TVDataSet<User, TVProgram, TVEvent<User, TVPr
 	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super TVProgram, ? super TVEvent<User, TVProgram>> extractor) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
 	}
 
 }

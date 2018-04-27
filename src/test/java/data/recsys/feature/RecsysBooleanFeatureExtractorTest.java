@@ -88,7 +88,6 @@ public class RecsysBooleanFeatureExtractorTest {
 
 	@AfterClass
 	public static void tearDown() {
-		data._2.close();
 		sc.close();
 	}
 }

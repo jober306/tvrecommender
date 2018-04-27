@@ -31,11 +31,11 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 	}
 	
 	@Override
-	protected Recommendations<Recommendation> recommendNormally(int userId, List<RecsysTVProgram> tvPrograms) {
-		return recommendByAggregatingSlots(userId, tvPrograms);
+	protected Recommendations<User, Recommendation> recommendNormally(User user, List<? extends RecsysTVProgram> tvPrograms) {
+		return recommendByAggregatingSlots(user, tvPrograms);
 	}
 	
-	private Recommendations<Recommendation> recommendByAggregatingSlots(int userId, List<RecsysTVProgram> tvPrograms) {
+	private Recommendations<User, Recommendation> recommendByAggregatingSlots(User user, List<? extends RecsysTVProgram> tvPrograms) {
 		Stream<Short> allPossibleSlots = tvPrograms.stream()
 				.map(RecsysTVProgram::slot)
 				.distinct();
@@ -43,7 +43,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 				.map(RecsysTVProgram::channelId)
 				.distinct()
 				.collect(Collectors.toList());
-		Map<Integer, Integer> channelsWatchTime = allPossibleSlots.flatMap(slot -> allPossibleChannels.stream().map(channel -> toUserPreferenceTuple(userId, channel, slot)))
+		Map<Integer, Integer> channelsWatchTime = allPossibleSlots.flatMap(slot -> allPossibleChannels.stream().map(channel -> toUserPreferenceTuple(user.id(), channel, slot)))
 				.map(UserPreference::new)
 				.map(this::toChannelWatchTime)
 				.collect(Collectors.toMap(Tuple2::_1, Tuple2::_2, Integer::sum));
@@ -52,7 +52,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 				.sorted(comparing(Tuple2<Integer, Integer>::_2).reversed())
 				.collect(Collectors.toList());
 		List<Recommendation> recommendations = recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfRecommendations, tvPrograms);
-		return new Recommendations<>(userId, recommendations);
+		return new Recommendations<>(user, recommendations);
 	}
 	
 	private Tuple3<Integer, Vector, Short> toUserPreferenceTuple(int userId, int channelId, short slot) {

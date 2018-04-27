@@ -4,20 +4,22 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Stream;
 
+import model.data.User;
+
 /**
  * Class that represents a list of recommendations made for a particular user.
  * @author Jonathan Bergeron
  *
  * @param <T> The type of recommendations
  */
-public class Recommendations<T extends Recommendation> implements Serializable{
+public class Recommendations<U extends User, T extends Recommendation> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	
 	/**
 	 * The user id for whom recommendations were made.
 	 */
-	final int userId;
+	final U user;
 	
 	/**
 	 * The sorted list of recommendations, from most relevant to less relevant.
@@ -26,21 +28,21 @@ public class Recommendations<T extends Recommendation> implements Serializable{
 	
 	/**
 	 * Main constructor of the class.
-	 * @param userId The user id for whom recommendations were made.
+	 * @param user The user for whom recommendations were made.
 	 * @param recommendations The sorted list of recommendations made for the user. It should be sorted from most
 	 * relevant to less relevant.
 	 */
-	public Recommendations(int userId, List<T> recommendations) {
-		this.userId = userId;
+	public Recommendations(U user, List<T> recommendations) {
+		this.user = user;
 		this.recommendations = recommendations;
 	}
 	
-	/**
-	 * Method that return the user id for whom recommendations were made.
-	 * @return The user id.
-	 */
-	public int userId() {
-		return this.userId;
+	public U user(){
+		return this.user;
+	}
+	
+	public int userId(){
+		return this.user.id();
 	}
 	
 	/**

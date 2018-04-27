@@ -50,8 +50,6 @@ public class RecsysTVDataSetLoaderTest {
 
 	@AfterClass
 	public static void tearDown() {
-		RecsysTVDataSet dataSet = data._2();
-		dataSet.close();
 		sc.close();
 		loader = null;
 	}

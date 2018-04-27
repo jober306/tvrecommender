@@ -2,6 +2,7 @@ package recommender;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.spark.mllib.linalg.Matrix;
@@ -13,7 +14,7 @@ import data.TVDataSet;
 import model.data.TVEvent;
 import model.data.TVProgram;
 import model.data.User;
-import model.matrix.UserItemMatrix;
+import model.matrix.UserTVProgramMatrix;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
 import model.similarity.NormalizedCosineSimilarity;
@@ -42,7 +43,7 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	/**
 	 * The user item matrix.
 	 */
-	UserItemMatrix R;
+	UserTVProgramMatrix<? extends U, ? extends P> R;
 
 	/**
 	 * The item similarities matrix. It is a symetric matrix represented only by
@@ -61,7 +62,7 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(Context<U, P, E> context, int numberOfRecommendations) {
+	public ItemBasedRecommender(Context<? extends U, ? extends P, ? extends E> context, int numberOfRecommendations) {
 		super(context, numberOfRecommendations);
 	}
 
@@ -108,22 +109,21 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	 * @return A list of pair containing respectively the item index in the user
 	 *         item matrix and the similarity value.
 	 */
-	public List<Tuple2<Integer, Double>> predictItemNeighbourhoodForUser(
-			int userIndex, int itemIndex, int n) {
-		List<Integer> itemsSeenByUser = R.getItemIndexesSeenByUser(userIndex);
+	public List<Tuple2<Integer, Double>> predictItemNeighbourhoodForUser(U user, int itemIndex, int n) {
+		Set<Integer> itemsSeenByUser = R.getTVProgramIndexesSeenByUser(user);
 		List<Tuple2<Integer, Double>> itemsNeighbourhood = predictItemNeighbourhood(itemIndex, n);
 		List<Tuple2<Integer, Double>> itemsNeighbourhoodForUser = itemsNeighbourhood.stream().filter(pair -> itemsSeenByUser.contains(pair._1())).collect(Collectors.toList());
 		return itemsNeighbourhood.subList(0, Math.min(itemsNeighbourhoodForUser.size(), n));
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendNormally(int userId, List<P> tvPrograms) {
+	protected Recommendations<U, ScoredRecommendation> recommendNormally(U user, List<? extends P> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected Recommendations<ScoredRecommendation> recommendForTesting(int userId, List<P> tvPrograms) {
+	protected Recommendations<U, ScoredRecommendation> recommendForTesting(U user, List<? extends P> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

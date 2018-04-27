@@ -10,22 +10,28 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.recommendation.Rating;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
 import model.data.User;
-import model.feature.FeatureExtractor;
+import model.data.feature.FeatureExtractor;
 import model.information.Informative;
-import model.matrix.DistributedUserItemMatrix;
-import model.matrix.LocalUserItemMatrix;
+import model.matrix.DistributedUserTVProgramMatrix;
+import model.matrix.LocalUserTVProgramMatrix;
+import model.matrix.UserTVProgramMapping;
+import scala.Tuple2;
 import util.Lazy;
+import util.collections.StreamUtilities;
 import util.spark.SparkUtilities;
 import util.time.LocalDateTimeDTO;
 
@@ -40,15 +46,13 @@ import util.time.LocalDateTimeDTO;
  *            this class.
  */
 public abstract class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U, P>> implements Serializable, Informative {
-	
-	abstract public void close();
-	
+		
 	// ----------ML lib convertion methods----------------
 	abstract public JavaRDD<Rating> convertToMLlibRatings();
 
-	abstract public DistributedUserItemMatrix convertToDistUserItemMatrix();
+	abstract public DistributedUserTVProgramMatrix<U, P> convertToDistUserItemMatrix();
 	
-	abstract public LocalUserItemMatrix convertToLocalUserItemMatrix();
+	abstract public LocalUserTVProgramMatrix<U, P> convertToLocalUserItemMatrix();
 
 	abstract public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super P, ? super E> extractor);
 	
@@ -80,11 +84,14 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 	transient Supplier<Integer> numberOfTvShowIndexes = lazily(() -> numberOfTvShowIndexes = value(initNumberOfTVShowIndexes()));
 	transient Supplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(eventsData.count()));
 	transient Supplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
+	transient Supplier<Set<U>> allUsers = lazily(() -> allUsers = value(initAllUsers()));
 	transient Supplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
+	transient Supplier<Set<P>> allPrograms = lazily(() -> allPrograms = value(initAllPrograms()));
 	transient Supplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
 	transient Supplier<Set<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
 	transient Supplier<LocalDateTime> startTime = lazily(() -> startTime = value(initStartTime()));
 	transient Supplier<LocalDateTime> endTime = lazily(() -> endTime = value(initEndTime()));
+	transient Supplier<UserTVProgramMapping<U, P>> mapping = lazily(() -> mapping = value(initUserTVProgramMapping()));
 	
 	/**
 	 * Abstract constructor that initialize the tv events data and the spark
@@ -96,6 +103,7 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 	public TVDataSet(JavaRDD<E> eventsData, JavaSparkContext sc) {
 		this.eventsData = eventsData;
 		this.sc = sc;
+		
 	}
 
 	/**
@@ -143,8 +151,7 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 	 * @return True if the event is in the data set, false otherwise.
 	 */
 	public boolean contains(E event) {
-		JavaRDD<E> eventRDD = SparkUtilities
-				.<E> elementToJavaRDD(event, sc);
+		JavaRDD<E> eventRDD = SparkUtilities.elementToJavaRDD(event, sc);
 		JavaRDD<E> intersection = eventsData.intersection(eventRDD);
 		return !intersection.isEmpty();
 	}
@@ -209,15 +216,31 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 	}
 	
 	private Set<Integer> initAllUserIds(){
-		return Sets.newHashSet(eventsData.map(TVEvent::getUserID).distinct().collect());
+		return Sets.newHashSet(getAllUsers().stream().map(U::id).collect(Collectors.toList()));
 	}
-
+	
+	public Set<U> getAllUsers(){
+		return allUsers.get();
+	}
+	
+	public Set<U> initAllUsers(){
+		return Sets.newHashSet(eventsData.map(E::getUser).distinct().collect());
+	}
+	
 	public Set<Integer> getAllProgramIds() {
-		return Sets.newHashSet(eventsData.map(TVEvent::getProgramID).distinct().collect());
+		return Sets.newHashSet(eventsData.map(E::getProgramID).distinct().collect());
 	}
 	
 	private Set<Integer> initAllProgramIds(){
-		return Sets.newHashSet(eventsData.map(TVEvent::getProgramID).distinct().collect());
+		return Sets.newHashSet(getAllPrograms().stream().map(P::programId).collect(Collectors.toList()));
+	}
+	
+	public Set<P> getAllPrograms(){
+		return allPrograms.get();
+	}
+	
+	private Set<P> initAllPrograms(){
+		return Sets.newHashSet(eventsData.map(E::getProgram).distinct().collect());
 	}
 
 	public Set<Integer> getAllEventIds() {
@@ -225,7 +248,7 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 	}
 	
 	public Set<Integer> initAllEventIds(){
-		return Sets.newHashSet(eventsData.map(TVEvent::getEventID).distinct().collect());
+		return Sets.newHashSet(eventsData.map(E::getEventID).distinct().collect());
 	}
 
 	public Set<Integer> getAllChannelIds() {
@@ -233,19 +256,19 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 	}
 	
 	public Set<Integer> initAllChannelIds(){
-		return Sets.newHashSet(eventsData.map(TVEvent::getChannelId).distinct().collect());
+		return Sets.newHashSet(eventsData.map(E::getChannelId).distinct().collect());
 	}
 
 	private int initNumberOfUsers(){
-		return (int)eventsData.map(TVEvent::getUserID).distinct().count();
+		return (int)eventsData.map(E::getUserID).distinct().count();
 	}
 
 	private int initNumberOfTVShows(){
-		return (int)eventsData.map(TVEvent::getProgram).distinct().count();
+		return (int)eventsData.map(E::getProgram).distinct().count();
 	}
 	
 	private int initNumberOfTVShowIndexes(){
-		return (int) eventsData.map(TVEvent::getProgramID).distinct().count();
+		return (int) eventsData.map(E::getProgramID).distinct().count();
 	}
 	
 	private LocalDateTime initStartTime(){
@@ -262,6 +285,16 @@ public abstract class TVDataSet<U extends User, P extends TVProgram, E extends T
 				.map(LocalDateTimeDTO::new)
 				.reduce(LocalDateTimeDTO::max)
 				.toLocalDateTime();
+	}
+	
+	public UserTVProgramMapping<U, P> getUserTVProgramMapping(){
+		return mapping.get();
+	}
+	
+	private UserTVProgramMapping<U, P> initUserTVProgramMapping(){
+		BiMap<U, Integer> userMapping = HashBiMap.create(StreamUtilities.zipWithIndex(getAllUsers().stream()).collect(Collectors.toMap(Tuple2::_1, Tuple2::_2)));
+		BiMap<P, Integer> tvProgramMapping = HashBiMap.create(StreamUtilities.zipWithIndex(getAllPrograms().stream()).collect(Collectors.toMap(Tuple2::_1, Tuple2::_2)));
+		return new UserTVProgramMapping<>(userMapping, tvProgramMapping);
 	}
 	
 	public int getNumberOfUsers(){

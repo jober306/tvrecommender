@@ -39,7 +39,7 @@ public class EvaluationContext<U extends User, P extends TVProgram, E extends TV
 	/**
 	 * The map containing the set of programs that each user watched.
 	 */
-	final Map<Integer, Set<P>> groundTruth;
+	final Map<U, Set<P>> groundTruth;
 	
 	/**
 	 * Constructor of this class
@@ -108,35 +108,29 @@ public class EvaluationContext<U extends User, P extends TVProgram, E extends TV
 	 * Method that return the ground truth map.
 	 * @return A map containing, for each user, the set of tv program they watched.
 	 */
-	public Map<Integer, Set<P>> getGroundTruth(){
+	public Map<U, Set<P>> getGroundTruth(){
 		return this.groundTruth;
 	}
 
-	private Map<Integer, Set<P>> createGroundTruth(){
-		Map<Integer, Set<P>> groundTruth = initializeGroundTruth();
+	private Map<U, Set<P>> createGroundTruth(){
+		Map<U, Set<P>> groundTruth = initializeGroundTruth();
 		testSet.getEventsData().collect().stream().forEach(event -> addEvent(groundTruth, event));
 		return groundTruth;
 	}
 	
-	private Map<Integer, Set<P>> initializeGroundTruth(){
-		Map<Integer, Set<P>> groundTruth = new HashMap<Integer, Set<P>>();
-		for(int userId : testSet.getAllUserIds()){
-			groundTruth.put(userId, new HashSet<P>());
+	private Map<U, Set<P>> initializeGroundTruth(){
+		Map<U, Set<P>> groundTruth = new HashMap<U, Set<P>>();
+		for(U user : testSet.getAllUsers()){
+			groundTruth.put(user, new HashSet<P>());
 		}
 		return groundTruth;
 	}
 	
-	private void addEvent(Map<Integer, Set<P>> groundTruth, E event){
+	private void addEvent(Map<U, Set<P>> groundTruth, E event){
 		groundTruth.get(event.getUserID()).add(event.getProgram());
 	}
 	
 	private List<P> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){
 		return getEPG().getListProgramsBetweenTimes(testStartTime, testEndTime).stream().distinct().collect(Collectors.toList());
-	}
-	
-	@Override
-	public void close() {
-		super.close();
-		testSet.close();
 	}
 }

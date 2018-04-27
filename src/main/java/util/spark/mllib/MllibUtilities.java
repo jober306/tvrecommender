@@ -503,7 +503,6 @@ public class MllibUtilities {
 	
 	/**
 	 * Method that converts the data of a sparse matrix (i.e. the non-zero entries) into the Compressed Sparse Column (CSC) Format.
-	 * @param numRows The number of row of the matrix.
 	 * @param numCols The number of column of the matrix.
 	 * @param entries The non-zero entries of the matrix.
 	 * @return The information needed to create a matrix in CSC representation.

@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import model.data.TVProgram;
+import model.data.User;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
@@ -50,15 +51,15 @@ public abstract class RecommendationsFixture {
 	
 	
 	
-	protected Recommendations<Recommendation> distinctRecommendations;
-	protected Recommendations<Recommendation> allRecommendations;
-	protected Recommendations<Recommendation> sameRecommendations;
+	protected Recommendations<User, Recommendation> distinctRecommendations;
+	protected Recommendations<User, Recommendation> allRecommendations;
+	protected Recommendations<User, Recommendation> sameRecommendations;
 	
 	@Before
 	public void setUp() {
-		distinctRecommendations = new Recommendations<>(1, Arrays.asList(rec1, rec2, rec3, rec4));
-		allRecommendations = new Recommendations<>(2, Arrays.asList(rec1, rec2, rec3, rec4, rec5, rec6, rec7, rec8, rec9, rec10));
-		sameRecommendations = new Recommendations<>(3, Arrays.asList(rec1, rec1, rec1 ,rec1));
+		distinctRecommendations = new Recommendations<>(new User(1), Arrays.asList(rec1, rec2, rec3, rec4));
+		allRecommendations = new Recommendations<>(new User(2), Arrays.asList(rec1, rec2, rec3, rec4, rec5, rec6, rec7, rec8, rec9, rec10));
+		sameRecommendations = new Recommendations<>(new User(3), Arrays.asList(rec1, rec1, rec1 ,rec1));
 	}
 	
 	@After

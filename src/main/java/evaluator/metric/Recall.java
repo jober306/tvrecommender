@@ -28,7 +28,7 @@ public class Recall implements EvaluationMetric<Recommendation>{
 	}
 
 	@Override
-	public double evaluate(Recommendations<? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<?, ? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
 		double truePositive = (double) recommendations.stream()
 			.limit(cutoff)
 			.map(Recommendation::tvProgram)

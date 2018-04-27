@@ -39,7 +39,7 @@ public class AveragePrecision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<?, ? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
 		List<? extends TVProgram> recommendedTVShowIndexes = recommendations.stream()
 				.map(Recommendation::tvProgram)
 				.collect(toList());

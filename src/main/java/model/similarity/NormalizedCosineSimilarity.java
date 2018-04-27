@@ -20,7 +20,7 @@ public class NormalizedCosineSimilarity implements SimilarityMeasure{
 		double normI = calculateL2Norm(i);
 		double normJ = calculateL2Norm(j);
 		double dotProduct = CosineSimilarity.getInstance().calculateSimilarity(i, j);
-		return dotProduct / (normI * normJ);
+		return (normI == 0.0d || normJ == 0.0d) ? 0.0d : dotProduct / (normI * normJ);
 	}
 
 	@Override
@@ -28,6 +28,6 @@ public class NormalizedCosineSimilarity implements SimilarityMeasure{
 		double normI = calculateL2Norm(i);
 		double normJ = calculateL2Norm(j);
 		double dotProduct = CosineSimilarity.getInstance().calculateSimilarity(i, j);
-		return dotProduct / (normI * normJ);
+		return (normI == 0.0d || normJ == 0.0d) ? 0.0d : dotProduct / (normI * normJ);
 	}
 }

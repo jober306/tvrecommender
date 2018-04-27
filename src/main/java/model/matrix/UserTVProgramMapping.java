@@ -1,30 +1,37 @@
 package model.matrix;
 
+import java.io.Serializable;
+
 import com.google.common.collect.BiMap;
 
 import model.data.TVProgram;
 import model.data.User;
 
-public class UserTVProgramMapping<U extends User, T extends TVProgram> {
+public class UserTVProgramMapping<U extends User, T extends TVProgram> implements Serializable{
 
-	final BiMap<? extends U, Long> userMapping;
-	final BiMap<? extends TVProgram, Long> tvProgramMapping;
+	private static final long serialVersionUID = 1L;
 	
-	public UserTVProgramMapping(BiMap<U, Long> userMapping, BiMap<T, Long> tvProgramMapping){
+	transient final BiMap<? extends U, Integer> userMapping;
+	transient final BiMap<? extends T, Integer> tvProgramMapping;
+	
+	public UserTVProgramMapping(BiMap<? extends U, Integer> userMapping, BiMap<? extends T, Integer> tvProgramMapping){
 		this.userMapping = userMapping;
 		this.tvProgramMapping = tvProgramMapping;
 	}
 	
-	public long mapUser(User u){
+	public int userToIndex(User u){
 		return userMapping.get(u);
 	}
 	
-	public U mapToUser(long index){
+	public U indexToUser(int index){
 		return userMapping.inverse().get(index);
 	}
 	
-	public long mapTVProgram(T tvProgram){
+	public int tvProgramToIndex(TVProgram tvProgram){
 		return tvProgramMapping.get(tvProgram);
 	}
 	
+	public T indexToTVProgram(int index){
+		return tvProgramMapping.inverse().get(index);
+	}
 }

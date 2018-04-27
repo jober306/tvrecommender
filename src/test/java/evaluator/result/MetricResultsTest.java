@@ -39,8 +39,8 @@ public class MetricResultsTest {
 	
 	Map<Integer, Double> usersScore;
 	
-	OneMetric<Recommendation> oneMetric;
-	IncrementMetric<Recommendation> incMetric;
+	OneMetric oneMetric;
+	IncrementMetric incMetric;
 	
 	@BeforeClass
 	public static void setUpOnce() {
@@ -57,8 +57,8 @@ public class MetricResultsTest {
 		usersScore.put(2, 0.6d);
 		usersScore.put(3, 0.7d);
 		usersScore.put(4, 0.8d);
-		this.oneMetric = new OneMetric<>();
-		this.incMetric = new IncrementMetric<>();
+		this.oneMetric = new OneMetric();
+		this.incMetric = new IncrementMetric();
 	}
 	
 	@Test
@@ -76,11 +76,11 @@ public class MetricResultsTest {
 	
 	@Test
 	public void evaluatingMeanTest() {
-		Recommendations<Recommendation> recommendations1 = new Recommendations<>(1, Collections.emptyList());
-		Recommendations<Recommendation> recommendations2 = new Recommendations<>(2, Collections.emptyList());
-		Recommendations<Recommendation> recommendations3 = new Recommendations<>(3, Collections.emptyList());
+		Recommendations<User, Recommendation> recommendations1 = new Recommendations<>(new User(1), Collections.emptyList());
+		Recommendations<User, Recommendation> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
+		Recommendations<User, Recommendation> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
 
-		Stream<Recommendations<? extends Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		Stream<Recommendations<User, Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
 		MetricResults result = incMetric.evaluate(recommendationsStream, context);
 		double expectedMean = 2.0d;
 		assertEquals(expectedMean, result.mean(), 0.0d);
@@ -102,10 +102,10 @@ public class MetricResultsTest {
 	
 	@Test
 	public void evaluatingGeometricMeanTest() {
-		Recommendations<Recommendation> recommendations1 = new Recommendations<>(1, Collections.emptyList());
-		Recommendations<Recommendation> recommendations2 = new Recommendations<>(2, Collections.emptyList());
-		Recommendations<Recommendation> recommendations3 = new Recommendations<>(3, Collections.emptyList());
-		Stream<Recommendations<? extends Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		Recommendations<User, Recommendation> recommendations1 = new Recommendations<>(new User(1), Collections.emptyList());
+		Recommendations<User, Recommendation> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
+		Recommendations<User, Recommendation> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
+		Stream<Recommendations<User, Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
 		MetricResults result = incMetric.evaluate(recommendationsStream, context);
 		double expectedGeoMean = 1.8171205928321d;
 		assertEquals(expectedGeoMean, result.geometricMean(), 0.000001d);
@@ -120,7 +120,6 @@ public class MetricResultsTest {
 	
 	@AfterClass
 	public static void tearDownOnce() {
-		context.close();
 		sc.close();
 	}
 }

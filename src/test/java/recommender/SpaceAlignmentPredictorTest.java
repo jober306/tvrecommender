@@ -46,13 +46,12 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		Recommendations<ScoredRecommendation> prediction = recommender.recommend(userId, START_TIME.plusHours(19));
+		Recommendations<User, ScoredRecommendation> prediction = recommender.recommend(new User(userId), START_TIME.plusHours(19));
 		assertEquals(numberOfResults, prediction.size());
 	}
 
 	@AfterClass
 	public static void tearDownOnce() {
-		recommender.closeContextDatasets();
 		sc.close();
 	}
 }

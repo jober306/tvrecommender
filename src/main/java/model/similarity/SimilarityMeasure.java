@@ -10,14 +10,14 @@ public interface SimilarityMeasure {
 	public double calculateSimilarity(DenseVector i, DenseVector j);
 	
 	public default double calculateSimilarity(Vector i, Vector j){
-		if(i instanceof SparseVector && j instanceof SparseVector){
-			SparseVector sparseI = (SparseVector) i;
-			SparseVector sparseJ = (SparseVector) j;
+		if(i instanceof DenseVector && j instanceof DenseVector){
+			DenseVector sparseI = (DenseVector) i;
+			DenseVector sparseJ = (DenseVector) j;
 			return calculateSimilarity(sparseI, sparseJ);
 		}
 		else{
-			DenseVector denseI = i.toDense();
-			DenseVector denseJ = j.toDense();
+			SparseVector denseI = i.toSparse();
+			SparseVector denseJ = j.toSparse();
 			return calculateSimilarity(denseI, denseJ);
 		}
 	}

@@ -13,12 +13,12 @@ import model.recommendation.Recommendations;
  *
  * @param <R> The type of the recommendation.
  */
-public class IncrementMetric<R extends Recommendation> implements EvaluationMetric<R> {
+public class IncrementMetric implements EvaluationMetric<Recommendation> {
 	
 	int currentValue = 1;
 	
 	@Override
-	public double evaluate(Recommendations<? extends R> recommendations, Set<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<?, ? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
 		return currentValue++;
 	}
 	

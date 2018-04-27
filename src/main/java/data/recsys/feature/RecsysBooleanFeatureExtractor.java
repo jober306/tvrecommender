@@ -14,7 +14,7 @@ import scala.Tuple2;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
-import model.feature.FeatureExtractor;
+import model.data.feature.FeatureExtractor;
 
 /**
  * A feature extractor for the recsys data set. It transforms a tv program or tv

@@ -41,7 +41,7 @@ public class TopChannelPerUserRecommenderTest {
 	
 	@Test
 	public void testRecommendMostWatchedProgramUser1(){
-		int user = 1;
+		User user = new User(1);
 		int expectedProgramId = 10;
 		RecsysTVProgram mostWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)0, 46, expectedProgramId, (byte) 0, (byte) 0);
 		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, 1, 1, (byte) 0, (byte) 0);
@@ -50,14 +50,14 @@ public class TopChannelPerUserRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().programId());
 	}
 	
 	@Test
 	public void testRecommendMostWatchProgramUser2(){
-		int user = 2;
+		User user = new User(2);
 		int expectedFirstProgramId1 = 10;
 		int expectedSecondProgramId2 = 15;
 		int expectedThirdProgramId3 = 20;
@@ -68,7 +68,7 @@ public class TopChannelPerUserRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram1, mostWatchedChannelTVProgram2, mostWatchedChannelTVProgram3, notWatchedChannelTVProgram);
 		int expectedNumberOfResults = 4;
 		recommender.setNumberOfRecommendations(tvPrograms.size());
-		Recommendations<Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().programId());
 		assertEquals(expectedSecondProgramId2, recommendations.get(1).tvProgram().programId());
@@ -77,7 +77,6 @@ public class TopChannelPerUserRecommenderTest {
 	
 	@AfterClass
 	public static void tearDownOnce() {
-		recommender.closeContextDatasets();
 		sc.close();
 	}
 }

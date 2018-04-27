@@ -54,7 +54,6 @@ public class UserPrefenreceTensorCalculatorTest {
 	
 	@AfterClass
 	public static void tearDown(){
-		dataSet.close();
 		sc.close();
 		loader = null;
 	}

@@ -19,7 +19,7 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.tensor.RecsysUserPreferenceTensorCalculator;
 import model.data.User;
-import model.feature.ChannelFeatureExtractor;
+import model.data.feature.ChannelFeatureExtractor;
 import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
@@ -45,7 +45,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 		this.anySlots = anySlots;
 	}
 	
-	public ChannelPreferenceRecommender(Context<User, RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
+	public ChannelPreferenceRecommender(Context<? extends User, ? extends RecsysTVProgram, ? extends RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
 		super(context, numberOfRecommendations);
 		this.anyUsers = anyUsers;
 		this.anySlots = anySlots;
@@ -63,15 +63,15 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 	}
 
 	@Override
-	protected Recommendations<Recommendation> recommendNormally(int userId, List<RecsysTVProgram> tvPrograms){
+	protected Recommendations<User, Recommendation> recommendNormally(User user, List<? extends RecsysTVProgram> tvPrograms){
 		List<Recommendation> recommendations = tvPrograms.stream()
-				.map(curry1(this::toProgramWatchTime, userId))
+				.map(curry1(this::toProgramWatchTime, user))
 				.sorted(comparing(Tuple2<RecsysTVProgram, Integer>::_2).reversed())
 				.limit(numberOfRecommendations)
 				.map(Tuple2<RecsysTVProgram, Integer>::_1)
 				.map(Recommendation::new)
 				.collect(Collectors.toList());
-		return new Recommendations<>(userId, recommendations);
+		return new Recommendations<>(user, recommendations);
 	}
 	
 	@Override
@@ -79,21 +79,21 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 		return Collections.emptyMap();
 	}
 	
-	protected Tuple2<RecsysTVProgram, Integer> toProgramWatchTime(int userId, RecsysTVProgram tvProgram){
-		UserPreference userPreference = new UserPreference(toUserPreferenceTuple(userId, tvProgram));
+	protected Tuple2<RecsysTVProgram, Integer> toProgramWatchTime(User user, RecsysTVProgram tvProgram){
+		UserPreference userPreference = new UserPreference(toUserPreferenceTuple(user, tvProgram));
 		int watchTime = userPreferenceCollection.getUserPreferenceTensorWatchTime(userPreference);
 		return new Tuple2<RecsysTVProgram, Integer>(tvProgram, watchTime);
 	}
 	
-	private Tuple3<Integer, Vector, Short> toUserPreferenceTuple(int userId, RecsysTVProgram tvProgram){
-		userId = anyUsers ? ANY : userId;
+	private Tuple3<Integer, Vector, Short> toUserPreferenceTuple(User user, RecsysTVProgram tvProgram){
+		int userId = anyUsers ? ANY : user.id();
 		short slot = anySlots ? (short) ANY : tvProgram.slot();
 		Vector channel = Vectors.dense(new double[] {tvProgram.channelId()});
 		return new Tuple3<Integer, Vector, Short>(userId, channel, slot);
 
 	}
 	
-	protected List<Recommendation> recommendTopChannelsWithRespectToWatchTime(Collection<Tuple2<Integer, Integer>> topChannelsWatchTime, int numberOfResults, List<RecsysTVProgram> tvPrograms){
+	protected List<Recommendation> recommendTopChannelsWithRespectToWatchTime(Collection<Tuple2<Integer, Integer>> topChannelsWatchTime, int numberOfResults, List<? extends RecsysTVProgram> tvPrograms){
 		List<Recommendation> recommendations = new ArrayList<Recommendation>();
 		for(Tuple2<Integer, Integer> topChannelWatchTime : topChannelsWatchTime){
 			int channelIndex = topChannelWatchTime._1();
@@ -107,7 +107,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 	}
 	
 	@Override
-	protected Recommendations<Recommendation> recommendForTesting(int userId, List<RecsysTVProgram> tvPrograms){
-		return recommendNormally(userId, tvPrograms);
+	protected Recommendations<User, Recommendation> recommendForTesting(User user, List<? extends RecsysTVProgram> tvPrograms){
+		return recommendNormally(user, tvPrograms);
 	}
 }
