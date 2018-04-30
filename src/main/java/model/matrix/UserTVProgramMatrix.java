@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import model.data.TVProgram;
 import model.data.User;
+import model.data.mapping.Mapping;
 import model.similarity.SimilarityMeasure;
 import scala.Tuple3;
 import util.spark.mllib.MllibUtilities;
@@ -25,7 +26,7 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
  * @author Jonathan Bergeron
  *
  */
-public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> implements Serializable{
+public abstract class UserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> implements Serializable{
 	
 	private static final long serialVersionUID = -7905292446619491537L;
 	
@@ -75,14 +76,16 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	/**
 	 * The mapping between user/row and tv program/column.
 	 */
-	protected final UserTVProgramMapping<U, P> mapping;
+	protected final Mapping<U, UM> userMapping;
+	protected final Mapping<P, PM> tvProgramMapping;
 	
 	/**
 	 * Super constructor accepting the mapping from user/tv program to their respective row/column.
 	 * @param mapping
 	 */
-	public UserTVProgramMatrix(UserTVProgramMapping<U, P> mapping){
-		this.mapping = mapping;
+	public UserTVProgramMatrix(Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping){
+		this.userMapping = userMapping;
+		this.tvProgramMapping = tvProgramMapping;
 	}
 	
 	/**
@@ -91,8 +94,8 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param tvProgram The tv program
 	 * @return The value associated with this user and this tv program.
 	 */
-	public double getValue(User user, TVProgram tvProgram){
-		return getValue(mapping.userToIndex(user), mapping.tvProgramToIndex(tvProgram));
+	public double getValue(U user, P tvProgram){
+		return getValue(userMapping.valueToIndex(user), tvProgramMapping.valueToIndex(tvProgram));
 	}
 	
 	/**
@@ -100,7 +103,7 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param user The user.
 	 * @return The set of tv program indexes seen by given user.
 	 */
-	public Set<Integer> getTVProgramIndexesSeenByUser(User user){
+	public Set<Integer> getTVProgramIndexesSeenByUser(U user){
 		return IntStream.of(getUserRow(user).toSparse().indices()).boxed().collect(Collectors.toSet());
 	}
 	
@@ -109,8 +112,8 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param user The user.
 	 * @return The set of tv programs seen by the given user.
 	 */
-	public Set<P> getTVProgramSeenByUser(User user){
-		return getTVProgramIndexesSeenByUser(user).stream().map(mapping::indexToTVProgram).collect(Collectors.toSet());
+	public Set<PM> getTVProgramSeenByUser(U user){
+		return getTVProgramIndexesSeenByUser(user).stream().map(tvProgramMapping::indexToMappedValue).collect(Collectors.toSet());
 	}
 	
 	/**
@@ -118,7 +121,7 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param program The tv program.
 	 * @return The set of user indexes that have seen the given tv program.
 	 */
-	public Set<Integer> getUserIndexesThatHavenSeenTVProgram(TVProgram program){
+	public Set<Integer> getUserIndexesThatHavenSeenTVProgram(P program){
 		return IntStream.of(getTVProgramColumn(program).toSparse().indices()).boxed().collect(Collectors.toSet());
 	}
 	
@@ -127,8 +130,8 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param program The tv program.
 	 * @return The set of users that have seen the given tv program.
 	 */
-	public Set<U> getUsersThatHaveSeenTVProgram(TVProgram program){
-		return getUserIndexesThatHavenSeenTVProgram(program).stream().map(mapping::indexToUser).collect(Collectors.toSet());
+	public Set<UM> getUsersThatHaveSeenTVProgram(P program){
+		return getUserIndexesThatHavenSeenTVProgram(program).stream().map(userMapping::indexToMappedValue).collect(Collectors.toSet());
 	}
 	
 	/**
@@ -136,8 +139,8 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param user The user.
 	 * @return The row represented as a vector corresponding to the given user.
 	 */
-	public Vector getUserRow(User user){
-		return getRow(mapping.userToIndex(user));
+	public Vector getUserRow(U user){
+		return getRow(userMapping.valueToIndex(user));
 	}
 	
 	/**
@@ -145,8 +148,8 @@ public abstract class UserTVProgramMatrix<U extends User, P extends TVProgram> i
 	 * @param tvProgram The tv program.
 	 * @return The column represented as a vector corresponding to the given tv program.
 	 */
-	public Vector getTVProgramColumn(TVProgram tvProgram){
-		return getColumn(mapping.tvProgramToIndex(tvProgram));
+	public Vector getTVProgramColumn(P tvProgram){
+		return getColumn(tvProgramMapping.valueToIndex(tvProgram));
 	}
 	
 	/**

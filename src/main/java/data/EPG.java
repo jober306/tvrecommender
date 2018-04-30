@@ -39,9 +39,9 @@ public class EPG<T extends TVProgram> implements Serializable {
 	 * 
 	 * @param electronicProgrammingGuide
 	 */
-	public EPG(JavaRDD<T> electronicProgrammingGuide, JavaSparkContext sc) {
+	public EPG(JavaRDD<T> electronicProgrammingGuide) {
 		this.electronicProgrammingGuide = electronicProgrammingGuide;
-		this.sc = sc;
+		this.sc = new JavaSparkContext(electronicProgrammingGuide.context());
 	}
 	
 	public void cache(){

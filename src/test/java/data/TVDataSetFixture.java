@@ -104,8 +104,8 @@ public class TVDataSetFixture {
 	}
 	
 	static void initializeEPG(){
-		epg = new EPG<>(tvProgramsRDD, sc);
-		emptyEPG = new EPG<>(sc.emptyRDD(), sc);
+		epg = new EPG<>(tvProgramsRDD);
+		emptyEPG = new EPG<>(sc.emptyRDD());
 	}
 	
 	private static void initializeTVEvents(){
@@ -125,8 +125,8 @@ public class TVDataSetFixture {
 	}
 	
 	static void initializeTVDataset(){
-		dataset = new TVDataSetMock(tvEventsRDD, sc);
-		emptyDataset = new TVDataSetMock(sc.emptyRDD(), sc);
+		dataset = new TVDataSetMock(tvEventsRDD);
+		emptyDataset = new TVDataSetMock(sc.emptyRDD());
 	}
 
 	@AfterClass

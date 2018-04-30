@@ -70,7 +70,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	/**
 	 * The context of this recommender;
 	 */
-	protected Context<? extends U, ? extends P, ? extends E> context;
+	protected Context<U, P, E> context;
 
 	RecommendFunction<U, P, R> recommendFunctionRef;
 	
@@ -80,7 +80,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
 
-	public TVRecommender(Context<? extends U, ? extends P, ? extends E> context, int numberOfRecommendations) {
+	public TVRecommender(Context<U, P, E> context, int numberOfRecommendations) {
 		this.setContext(context);
 		this.numberOfRecommendations = numberOfRecommendations;
 	}
@@ -96,7 +96,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 		return parameters;
 	}
 	
-	public void setContext(Context<? extends U, ? extends P, ? extends E> context){
+	public void setContext(Context<U, P, E> context){
 		this.context = context;
 		if (context instanceof EvaluationContext) {
 			recommendFunctionRef = this::recommendForTesting;

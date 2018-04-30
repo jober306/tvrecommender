@@ -9,6 +9,7 @@ import java.util.List;
 import model.UserTVProgramFixture;
 import model.data.TVProgram;
 import model.data.User;
+import model.data.mapping.IdentityMapping;
 import model.matrix.DistributedUserTVProgramMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 import model.similarity.SimilarityMeasure;
@@ -26,18 +27,21 @@ public class DistributedUserTVProgramMatrixTest extends UserTVProgramFixture{
 
 	static JavaSparkContext sc;
 	
-	static DistributedUserTVProgramMatrix<User, TVProgram> R;
-	static UserTVProgramMapping<User, TVProgram> mapping;
+	static DistributedUserTVProgramMatrix<User, User, TVProgram, TVProgram> R;
+	static IdentityMapping<User> userMapping;
+	static IdentityMapping<TVProgram> tvProgramMapping;
 	
 	@BeforeClass
 	public static void setUp() {
+		userMapping = new IdentityMapping<>(allUsers);
+		tvProgramMapping = new IdentityMapping<>(allPrograms);
 		sc = SparkUtilities.getADefaultSparkContext();
 		List<IndexedRow> rowList = new ArrayList<IndexedRow>();
 		for (int rowIndex = 0; rowIndex < NUM_ROWS; rowIndex++) {
 			rowList.add(new IndexedRow(rowIndex, Vectors.sparse(NUM_COL, ROW_VALUE_INDICES[rowIndex], ROW_SPARSE_MATRIX_VALUES[rowIndex])));
 		}
 		JavaRDD<IndexedRow> rows = SparkUtilities.elementsToJavaRDD(rowList, sc);
-		R = new DistributedUserTVProgramMatrix<>(rows, mapping);
+		R = new DistributedUserTVProgramMatrix<>(rows, userMapping, tvProgramMapping);
 		
 	}
 

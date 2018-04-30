@@ -1,8 +1,10 @@
 package model;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
@@ -21,23 +23,8 @@ public class UserTVProgramFixture {
 	protected final static TVProgram program2 = new TVProgram(NOW, NOW, 0, 2);
 	protected final static TVProgram program3 = new TVProgram(NOW, NOW, 0, 3);
 	
-	protected final static Map<User, Integer> userMapping; 
-	static {
-		Map<User, Integer> map = new HashMap<User, Integer>();
-		map.put(user0, 0);
-		map.put(user1, 1);
-		map.put(user2, 2);
-		userMapping = map;
-	};
-	protected final static Map<TVProgram, Integer> programMapping;
-	static {
-		Map<TVProgram, Integer> map = new HashMap<TVProgram, Integer>();
-		map.put(program0, 0);
-		map.put(program1, 1);
-		map.put(program2, 2);
-		map.put(program3, 3);
-		programMapping = map;
-	}
+	protected final static Set<User> allUsers = Sets.newHashSet(Arrays.asList(user0, user1, user2)); 
+	protected final static Set<TVProgram> allPrograms = Sets.newHashSet(Arrays.asList(program0, program1, program2, program3)); 
 	
 	protected final static TVEvent<User, TVProgram> event1 = new TVEvent<>(NOW, program0, user1, 0, 0);
 	protected final static TVEvent<User, TVProgram> event2 = new TVEvent<>(NOW, program0, user2, 0, 0);

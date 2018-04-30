@@ -14,6 +14,8 @@ import data.TVDataSet;
 import model.data.TVEvent;
 import model.data.TVProgram;
 import model.data.User;
+import model.data.mapping.TVProgramIDMapping;
+import model.data.mapping.UserIDMapping;
 import model.matrix.UserTVProgramMatrix;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
@@ -29,7 +31,7 @@ import scala.Tuple2;
  */
 public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>>
 		extends TVRecommender<U, P, E, ScoredRecommendation> {
-
+	
 	/**
 	 * The electronic programming guide used by this recommender.
 	 */
@@ -39,11 +41,17 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	 * The tv data set on which the matrix M prime will be build.
 	 */
 	TVDataSet<U, P, E> tvDataset;
+	
+	/**
+	 * The mapping between user row and tv program column.
+	 */
+	UserIDMapping<U> userMapping;
+	TVProgramIDMapping<P> tvProgramMapping;
 
 	/**
 	 * The user item matrix.
 	 */
-	UserTVProgramMatrix<? extends U, ? extends P> R;
+	UserTVProgramMatrix<U, Integer, P, Integer> R;
 
 	/**
 	 * The item similarities matrix. It is a symetric matrix represented only by
@@ -62,7 +70,7 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	 * @param R
 	 *            The user item matrix.
 	 */
-	public ItemBasedRecommender(Context<? extends U, ? extends P, ? extends E> context, int numberOfRecommendations) {
+	public ItemBasedRecommender(Context<U, P, E> context, int numberOfRecommendations) {
 		super(context, numberOfRecommendations);
 	}
 
@@ -71,7 +79,9 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	 * set.
 	 */
 	public void train() {
-		this.R = context.getTrainingSet().convertToDistUserItemMatrix();
+		this.userMapping = new UserIDMapping<>(context.getTrainingSet().getAllUsers());
+		this.tvProgramMapping = new TVProgramIDMapping<>(context.getTrainingSet().getAllPrograms()); 
+		this.R = context.getTrainingSet().convertToDistUserItemMatrix(userMapping, tvProgramMapping);
 		this.S = R.getItemSimilarities(NormalizedCosineSimilarity.getInstance());
 	}
 

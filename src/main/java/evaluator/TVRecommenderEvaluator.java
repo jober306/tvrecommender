@@ -234,7 +234,7 @@ public class TVRecommenderEvaluator<U extends User, P extends TVProgram, E exten
 		Set<EvaluationMetric<Recommendation>> measures = Sets.newHashSet(new Recall(2), new Recall(5), new Recall(10), new Precision(2), new Precision(5), new Precision(10));
 		int rank = 50;
 		int neighbourhoodSize = 10;
-		SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, new RecsysBooleanFeatureExtractor(epg), rank, neighbourhoodSize, sc);
+		SpaceAlignmentRecommender<User, RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, new RecsysBooleanFeatureExtractor(epg), rank, neighbourhoodSize, sc);
 		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent, ScoredRecommendation> evaluator = new TVRecommenderEvaluator<>(recommender, measures);
 		return evaluator;
 	}

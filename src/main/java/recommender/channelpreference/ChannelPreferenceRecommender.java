@@ -45,7 +45,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 		this.anySlots = anySlots;
 	}
 	
-	public ChannelPreferenceRecommender(Context<? extends User, ? extends RecsysTVProgram, ? extends RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
+	public ChannelPreferenceRecommender(Context<User, RecsysTVProgram, RecsysTVEvent> context, int numberOfRecommendations, boolean anyUsers, boolean anySlots) {
 		super(context, numberOfRecommendations);
 		this.anyUsers = anyUsers;
 		this.anySlots = anySlots;

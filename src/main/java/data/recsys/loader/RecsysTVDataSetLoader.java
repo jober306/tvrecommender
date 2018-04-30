@@ -96,8 +96,8 @@ public class RecsysTVDataSetLoader {
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet() {
 		JavaRDD<RecsysTVEvent> events = linesToTVEvent(loadLinesFromDataSet());
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
-		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc);
-		RecsysEPG epg = new RecsysEPG(programs, sc);
+		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events);
+		RecsysEPG epg = new RecsysEPG(programs);
 		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
 	}
 
@@ -117,8 +117,8 @@ public class RecsysTVDataSetLoader {
 		JavaRDD<RecsysTVEvent> filteredEvents = TVDataSetUtilities
 				.filterByMinDuration(events, 5);
 		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(filteredEvents);
-		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events, sc);
-		RecsysEPG epg = new RecsysEPG(programs, sc);
+		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events);
+		RecsysEPG epg = new RecsysEPG(programs);
 		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
 	}
 

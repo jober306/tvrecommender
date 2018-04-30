@@ -16,6 +16,7 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 
 import model.data.TVProgram;
 import model.data.User;
+import model.data.mapping.Mapping;
 import util.spark.SparkUtilities;
 
 /**
@@ -25,7 +26,7 @@ import util.spark.SparkUtilities;
  * @author Jonathan Bergeron
  *
  */
-public class DistributedUserTVProgramMatrix<U extends User, P extends TVProgram> extends UserTVProgramMatrix<U, P> implements Serializable{
+public class DistributedUserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> extends UserTVProgramMatrix<U, UM, P, PM> implements Serializable{
 
 	private static final long serialVersionUID = -135750142194246162L;
 	
@@ -38,8 +39,8 @@ public class DistributedUserTVProgramMatrix<U extends User, P extends TVProgram>
 	 * Constructor of the class.
 	 * 
 	 */
-	public DistributedUserTVProgramMatrix(JavaRDD<IndexedRow> rows, UserTVProgramMapping<U, P> mapping) {
-		super(mapping);
+	public DistributedUserTVProgramMatrix(JavaRDD<IndexedRow> rows, Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping) {
+		super(userMapping, tvProgramMapping);
 		data = new IndexedRowMatrix(rows.rdd());
 	}
 

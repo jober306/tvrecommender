@@ -80,7 +80,6 @@ public class TVDataSetUtilities {
 	 */
 	public static <U extends User, P extends TVProgram, E extends TVEvent<U, P>> TVDataSet<U, P, E> createSubDataSet(TVDataSet<U, P, E> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
 		return dataSet.newInstance(
-				filterByDateTime(dataSet.getEventsData(), startTime, endTime),
-				dataSet.getJavaSparkContext());
+				filterByDateTime(dataSet.getEventsData(), startTime, endTime));
 	}
 }

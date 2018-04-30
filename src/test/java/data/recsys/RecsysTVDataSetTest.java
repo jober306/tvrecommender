@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import data.recsys.feature.RecsysFeatureExtractor;
 import model.data.User;
+import model.data.mapping.IdentityMapping;
 import model.matrix.DistributedUserTVProgramMatrix;
 import model.matrix.LocalUserTVProgramMatrix;
 import scala.Tuple2;
@@ -49,6 +50,8 @@ public class RecsysTVDataSetTest {
 			(byte) 1, (byte) 4, (byte) 30, 5, 5785, 51097405, 30);
 
 	RecsysTVDataSet dataSet;
+	IdentityMapping<User> userMapping;
+	IdentityMapping<RecsysTVProgram> tvProgramMapping;
 	
 	@BeforeClass
 	public static void setUpOnce(){
@@ -63,7 +66,9 @@ public class RecsysTVDataSetTest {
 		events.add(tvEvent3);
 		events.add(tvEvent4);
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities.elementsToJavaRDD(events,sc);
-		dataSet = new RecsysTVDataSet(eventsRDD, sc);
+		dataSet = new RecsysTVDataSet(eventsRDD);
+		userMapping = new IdentityMapping<>(dataSet.getAllUsers());
+		tvProgramMapping = new IdentityMapping<>(dataSet.getAllPrograms());
 	}
 	
 	@Test
@@ -88,8 +93,10 @@ public class RecsysTVDataSetTest {
 
 	@Test
 	public void convertToDistributedMatrixTest() {
-		DistributedUserTVProgramMatrix<User, RecsysTVProgram> R = dataSet.convertToDistUserItemMatrix();
-		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getUserTVProgramMapping().userToIndex(event.getUser()), dataSet.getUserTVProgramMapping().tvProgramToIndex(event.getProgram()))).collect(Collectors.toSet());
+		IdentityMapping<User> userMapping = new IdentityMapping<>(dataSet.getAllUsers());
+		IdentityMapping<RecsysTVProgram> tvProgramMapping = new IdentityMapping<>(dataSet.getAllPrograms());
+		DistributedUserTVProgramMatrix<User, User, RecsysTVProgram, RecsysTVProgram> R = dataSet.convertToDistUserItemMatrix(userMapping, tvProgramMapping);
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(userMapping.valueToIndex(event.getUser()), tvProgramMapping.valueToIndex(event.getProgram()))).collect(Collectors.toSet());
 		for (int row = 0; row < R.getNumRows(); row++) {
 			for(int col = 0; col < R.getNumCols(); col++){
 				double actualValue = R.getValue(row, col);
@@ -107,8 +114,10 @@ public class RecsysTVDataSetTest {
 	
 	@Test
 	public void convertToLocalMatrixTest(){
-		LocalUserTVProgramMatrix<User, RecsysTVProgram> R = dataSet.convertToLocalUserItemMatrix();
-		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(dataSet.getUserTVProgramMapping().userToIndex(event.getUser()), dataSet.getUserTVProgramMapping().tvProgramToIndex(event.getProgram()))).collect(Collectors.toSet());
+		IdentityMapping<User> userMapping = new IdentityMapping<>(dataSet.getAllUsers());
+		IdentityMapping<RecsysTVProgram> tvProgramMapping = new IdentityMapping<>(dataSet.getAllPrograms());
+		LocalUserTVProgramMatrix<User, User, RecsysTVProgram, RecsysTVProgram> R = dataSet.convertToLocalUserItemMatrix(userMapping, tvProgramMapping);
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(userMapping.valueToIndex(event.getUser()), tvProgramMapping.valueToIndex(event.getProgram()))).collect(Collectors.toSet());
 		for (int row = 0; row < R.getNumRows(); row++) {
 			for(int col = 0; col < R.getNumCols(); col++){
 				double actualValue = R.getValue(row, col);
@@ -127,7 +136,7 @@ public class RecsysTVDataSetTest {
 	@Test
 	public void getContentMatrixTest() {
 		IndexedRowMatrix C = dataSet.getContentMatrix(RecsysFeatureExtractor
-				.getInstance());
+				.getInstance(), tvProgramMapping);
 		assertEquals(3, C.rows().count());
 		assertEquals(3, C.numRows());
 		assertEquals(4, C.numCols());

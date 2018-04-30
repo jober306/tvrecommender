@@ -10,6 +10,7 @@ import org.apache.spark.mllib.linalg.Vector;
 
 import model.data.TVProgram;
 import model.data.User;
+import model.data.mapping.Mapping;
 
 /**
  * Class that wraps the local matrix of mllib to represent an user-item matrix.
@@ -17,7 +18,7 @@ import model.data.User;
  * @author Jonathan Bergeron
  *
  */
-public class LocalUserTVProgramMatrix<U extends User, P extends TVProgram> extends UserTVProgramMatrix<U, P> implements Serializable{
+public class LocalUserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> extends UserTVProgramMatrix<U, UM, P, PM> implements Serializable{
 
 	private static final long serialVersionUID = 6401494865309223613L;
 	
@@ -32,8 +33,8 @@ public class LocalUserTVProgramMatrix<U extends User, P extends TVProgram> exten
 	 * @param numCol The matrix number of column.
 	 * @param values The values of the matrix in column major order.
 	 */
-	public LocalUserTVProgramMatrix(int numRow, int numCol, double[] values, UserTVProgramMapping<U, P> mapping){
-		super(mapping);
+	public LocalUserTVProgramMatrix(int numRow, int numCol, double[] values, Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping){
+		super(userMapping, tvProgramMapping);
 		this.R = Matrices.dense(numRow, numCol, values);
 	}
 	
@@ -53,8 +54,8 @@ public class LocalUserTVProgramMatrix<U extends User, P extends TVProgram> exten
 	 * @param rowIndices
 	 * @param values
 	 */
-	public LocalUserTVProgramMatrix(int numRow, int numCol, int[] colPtrs, int[] rowIndices, double[] values, UserTVProgramMapping<U, P> mapping){
-		super(mapping);
+	public LocalUserTVProgramMatrix(int numRow, int numCol, int[] colPtrs, int[] rowIndices, double[] values, Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping){
+		super(userMapping, tvProgramMapping);
 		this.R = Matrices.sparse(numRow, numCol, colPtrs, rowIndices, values);
 	}
 	

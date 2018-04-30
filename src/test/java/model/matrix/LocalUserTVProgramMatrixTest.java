@@ -6,6 +6,7 @@ import static org.junit.Assert.assertArrayEquals;
 import model.UserTVProgramFixture;
 import model.data.TVProgram;
 import model.data.User;
+import model.data.mapping.IdentityMapping;
 import model.matrix.LocalUserTVProgramMatrix;
 import model.similarity.NormalizedCosineSimilarity;
 import model.similarity.SimilarityMeasure;
@@ -15,19 +16,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.HashBiMap;
-
 public class LocalUserTVProgramMatrixTest extends UserTVProgramFixture{
 	
-	UserTVProgramMapping<User, TVProgram> mapping;
-	LocalUserTVProgramMatrix<User, TVProgram> denseMatrix;
-	LocalUserTVProgramMatrix<User, TVProgram> sparseMatrix;
+	static IdentityMapping<User> userMapping;
+	static IdentityMapping<TVProgram> tvProgramMapping;
+	LocalUserTVProgramMatrix<User, User, TVProgram, TVProgram> denseMatrix;
+	LocalUserTVProgramMatrix<User, User, TVProgram, TVProgram> sparseMatrix;
 	
 	@Before
 	public void setUp(){
-		this.mapping = new UserTVProgramMapping<>(HashBiMap.create(userMapping), HashBiMap.create(programMapping));
-		this.denseMatrix = new LocalUserTVProgramMatrix<>(NUM_ROWS, NUM_COL, MATRIX_VALUES, mapping);
-		this.sparseMatrix = new LocalUserTVProgramMatrix<>(NUM_ROWS, NUM_COL, COL_PTRS, ROW_INDICES, SPARSE_MATRIX_VALUES, mapping);
+		userMapping = new IdentityMapping<>(allUsers);
+		tvProgramMapping = new IdentityMapping<>(allPrograms);
+		this.denseMatrix = new LocalUserTVProgramMatrix<>(NUM_ROWS, NUM_COL, MATRIX_VALUES, userMapping, tvProgramMapping);
+		this.sparseMatrix = new LocalUserTVProgramMatrix<>(NUM_ROWS, NUM_COL, COL_PTRS, ROW_INDICES, SPARSE_MATRIX_VALUES, userMapping, tvProgramMapping);
 	}
 	
 	@Test
@@ -106,7 +107,6 @@ public class LocalUserTVProgramMatrixTest extends UserTVProgramFixture{
 	
 	@After
 	public void tearDown(){
-		this.mapping = null;
 		this.denseMatrix = null;
 		this.sparseMatrix = null;
 	}

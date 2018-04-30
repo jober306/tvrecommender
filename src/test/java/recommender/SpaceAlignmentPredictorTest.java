@@ -26,7 +26,7 @@ public class SpaceAlignmentPredictorTest {
 	static final String path = "/tv-audience-dataset/tv-audience-dataset-mock.csv";
 	
 	static JavaSparkContext sc;
-	static SpaceAlignmentRecommender<RecsysTVProgram, RecsysTVEvent> recommender;
+	static SpaceAlignmentRecommender<User, RecsysTVProgram, RecsysTVEvent> recommender;
 
 	final static int r = 100;
 	final static int numberOfResults = 2;
