@@ -1,6 +1,6 @@
 package util;
 
-import java.util.function.Supplier;
+import util.function.SerializableSupplier;
 
 /**
  * Interface used to load attributes of a class lazily.
@@ -24,7 +24,8 @@ import java.util.function.Supplier;
  * 
  * @param <T> The class of the attribute to load layzily.
  */
-public interface Lazy<T> extends Supplier<T>{
-	Supplier<T> init();
+public interface Lazy<T> extends SerializableSupplier<T>{
+	
+	SerializableSupplier<T> init();
     public default T get() { return init().get(); }
 }

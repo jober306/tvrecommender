@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -35,6 +34,7 @@ import model.matrix.LocalUserTVProgramMatrix;
 import scala.Tuple2;
 import scala.Tuple3;
 import util.Lazy;
+import util.function.SerializableSupplier;
 import util.spark.SparkUtilities;
 import util.time.LocalDateTimeDTO;
 
@@ -44,48 +44,47 @@ import util.time.LocalDateTimeDTO;
  * 
  * @author Jonathan Bergeron
  *
- * @param <E>
- *            A child class of the abstract class TVEvent. The RDD will be of
- *            this class.
+ * @param <U> The type of user contained in this data set.
+ * @param <P> The type of tv pgoram contained in this data set.
+ * @param <E> The type of tv event contained in this data set.
  */
 public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U, P>> implements Serializable, Informative {
 	
 	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * Method to load lazily load attributes. See the lazy interface for more information.
+	 * Utility methods to lazily load some fields expensive to compute. See the lazy interface for more information.
 	 */
-    static <U> Supplier<U> lazily(Lazy<U> lazy) { return lazy; }
-	static <G> Supplier<G> value(G value) { return ()->value; }
+    static <U> SerializableSupplier<U> lazily(Lazy<U> lazy) { return lazy; }
+	static <G> SerializableSupplier<G> value(G value) { return ()->value; }
 
 	/**
-	 * The java rdd containing all the tv events.
+	 * The rdd containing the data set.
 	 */
 	transient protected JavaRDD<E> eventsData;
 
 	/**
-	 * The java spark context used to load the tv events.
+	 * The java spark context used to load the data set.
 	 */
 	transient protected JavaSparkContext sc;
 	
 	
 	/**
-	 * Attributes that hold the number of users and tv shows. They are lazy initialized
-	 * when the getters are called because spark needs to do a collect on the whole data set which
-	 * can be long.
+	 * All the lazy attributes. They are transient because Supplier is not Serializable, so each
+	 * worker need to recalculate it.
 	 */
-	transient Supplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
-	transient Supplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
-	transient Supplier<Integer> numberOfTvShowIndexes = lazily(() -> numberOfTvShowIndexes = value(initNumberOfTVShowIndexes()));
-	transient Supplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(eventsData.count()));
-	transient Supplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
-	transient Supplier<Set<U>> allUsers = lazily(() -> allUsers = value(initAllUsers()));
-	transient Supplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
-	transient Supplier<Set<P>> allPrograms = lazily(() -> allPrograms = value(initAllPrograms()));
-	transient Supplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
-	transient Supplier<Set<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
-	transient Supplier<LocalDateTime> startTime = lazily(() -> startTime = value(initStartTime()));
-	transient Supplier<LocalDateTime> endTime = lazily(() -> endTime = value(initEndTime()));	
+	SerializableSupplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
+	SerializableSupplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
+	SerializableSupplier<Integer> numberOfTvShowIndexes = lazily(() -> numberOfTvShowIndexes = value(initNumberOfTVShowIndexes()));
+	SerializableSupplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(eventsData.count()));
+	SerializableSupplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
+	SerializableSupplier<Set<U>> allUsers = lazily(() -> allUsers = value(initAllUsers()));
+	SerializableSupplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
+	SerializableSupplier<Set<P>> allPrograms = lazily(() -> allPrograms = value(initAllPrograms()));
+	SerializableSupplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
+	SerializableSupplier<Set<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
+	SerializableSupplier<LocalDateTime> startTime = lazily(() -> startTime = value(initStartTime()));
+	SerializableSupplier<LocalDateTime> endTime = lazily(() -> endTime = value(initEndTime()));	
 	
 	
 	/**
