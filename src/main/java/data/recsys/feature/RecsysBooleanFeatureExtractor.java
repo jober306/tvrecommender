@@ -158,7 +158,7 @@ public class RecsysBooleanFeatureExtractor extends
 	 */
 	@Override
 	public Vector extractFeaturesFromEvent(RecsysTVEvent tvEvent) {
-		int channelID = tvEvent.getChannelId();
+		int channelID = tvEvent.channelId();
 		short slot = tvEvent.getSlot();
 		byte genreID = tvEvent.getGenreID();
 		byte subgenreID = tvEvent.getSubgenreID();

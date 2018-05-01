@@ -40,14 +40,14 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 	/**
 	 * duration: duration of the view.
 	 */
-	protected final int duration;
+	protected final int watchDuration;
 
-	public TVEvent(LocalDateTime watchTime, P program, U user, int eventId, int duration) {
+	public TVEvent(LocalDateTime watchTime, P program, U user, int eventId, int watchDuration) {
 		this.watchTime = watchTime;
 		this.program = program;
 		this.user = user;
 		this.eventID = eventId;
-		this.duration = duration;
+		this.watchDuration = watchDuration;
 	}
 
 	/**
@@ -55,29 +55,29 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 	 * 
 	 * @return the watchTime
 	 */
-	public LocalDateTime getWatchTime() {
+	public LocalDateTime watchTime() {
 		return watchTime;
 	}
 
 	/**
 	 * @return the programId
 	 */
-	public P getProgram() {
+	public P program() {
 		return program;
 	}
 	
-	public int getProgramID(){
-		return program.programId();
+	public int programID(){
+		return program.id();
 	}
 
 	/**
 	 * @return the channelId
 	 */
-	public int getChannelId() {
+	public int channelId() {
 		return program.channelId();
 	}
 	
-	public U getUser(){
+	public U user(){
 		return user;
 	}
 	
@@ -86,7 +86,7 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 	 * 
 	 * @return The user Id.
 	 */
-	public int getUserID() {
+	public int userID() {
 		return user.id();
 	}
 
@@ -95,7 +95,7 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 	 * 
 	 * @return The event Id.
 	 */
-	public int getEventID() {
+	public int eventID() {
 		return eventID;
 	}
 
@@ -104,8 +104,8 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 	 * 
 	 * @return The duration of the event.
 	 */
-	public int getDuration() {
-		return duration;
+	public int watchDuration() {
+		return watchDuration;
 	}
 
 	@Override

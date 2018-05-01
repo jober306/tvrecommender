@@ -67,14 +67,14 @@ public class RecsysTVDataSetTest {
 		events.add(tvEvent4);
 		JavaRDD<RecsysTVEvent> eventsRDD = SparkUtilities.elementsToJavaRDD(events,sc);
 		dataSet = new RecsysTVDataSet(eventsRDD);
-		userMapping = new IdentityMapping<>(dataSet.getAllUsers());
-		tvProgramMapping = new IdentityMapping<>(dataSet.getAllPrograms());
+		userMapping = new IdentityMapping<>(dataSet.allUsers());
+		tvProgramMapping = new IdentityMapping<>(dataSet.allPrograms());
 	}
 	
 	@Test
 	public void startTimeConvertedProperlyTest(){
 		LocalDateTime expectedTime = RecsysTVDataSet.START_TIME.plusWeeks(2).plusHours(1);
-		LocalDateTime actualTime = tvEvent1.getWatchTime();
+		LocalDateTime actualTime = tvEvent1.watchTime();
 		assertEquals(expectedTime, actualTime);
 	}
 
@@ -82,8 +82,8 @@ public class RecsysTVDataSetTest {
 	public void convertDataSetToMLlibRatingsTest() {
 		JavaRDD<Rating> ratings = dataSet.convertToMLlibRatings();
 		assertTrue(ratings.count() == 4);
-		final Set<Integer> expectedUserIds = dataSet.getAllUserIds();
-		final Set<Integer> expectedProgramIds = dataSet.getAllProgramIds();
+		final Set<Integer> expectedUserIds = dataSet.allUserIds();
+		final Set<Integer> expectedProgramIds = dataSet.allProgramIds();
 		ratings.foreach(rating -> {
 			assertTrue(expectedUserIds.contains(rating.user()));
 			assertTrue(expectedProgramIds.contains(rating.product()));
@@ -93,10 +93,10 @@ public class RecsysTVDataSetTest {
 
 	@Test
 	public void convertToDistributedMatrixTest() {
-		IdentityMapping<User> userMapping = new IdentityMapping<>(dataSet.getAllUsers());
-		IdentityMapping<RecsysTVProgram> tvProgramMapping = new IdentityMapping<>(dataSet.getAllPrograms());
-		DistributedUserTVProgramMatrix<User, User, RecsysTVProgram, RecsysTVProgram> R = dataSet.convertToDistUserItemMatrix(userMapping, tvProgramMapping);
-		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(userMapping.valueToIndex(event.getUser()), tvProgramMapping.valueToIndex(event.getProgram()))).collect(Collectors.toSet());
+		IdentityMapping<User> userMapping = new IdentityMapping<>(dataSet.allUsers());
+		IdentityMapping<RecsysTVProgram> tvProgramMapping = new IdentityMapping<>(dataSet.allPrograms());
+		DistributedUserTVProgramMatrix<User, User, RecsysTVProgram, RecsysTVProgram> R = dataSet.computeDistUserItemMatrix(userMapping, tvProgramMapping);
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.events().collect().stream().map(event -> new Tuple2<>(userMapping.valueToIndex(event.user()), tvProgramMapping.valueToIndex(event.program()))).collect(Collectors.toSet());
 		for (int row = 0; row < R.getNumRows(); row++) {
 			for(int col = 0; col < R.getNumCols(); col++){
 				double actualValue = R.getValue(row, col);
@@ -114,10 +114,10 @@ public class RecsysTVDataSetTest {
 	
 	@Test
 	public void convertToLocalMatrixTest(){
-		IdentityMapping<User> userMapping = new IdentityMapping<>(dataSet.getAllUsers());
-		IdentityMapping<RecsysTVProgram> tvProgramMapping = new IdentityMapping<>(dataSet.getAllPrograms());
-		LocalUserTVProgramMatrix<User, User, RecsysTVProgram, RecsysTVProgram> R = dataSet.convertToLocalUserItemMatrix(userMapping, tvProgramMapping);
-		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.getEventsData().collect().stream().map(event -> new Tuple2<>(userMapping.valueToIndex(event.getUser()), tvProgramMapping.valueToIndex(event.getProgram()))).collect(Collectors.toSet());
+		IdentityMapping<User> userMapping = new IdentityMapping<>(dataSet.allUsers());
+		IdentityMapping<RecsysTVProgram> tvProgramMapping = new IdentityMapping<>(dataSet.allPrograms());
+		LocalUserTVProgramMatrix<User, User, RecsysTVProgram, RecsysTVProgram> R = dataSet.computeLocalUserItemMatrix(userMapping, tvProgramMapping);
+		Set<Tuple2<Integer, Integer>> seenIndexes = dataSet.events().collect().stream().map(event -> new Tuple2<>(userMapping.valueToIndex(event.user()), tvProgramMapping.valueToIndex(event.program()))).collect(Collectors.toSet());
 		for (int row = 0; row < R.getNumRows(); row++) {
 			for(int col = 0; col < R.getNumCols(); col++){
 				double actualValue = R.getValue(row, col);
@@ -135,7 +135,7 @@ public class RecsysTVDataSetTest {
 
 	@Test
 	public void getContentMatrixTest() {
-		IndexedRowMatrix C = dataSet.getContentMatrix(RecsysFeatureExtractor
+		IndexedRowMatrix C = dataSet.computeContentMatrix(RecsysFeatureExtractor
 				.getInstance(), tvProgramMapping);
 		assertEquals(3, C.rows().count());
 		assertEquals(3, C.numRows());

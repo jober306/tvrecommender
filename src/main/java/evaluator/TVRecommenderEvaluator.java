@@ -158,7 +158,7 @@ public class TVRecommenderEvaluator<U extends User, P extends TVProgram, E exten
 		EvaluationContext<? extends U, ? extends P, ? extends E> context = (EvaluationContext<? extends U, ? extends P, ? extends E>) recommender.getContext();
 		Instant recommendingStartTime = Instant.now();
 		System.out.print("Recommending for tested users...");
-		List<Recommendations<? extends U, R>> testedUserRecommendations = context.getTestSet().getAllUsers().stream()
+		List<Recommendations<? extends U, R>> testedUserRecommendations = context.getTestSet().allUsers().stream()
 			.map(testedUser -> recommender.recommend(testedUser, context.getTestPrograms()))
 			.collect(Collectors.toList());
 		Instant recommendingEndTime = Instant.now();

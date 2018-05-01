@@ -30,11 +30,11 @@ public class RecsysUserPreferenceTensorCalculator extends UserPreferenceTensorCa
 	@Override
 	public UserPreferenceTensorCollection calculateUserPreferenceTensorForDataSet(TVDataSet<?, ? extends RecsysTVProgram, ? extends RecsysTVEvent> dataSet, FeatureExtractor<? super RecsysTVProgram, ? super RecsysTVEvent> extractor, boolean anyUser, boolean anyProgram, boolean anySlot){
 		UserPreferenceTensorCollectionAccumulator acc = new UserPreferenceTensorCollectionAccumulator(anyUser, anyProgram, extractor.extractedVectorSize(), anySlot);
-		JavaSparkContext.toSparkContext(dataSet.getJavaSparkContext()).register(acc);
-		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.getEventsData().map(event -> {
-			UserPreference userPref = new UserPreference(event.getUserID(), extractor.extractFeaturesFromEvent(event), event.getSlot());
+		JavaSparkContext.toSparkContext(dataSet.javaSparkContext()).register(acc);
+		JavaRDD<UserPreferenceTensor> userPrefTensors = dataSet.events().map(event -> {
+			UserPreference userPref = new UserPreference(event.userID(), extractor.extractFeaturesFromEvent(event), event.getSlot());
 			UserPreferenceTensor tensor = new UserPreferenceTensor(userPref);
-			tensor.incrementValue(event.getDuration());
+			tensor.incrementValue(event.watchDuration());
 			return tensor;
 		});
 		userPrefTensors.foreach(tensor -> acc.add(tensor));

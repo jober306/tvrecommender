@@ -120,15 +120,15 @@ final public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implemen
 		if (!(other instanceof RecsysTVEvent))
 			return false;
 		RecsysTVEvent tvEvent = (RecsysTVEvent) other;
-		return new EqualsBuilder().append(getChannelId(), tvEvent.getChannelId())
+		return new EqualsBuilder().append(channelId(), tvEvent.channelId())
 				.append(slot, tvEvent.getSlot())
 				.append(week, tvEvent.getWeek())
 				.append(genreID, tvEvent.getGenreID())
 				.append(subgenreID, tvEvent.getSubgenreID())
-				.append(user.id(), tvEvent.getUserID())
-				.append(program, tvEvent.getProgram())
-				.append(eventID, tvEvent.getEventID())
-				.append(duration, tvEvent.getDuration()).isEquals();
+				.append(user.id(), tvEvent.userID())
+				.append(program, tvEvent.program())
+				.append(eventID, tvEvent.eventID())
+				.append(watchDuration, tvEvent.watchDuration()).isEquals();
 	}
 
 	/**
@@ -147,14 +147,14 @@ final public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implemen
 	@Override
 	public String toString() {
 		String tvEventStr = "";
-		tvEventStr += "Channel ID: " + getChannelId() + "\n";
+		tvEventStr += "Channel ID: " + channelId() + "\n";
 		tvEventStr += "Slot: " + slot + "\n";
 		tvEventStr += "Week: " + week + "\n";
 		tvEventStr += "Genre ID: " + RecsysUtilities.getGenreName(genreID) + "\n";
 		tvEventStr += "Subgenre ID" + RecsysUtilities.getSubgenreName(genreID, subgenreID) + "\n";
 		tvEventStr += "User ID: " + user.id() + "\n";
 		tvEventStr += "Event ID: " + eventID + "\n";
-		tvEventStr += "Duration: " + duration + "\n";
+		tvEventStr += "Duration: " + watchDuration + "\n";
 		return tvEventStr;
 	}
 }

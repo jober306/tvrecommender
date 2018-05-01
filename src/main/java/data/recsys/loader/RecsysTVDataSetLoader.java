@@ -153,15 +153,15 @@ public class RecsysTVDataSetLoader {
 	 * @return The program implicitly created from the events.
 	 */
 	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(JavaRDD<RecsysTVEvent> events) {
-		return events.map(RecsysTVEvent::getProgram).distinct();
+		return events.map(RecsysTVEvent::program).distinct();
 	}
 
 	public static void main(String[] args) {
 		RecsysTVDataSetLoader l = new RecsysTVDataSetLoader();
 		RecsysTVDataSet data = l.loadDataSet()._2();
 		//System.out.println("Dataset length: " + Duration.between(data.startTime(), data.endTime()).toDays());
-		System.out.println("Users: " + data.getNumberOfUsers());
-		System.out.println("Programs: " + data.getNumberOfTvPrograms());
+		System.out.println("Users: " + data.numberOfUsers());
+		System.out.println("Programs: " + data.numberOfTvPrograms());
 		//System.out.println("Events: " + data.getEventsData().map(RecsysTVEvent::getEventID).distinct().count());
 	}
 }

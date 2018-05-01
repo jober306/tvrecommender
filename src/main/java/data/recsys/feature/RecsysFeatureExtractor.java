@@ -64,7 +64,7 @@ public class RecsysFeatureExtractor extends
 	@Override
 	public Vector extractFeaturesFromEvent(RecsysTVEvent event) {
 		double[] features = new double[4];
-		features[0] = event.getChannelId();
+		features[0] = event.channelId();
 		features[1] = event.getSlot();
 		features[2] = event.getGenreID();
 		features[3] = event.getSubgenreID();

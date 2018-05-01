@@ -37,7 +37,7 @@ public class RecsysBooleanFeatureExtractorTest {
 		int expectedGenreSize = 8;
 		int expectedSubgenreSize = 114;
 		int expectedSlotSize = 168;
-		assertThat(data._2.getAllChannelIds().size(), equalTo(featureExtractor.getChannelIDMap().size()));
+		assertThat(data._2.allChannelIds().size(), equalTo(featureExtractor.getChannelIDMap().size()));
 		assertThat(expectedSlotSize, equalTo(featureExtractor.getSlotIDMap().size()));
 		assertThat(expectedGenreSize, equalTo(featureExtractor.getGenreIDMap().size()));
 		assertThat(expectedSubgenreSize, equalTo(featureExtractor.getSubgenreIDMap().size()));

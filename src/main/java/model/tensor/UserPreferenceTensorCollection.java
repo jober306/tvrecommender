@@ -103,7 +103,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 	 * contains tensors corresponding to the given slot and program feature
 	 * vector for any users.
 	 * 
-	 * @param userId
+	 * @param id
 	 *            The wanted user id.
 	 * @param programFeatures
 	 *            The wanted program feature vector.

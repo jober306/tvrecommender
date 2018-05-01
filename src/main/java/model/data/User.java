@@ -9,14 +9,14 @@ public class User implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 	
-	final int userId;
+	final int id;
 	
-	public User(int userId){
-		this.userId = userId;
+	public User(int id){
+		this.id = id;
 	}
 	
 	public int id(){
-		return this.userId;
+		return this.id;
 	}
 	
 	@Override

@@ -79,9 +79,9 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	 * set.
 	 */
 	public void train() {
-		this.userMapping = new UserIDMapping<>(context.getTrainingSet().getAllUsers());
-		this.tvProgramMapping = new TVProgramIDMapping<>(context.getTrainingSet().getAllPrograms()); 
-		this.R = context.getTrainingSet().convertToDistUserItemMatrix(userMapping, tvProgramMapping);
+		this.userMapping = new UserIDMapping<>(context.getTrainingSet().allUsers());
+		this.tvProgramMapping = new TVProgramIDMapping<>(context.getTrainingSet().allPrograms()); 
+		this.R = context.getTrainingSet().computeDistUserItemMatrix(userMapping, tvProgramMapping);
 		this.S = R.getItemSimilarities(NormalizedCosineSimilarity.getInstance());
 	}
 

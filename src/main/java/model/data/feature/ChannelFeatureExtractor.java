@@ -38,7 +38,7 @@ public class ChannelFeatureExtractor extends FeatureExtractor<TVProgram, TVEvent
 	 */
 	@Override
 	public Vector extractFeaturesFromEvent(TVEvent<?, ?> event) {
-		return Vectors.dense(new double[]{event.getChannelId()});
+		return Vectors.dense(new double[]{event.channelId()});
 	}
 	
 	@Override

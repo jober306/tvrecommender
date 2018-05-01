@@ -38,7 +38,7 @@ public class TopChannelRecommenderTest {
 	@Test
 	public void recommendTest() {
 		int expectedRecommendation = 254329;
-		int recommendation = recommender.recommend(new User(0), START_TIME.plusHours(19)).get(0).tvProgram().programId();
+		int recommendation = recommender.recommend(new User(0), START_TIME.plusHours(19)).get(0).tvProgram().id();
 		assertEquals(expectedRecommendation, recommendation);
 	}
 	

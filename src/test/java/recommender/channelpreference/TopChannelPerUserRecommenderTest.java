@@ -52,7 +52,7 @@ public class TopChannelPerUserRecommenderTest {
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
 		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
-		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().programId());
+		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().id());
 	}
 	
 	@Test
@@ -70,9 +70,9 @@ public class TopChannelPerUserRecommenderTest {
 		recommender.setNumberOfRecommendations(tvPrograms.size());
 		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
-		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().programId());
-		assertEquals(expectedSecondProgramId2, recommendations.get(1).tvProgram().programId());
-		assertEquals(expectedThirdProgramId3, recommendations.get(2).tvProgram().programId());
+		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().id());
+		assertEquals(expectedSecondProgramId2, recommendations.get(1).tvProgram().id());
+		assertEquals(expectedThirdProgramId3, recommendations.get(2).tvProgram().id());
 	}
 	
 	@AfterClass

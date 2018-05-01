@@ -84,7 +84,7 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	public String toString() {
 		StringBuilder s = new StringBuilder(super.toString());
 		s.append("Program ID: ");
-		s.append(programId());
+		s.append(id());
 		s.append("\nBroadcast Time: ");
 		s.append(startTime());
 		s.append(" to ");

@@ -31,22 +31,22 @@ public class RecsysTVEventTest {
 	@Test
 	public void constructorAndGetterTest(){
 		assertTrue(event != null);
-		assertTrue(channelID == event.getChannelId());
+		assertTrue(channelID == event.channelId());
 		assertTrue(slot == event.getSlot());
 		assertTrue(week == event.getWeek());
 		assertTrue(genreID == event.getGenreID());
 		assertTrue(subgenreID == event.getSubgenreID());
-		assertTrue(userID == event.getUserID());
-		assertTrue(programID == event.getProgramID());
-		assertTrue(eventID == event.getEventID());
-		assertTrue(duration == event.getDuration());
-		System.out.println(event.getWatchTime().toString());
+		assertTrue(userID == event.userID());
+		assertTrue(programID == event.programID());
+		assertTrue(eventID == event.eventID());
+		assertTrue(duration == event.watchDuration());
+		System.out.println(event.watchTime().toString());
 	}
 	
 	@Test
 	public void watchTimeSetCorrectlyTest(){
 		LocalDateTime expectedWatchTime = LocalDateTime.of(1995, 4,16,7,0);
-		assertEquals(expectedWatchTime, event.getWatchTime());
+		assertEquals(expectedWatchTime, event.watchTime());
 	}
 	
 	@Test

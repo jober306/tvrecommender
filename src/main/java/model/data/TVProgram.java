@@ -43,7 +43,7 @@ public class TVProgram implements Serializable {
 	/**
 	 * The id of the prorgram.
 	 */
-	protected final int programId;
+	protected final int id;
 
 	/**
 	 * Constructor of the TVProgram class, to be accessed only by the children
@@ -64,7 +64,7 @@ public class TVProgram implements Serializable {
 		this.endTime = endTime;
 		this.duration = Duration.between(startTime, endTime);
 		this.channelId = channelId;
-		this.programId = programId;
+		this.id = programId;
 	}
 
 	/**
@@ -98,8 +98,8 @@ public class TVProgram implements Serializable {
 	/**
 	 * @return the programId
 	 */
-	public int programId() {
-		return programId;
+	public int id() {
+		return id;
 	}
 
 	@Override
@@ -114,19 +114,19 @@ public class TVProgram implements Serializable {
 		return new EqualsBuilder().append(startTime, tvProgram.startTime)
 				.append(endTime, tvProgram.endTime)
 				.append(channelId, tvProgram.channelId)
-				.append(programId, tvProgram.programId).isEquals();
+				.append(id, tvProgram.id).isEquals();
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder(17, 37).append(channelId).append(programId).append(startTime).append(endTime)
+		return new HashCodeBuilder(17, 37).append(channelId).append(id).append(startTime).append(endTime)
 				.toHashCode();
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder s = new StringBuilder();
-		s.append("Program Id: " + programId + "\n");
+		s.append("Program Id: " + id + "\n");
 		s.append("Channel Id: " + channelId + "\n");
 		s.append("Start time: " + startTime.toString() + "\n");
 		s.append("End Time: " + endTime.toString() + "\n");

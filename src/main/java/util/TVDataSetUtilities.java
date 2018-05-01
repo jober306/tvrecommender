@@ -32,7 +32,7 @@ public class TVDataSetUtilities {
 	 */
 	public static <T extends TVEvent<?, ?>> JavaRDD<T> filterByMinDuration(
 			JavaRDD<T> events, int minTimeView) {
-		return events.filter(tvEvent -> tvEvent.getDuration() >= minTimeView);
+		return events.filter(tvEvent -> tvEvent.watchDuration() >= minTimeView);
 	}
 
 	/**
@@ -50,7 +50,7 @@ public class TVDataSetUtilities {
 	public static <T extends TVEvent<?, ?>> JavaRDD<T> filterByDateTime(
 			JavaRDD<T> events, LocalDateTime startTime, LocalDateTime endTime) {
 		return events.filter(tvEvent -> isDateTimeBetween(startTime, endTime,
-				tvEvent.getWatchTime()));
+				tvEvent.watchTime()));
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class TVDataSetUtilities {
 	public static <T extends TVEvent<?, ?>> JavaRDD<T> filterByTime(
 			JavaRDD<T> events, LocalTime startTime, LocalTime endTime) {
 		return events.filter(tvEvent -> isTimeBetween(startTime, endTime,
-				tvEvent.getWatchTime().toLocalTime()));
+				tvEvent.watchTime().toLocalTime()));
 	}
 	
 	/**
@@ -80,6 +80,6 @@ public class TVDataSetUtilities {
 	 */
 	public static <U extends User, P extends TVProgram, E extends TVEvent<U, P>> TVDataSet<U, P, E> createSubDataSet(TVDataSet<U, P, E> dataSet, LocalDateTime startTime, LocalDateTime endTime) {
 		return dataSet.newInstance(
-				filterByDateTime(dataSet.getEventsData(), startTime, endTime));
+				filterByDateTime(dataSet.events(), startTime, endTime));
 	}
 }

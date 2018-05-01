@@ -22,7 +22,7 @@ public class TVDataSetVisualisation implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	public static <E extends TVEvent<?, ?>> void createAndSaveSortedProgramIdCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
-		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getProgramID, dataset, "");
+		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::programID, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Nombre de vues";
 		int width = 560;
@@ -32,7 +32,7 @@ public class TVDataSetVisualisation implements Serializable{
 	}
 	
 	public static <E extends TVEvent<?, ?>> void createAndSaveSortedChannelCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
-		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getChannelId, dataset, "");
+		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::channelId, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Number of Views";
 		int width = 560;
@@ -42,7 +42,7 @@ public class TVDataSetVisualisation implements Serializable{
 	}
 	
 	public static <E extends TVEvent<?, ?>> void createAndSaveSortedUserCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
-		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::getUserID, dataset, "");
+		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::userID, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Number of Views";
 		int width = 560;
@@ -52,7 +52,7 @@ public class TVDataSetVisualisation implements Serializable{
 	}
 	
 	public static <E extends TVEvent<?, ?>> XYSeries getSortedCountSeriesOf(SerializableFunction<? super E, ?>  tvEventKeyMapper, TVDataSet<?, ?, E> dataset, String seriesName){
-		Map<?, Long> programCount = dataset.getEventsData()
+		Map<?, Long> programCount = dataset.events()
 	  	     .map(tvEventKeyMapper::apply)
 	  	     .countByValue();
 		List<Long> sortedProgramCount = programCount.entrySet().stream()

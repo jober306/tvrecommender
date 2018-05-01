@@ -170,10 +170,10 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 	}
 
 	public void train() {
-		this.userMapping = new UserIDMapping<>(context.getTrainingSet().getAllUsers());
-		this.tvProgramMapping = new TVProgramIDMapping<>(context.getTrainingSet().getAllPrograms()); 
-		this.R = context.getTrainingSet().convertToLocalUserItemMatrix(userMapping, tvProgramMapping);
-		this.C = context.getTrainingSet().getContentMatrix(extractor, tvProgramMapping);
+		this.userMapping = new UserIDMapping<>(context.getTrainingSet().allUsers());
+		this.tvProgramMapping = new TVProgramIDMapping<>(context.getTrainingSet().allPrograms()); 
+		this.R = context.getTrainingSet().computeLocalUserItemMatrix(userMapping, tvProgramMapping);
+		this.C = context.getTrainingSet().computeContentMatrix(extractor, tvProgramMapping);
 		this.localC = toDenseLocalVectors(C);
 		calculateMprime(userMapping, tvProgramMapping);
 		if (context instanceof EvaluationContext) {
@@ -212,7 +212,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 	protected Recommendations<U, ScoredRecommendation> recommendForTesting(U user, List<? extends P> tvPrograms) {
 		EvaluationContext<U, P, E> evalContext = (EvaluationContext<U, P, E>) context;
 		List<Integer> itemIndexesSeenByUser = evalContext.getGroundTruth().get(user)
-				.stream().map(P::programId).collect(toList());
+				.stream().map(P::id).collect(toList());
 		List<ScoredRecommendation> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
 				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed()).limit(numberOfRecommendations)
@@ -286,7 +286,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		BlockMatrix Ut = U.transpose();
 		BlockMatrix leftMat = invertedSigma.multiply(Ut);
 		BlockMatrix rightMat = U.multiply(invertedSigma);
-		BlockMatrix S = context.getTrainingSet().convertToDistUserItemMatrix(userMapping, tvProgramMapping).getItemSimilarities().toBlockMatrix();
+		BlockMatrix S = context.getTrainingSet().computeDistUserItemMatrix(userMapping, tvProgramMapping).getItemSimilarities().toBlockMatrix();
 		IndexedRowMatrix intermediateMat = leftMat.multiply(S).multiply(rightMat).toIndexedRowMatrix();
 		SingularValueDecomposition<IndexedRowMatrix, Matrix> intMatsvd = intermediateMat.computeSVD(r, false, 0.0d);
 		// Casting the V matrix of svd to dense matrix because Spark 2.2.0

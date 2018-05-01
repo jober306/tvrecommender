@@ -114,20 +114,20 @@ public class EvaluationContext<U extends User, P extends TVProgram, E extends TV
 
 	private Map<U, Set<P>> createGroundTruth(){
 		Map<U, Set<P>> groundTruth = initializeGroundTruth();
-		testSet.getEventsData().collect().stream().forEach(event -> addEvent(groundTruth, event));
+		testSet.events().collect().stream().forEach(event -> addEvent(groundTruth, event));
 		return groundTruth;
 	}
 	
 	private Map<U, Set<P>> initializeGroundTruth(){
 		Map<U, Set<P>> groundTruth = new HashMap<U, Set<P>>();
-		for(U user : testSet.getAllUsers()){
+		for(U user : testSet.allUsers()){
 			groundTruth.put(user, new HashSet<P>());
 		}
 		return groundTruth;
 	}
 	
 	private void addEvent(Map<U, Set<P>> groundTruth, E event){
-		groundTruth.get(event.getUserID()).add(event.getProgram());
+		groundTruth.get(event.userID()).add(event.program());
 	}
 	
 	private List<P> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){
