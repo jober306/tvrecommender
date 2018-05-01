@@ -175,28 +175,28 @@ public class TVDataSetTest extends TVDataSetFixture{
 	@Test
 	public void numberOfTvShowsOnValideDatasetTest(){
 		int expectedNumberOfTVPrograms = 6;
-		int actualNumberOfTvPrograms = dataset.getNumberOfTvShows();
+		int actualNumberOfTvPrograms = dataset.getNumberOfTvPrograms();
 		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
 	}
 	
 	@Test
 	public void numberOfTVShowsOnEmptyDatasetTest(){
 		int expectedNumberOfTVPrograms = 0;
-		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvShows();
+		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvPrograms();
 		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
 	}
 	
 	@Test
 	public void numberOfTvShowIndexesOnValideDatasetTest(){
 		int expectedNumberOfTVPrograms = 5;
-		int actualNumberOfTvPrograms = dataset.getNumberOfTvShowIndexes();
+		int actualNumberOfTvPrograms = dataset.getNumberOfTvShowIds();
 		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
 	}
 	
 	@Test
 	public void numberOfTVShowIndexesOnEmptyDatasetTest(){
 		int expectedNumberOfTVPrograms = 0;
-		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvShowIndexes();
+		int actualNumberOfTvPrograms = emptyDataset.getNumberOfTvShowIds();
 		assertEquals(expectedNumberOfTVPrograms, actualNumberOfTvPrograms);
 	}
 	

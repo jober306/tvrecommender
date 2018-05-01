@@ -100,101 +100,8 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	}
 	
 	/**
-	 * Method that converts the data set into the good format for using mllib
-	 * methods.
-	 * 
-	 * @return A java RDD of the <class>Rating</class> class.
+	 * Method that cache the backing rdd containing this dataset.
 	 */
-	public JavaRDD<Rating> convertToMLlibRatings() {
-		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(event
-				.getUserID(), event.getProgram().programId(), 1.0));
-		return ratings;
-	}
-
-	/**
-	 * Method that converts the data set into a distributed user item matrix.
-	 * 
-	 * @return return the user item matrix in a distributed form corresponding
-	 *         to this data set.
-	 */
-	public <UM, PM> DistributedUserTVProgramMatrix<U, UM, P, PM> convertToDistUserItemMatrix(Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping) {
-		final int numberOfTvShows = tvProgramMapping.size();
-		Broadcast<Mapping<U, UM>> broadcastedUserMapping = sc.broadcast(userMapping);
-		Broadcast<Mapping<P, PM>> broadcastedTVProgramMapping = sc.broadcast(tvProgramMapping);
-		JavaRDD<IndexedRow> ratingMatrix = eventsData
-				.mapToPair(
-						event -> new Tuple2<Integer, E>(
-								broadcastedUserMapping.value().valueToIndex(event.getUser()), event))
-				.aggregateByKey(
-						new HashSet<Tuple2<Integer, Double>>(),
-						(list, event) -> {
-							list.add(new Tuple2<Integer, Double>(
-									broadcastedTVProgramMapping.value().valueToIndex(event.getProgram()), 1.0d));
-							return list;
-						}, (list1, list2) -> {
-							list1.addAll(list2);
-							return list1;
-						})
-				.map(sparseRowRepresenation -> new IndexedRow(
-						sparseRowRepresenation._1(), Vectors.sparse(
-								numberOfTvShows, sparseRowRepresenation._2())));
-		broadcastedUserMapping.unpersist();
-		broadcastedTVProgramMapping.unpersist();
-		return new DistributedUserTVProgramMatrix<>(ratingMatrix, userMapping, tvProgramMapping);
-	}
-	
-	
-	public <UM, PM> LocalUserTVProgramMatrix<U, UM, P, PM> convertToLocalUserItemMatrix(Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping){
-		final int numberOfUsers = userMapping.size();
-		final int numberOfTvShows = tvProgramMapping.size();
-		Broadcast<Mapping<U, UM>> broadcastedUserMapping = sc.broadcast(userMapping);
-		Broadcast<Mapping<P, PM>> broadcastedTVProgramMapping = sc.broadcast(tvProgramMapping);
-		List<MatrixEntry> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new MatrixEntry(broadcastedUserMapping.value().valueToIndex(tvEvent.getUser()), broadcastedTVProgramMapping.value().valueToIndex(tvEvent.getProgram()), 1.0d)).distinct().collect();
-		broadcastedUserMapping.unpersist();
-		broadcastedTVProgramMapping.unpersist();
-		Tuple3<int[], int[], double[]> matrixData = sparseMatrixFormatToCSCMatrixFormat(numberOfTvShows, tvShowIdUserIdEvent);
-		return new LocalUserTVProgramMatrix<>(numberOfUsers, numberOfTvShows, matrixData._1(), matrixData._2(), matrixData._3(), userMapping, tvProgramMapping);
-	}
-
-	public <PM> IndexedRowMatrix getContentMatrix(FeatureExtractor<? super P, ? super E> extractor, Mapping<P, PM> tvProgramMapping) {
-		Broadcast<Mapping<P, PM>> broadcastedTVProgramMapping = sc.broadcast(tvProgramMapping);
-		JavaRDD<IndexedRow> contentMatrix = eventsData
-				.mapToPair(
-						tvEvent -> new Tuple2<P, E>(tvEvent
-								.getProgram(), tvEvent))
-				.reduceByKey((tvEvent1, tvEvent2) -> tvEvent1)
-				.map(pair -> {
-					E event = pair._2();
-					int programIndex = broadcastedTVProgramMapping.value().valueToIndex(event.getProgram());
-					return new IndexedRow(programIndex, extractor
-							.extractFeaturesFromEvent(event));
-				});
-		broadcastedTVProgramMapping.unpersist();
-		return new IndexedRowMatrix(contentMatrix.rdd());
-	}
-	
-	/**
-	 * Method used to create a new data set from some events and a spark
-	 * context.
-	 * 
-	 * @param eventsData
-	 *            The events data
-	 * @param sc
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public TVDataSet<U, P, E> newInstance(JavaRDD<E> eventsData) {
-		try {
-			TVDataSet<U, P, E> newTvDataSet = this.getClass().getDeclaredConstructor(JavaRDD.class).newInstance(eventsData);
-			return newTvDataSet;
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
 	public void cache(){
 		eventsData = eventsData.cache();
 	}
@@ -223,17 +130,25 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 		return !intersection.isEmpty();
 	}
 	
-	public Set<Integer> getTvProgramIndexesSeenByUser(int userIndex) {
-		return Sets.newHashSet(eventsData
-				.filter(tvEvent -> tvEvent.getUserID() == userIndex)
-				.map(E::getProgram)
+	/**
+	 * Method that finds all the tv program ids seen by a given user id.
+	 * @param userId The user index
+	 * @return The set of tv program ids seen by user having given user id.
+	 */
+	public Set<Integer> getTvProgramIndexesSeenByUser(int userId) {
+		return getTVProgramSeenByUser(userId).stream()
 				.map(P::programId)
-				.collect());
+				.collect(Collectors.toSet());
 	}
 	
-	public Set<P> getTVProgramSeenByUser(int userIndex){
+	/**
+	 * Method that finds all the tv programs seen by a given user id.
+	 * @param userId The user index
+	 * @return The set of tv programs seen by user having given user id.
+	 */
+	public Set<P> getTVProgramSeenByUser(int userId){
 		List<P> tvShowsSeenByUser = eventsData
-				.filter(tvEvent -> tvEvent.getUserID() == userIndex)
+				.filter(tvEvent -> tvEvent.getUserID() == userId)
 				.map(E::getProgram)
 				.collect();
 		return Sets.newHashSet(tvShowsSeenByUser);
@@ -259,6 +174,101 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 		JavaRDD<E>[] splittedEvents = eventsData.randomSplit(ratios);
 		return Arrays.stream(splittedEvents).map(this::newInstance).collect(toSet());
 	}
+	
+	/**
+	 * Method that converts the data set into the good format for using mllib
+	 * methods. A default score of 1 is given to each rating.
+	 * 
+	 * @return A java RDD of the <class>Rating</class> class.
+	 */
+	public JavaRDD<Rating> convertToMLlibRatings() {
+		JavaRDD<Rating> ratings = eventsData.map(event -> new Rating(event
+				.getUserID(), event.getProgram().programId(), 1.0));
+		return ratings;
+	}
+
+
+	/**
+	 * Method that transforms this data set into a distributed user-item like matrix.
+	 * Each row and column are created with respect to the given user and tv program mapping.
+	 * @param userMapping The user mapping.
+	 * @param tvProgramMapping The tv program mapping
+	 * @return The distributed user/tv program matrix representing this data set with respect to the given mappings.
+	 */
+	public <UM, PM> DistributedUserTVProgramMatrix<U, UM, P, PM> convertToDistUserItemMatrix(Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping) {
+		final int numberOfTvShows = tvProgramMapping.size();
+		Broadcast<Mapping<U, UM>> broadcastedUserMapping = sc.broadcast(userMapping);
+		Broadcast<Mapping<P, PM>> broadcastedTVProgramMapping = sc.broadcast(tvProgramMapping);
+		JavaRDD<IndexedRow> ratingMatrix = eventsData
+				.mapToPair(event -> new Tuple2<Integer, Tuple2<Integer, Double>>(broadcastedUserMapping.value().valueToIndex(event.getUser()), new Tuple2<Integer, Double>(broadcastedTVProgramMapping.value().valueToIndex(event.getProgram()), 1.0d)))
+				.aggregateByKey(new HashSet<Tuple2<Integer, Double>>(), (set, ele) -> {set.add(ele); return set;}, (set1, set2) -> {set1.addAll(set2); return set1;})
+				.map(sparseRowRepresenation -> new IndexedRow(sparseRowRepresenation._1(), Vectors.sparse(numberOfTvShows, sparseRowRepresenation._2())));
+		broadcastedUserMapping.unpersist();
+		broadcastedTVProgramMapping.unpersist();
+		return new DistributedUserTVProgramMatrix<>(ratingMatrix, userMapping, tvProgramMapping);
+	}	
+	
+	/**
+	 * Method that transforms this data set into a local user-item like matrix.
+	 * Each row and column are created with respect to the given user and tv program mapping.
+	 * @param userMapping The user mapping.
+	 * @param tvProgramMapping The tv program mapping
+	 * @return The local user/tv program matrix representing this data set with respect to the given mappings.
+	 */
+	public <UM, PM> LocalUserTVProgramMatrix<U, UM, P, PM> convertToLocalUserItemMatrix(Mapping<U, UM> userMapping, Mapping<P, PM> tvProgramMapping){
+		final int numberOfUsers = userMapping.size();
+		final int numberOfTvShows = tvProgramMapping.size();
+		Broadcast<Mapping<U, UM>> broadcastedUserMapping = sc.broadcast(userMapping);
+		Broadcast<Mapping<P, PM>> broadcastedTVProgramMapping = sc.broadcast(tvProgramMapping);
+		List<MatrixEntry> tvShowIdUserIdEvent = eventsData.map(tvEvent -> new MatrixEntry(broadcastedUserMapping.value().valueToIndex(tvEvent.getUser()), broadcastedTVProgramMapping.value().valueToIndex(tvEvent.getProgram()), 1.0d)).distinct().collect();
+		broadcastedUserMapping.unpersist();
+		broadcastedTVProgramMapping.unpersist();
+		Tuple3<int[], int[], double[]> matrixData = sparseMatrixFormatToCSCMatrixFormat(numberOfTvShows, tvShowIdUserIdEvent);
+		return new LocalUserTVProgramMatrix<>(numberOfUsers, numberOfTvShows, matrixData._1(), matrixData._2(), matrixData._3(), userMapping, tvProgramMapping);
+	}
+
+	/**
+	 * Method that transforms all tv program found in this data set into a distributed feature matrix.
+	 * Each row represents the feature extractor representation of a tv program with respect to the given mapping.
+	 * @param extractor The feature extractor.
+	 * @param tvProgramMapping The tv program mapping.
+	 * @return An indexed row matrix representing the feature extractor representation of all tv programs with respect to the given mapping.
+	 */
+	public IndexedRowMatrix getContentMatrix(FeatureExtractor<? super P, ? super E> extractor, Mapping<P, ?> tvProgramMapping) {
+		Broadcast<Mapping<P, ?>> broadcastedTVProgramMapping = sc.broadcast(tvProgramMapping);
+		JavaRDD<IndexedRow> contentMatrix = eventsData
+				.mapToPair(tvEvent -> new Tuple2<P, E>(tvEvent.getProgram(), tvEvent))
+				.reduceByKey((tvEvent1, tvEvent2) -> tvEvent1)
+				.map(pair -> {
+					E event = pair._2();
+					int programIndex = broadcastedTVProgramMapping.value().valueToIndex(event.getProgram());
+					return new IndexedRow(programIndex, extractor.extractFeaturesFromEvent(event));
+				});
+		broadcastedTVProgramMapping.unpersist();
+		return new IndexedRowMatrix(contentMatrix.rdd());
+	}
+	
+	/**
+	 * Method used to create a new data set from some events and a spark
+	 * context.
+	 * 
+	 * @param eventsData
+	 *            The events data
+	 * @param sc
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public TVDataSet<U, P, E> newInstance(JavaRDD<E> eventsData) {
+		try {
+			TVDataSet<U, P, E> newTvDataSet = this.getClass().getDeclaredConstructor(JavaRDD.class).newInstance(eventsData);
+			return newTvDataSet;
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	/**
 	 * Getter method that return the data attached to this data set.
@@ -278,72 +288,113 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 		return sc;
 	}
 	
+	/**
+	 * Method that returns all the unique user ids contained in this data set.
+	 * @return The set of user ids.
+	 */
 	public Set<Integer> getAllUserIds() {
 		return allUserIds.get();
 	}
 	
+	/**
+	 * Method that returns all the unique users contained in this data set. 
+	 * @return The set of users.
+	 */
 	public Set<U> getAllUsers(){
 		return allUsers.get();
 	}
 	
-	public Set<U> initAllUsers(){
-		return Sets.newHashSet(eventsData.map(E::getUser).distinct().collect());
-	}
-	
+	/**
+	 * Method that returns all the unique tv program ids contained in this data set.
+	 * @return The set of tv program ids.
+	 */
 	public Set<Integer> getAllProgramIds() {
 		return Sets.newHashSet(eventsData.map(E::getProgramID).distinct().collect());
 	}
 	
+	/**
+	 * Method that returns all the unique tv programs contained in this data set.
+	 * @return The set of tv programs.
+	 */
 	public Set<P> getAllPrograms(){
 		return allPrograms.get();
 	}
 
+	/**
+	 * Method that returns all the unique event ids contained in this data set.
+	 * @return The set of event ids.
+	 */
 	public Set<Integer> getAllEventIds() {
 		return allEventIds.get();
 	}
-	
-	public Set<Integer> initAllEventIds(){
-		return Sets.newHashSet(eventsData.map(E::getEventID).distinct().collect());
-	}
 
+	/**
+	 * Method that returns all the unique channel ids contained in this data set.
+	 * @return The set of channel ids.
+	 */
 	public Set<Integer> getAllChannelIds() {
 		return allChannelIds.get();
 	}
 	
-	public Set<Integer> initAllChannelIds(){
-		return Sets.newHashSet(eventsData.map(E::getChannelId).distinct().collect());
-	}
-	
+	/**
+	 * Method that compute the number of distinct users contained in this data set.
+	 * @return The number of users contained in this data set.
+	 */
 	public int getNumberOfUsers(){
 		return numberOfUsers.get();
 	}
 	
-	public int getNumberOfTvShows(){
+	/**
+	 * Method that compute the number of distinct tv programs contained in this data set.
+	 * @return The number of tv programs contained in this data set.
+	 */
+	public int getNumberOfTvPrograms(){
 		return numberOfTvShows.get();
 	}
 	
-	public int getNumberOfTvShowIndexes(){
+	/**
+	 * Method that compute the number of distinct tv program ids contained in this data set.
+	 * @return The number of tv program ids contained in this data set.
+	 */
+	public int getNumberOfTvShowIds(){
 		return numberOfTvShowIndexes.get();
 	}
 	
+	/**
+	 * Method that compute the number of events contained in this data set.
+	 * @return The number of events contained in this data set.
+	 */
 	public long numberOfTvEvents(){
 		return numberOfTvEvents.get();
 	}
 	
+	/**
+	 * Method that finds the earliest time an event occurred.
+	 * @return The earliest event time.
+	 */
 	public LocalDateTime startTime(){
 		return startTime.get();
 	}
 	
+	/**
+	 * Method that finds the latest time an event occurred.
+	 * @return The latest event time.
+	 */
 	public LocalDateTime endTime(){
 		return endTime.get();
 	}
 	
+	@Override
 	public TVDataSetInfo info(){
-		return new TVDataSetInfo(this.getClass().getSimpleName(), getNumberOfUsers(), getNumberOfTvShows(), numberOfTvEvents());
+		return new TVDataSetInfo(this.getClass().getSimpleName(), getNumberOfUsers(), getNumberOfTvPrograms(), numberOfTvEvents());
 	}
 	
 	private Set<Integer> initAllUserIds(){
 		return Sets.newHashSet(getAllUsers().stream().map(U::id).collect(Collectors.toList()));
+	}
+	
+	private Set<U> initAllUsers(){
+		return Sets.newHashSet(eventsData.map(E::getUser).distinct().collect());
 	}
 	
 	private Set<Integer> initAllProgramIds(){
@@ -352,6 +403,14 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	
 	private Set<P> initAllPrograms(){
 		return Sets.newHashSet(eventsData.map(E::getProgram).distinct().collect());
+	}
+	
+	private Set<Integer> initAllEventIds(){
+		return Sets.newHashSet(eventsData.map(E::getEventID).distinct().collect());
+	}
+	
+	private Set<Integer> initAllChannelIds(){
+		return Sets.newHashSet(eventsData.map(E::getChannelId).distinct().collect());
 	}
 	
 	private int initNumberOfUsers(){

@@ -161,7 +161,7 @@ public class RecsysTVDataSetLoader {
 		RecsysTVDataSet data = l.loadDataSet()._2();
 		//System.out.println("Dataset length: " + Duration.between(data.startTime(), data.endTime()).toDays());
 		System.out.println("Users: " + data.getNumberOfUsers());
-		System.out.println("Programs: " + data.getNumberOfTvShows());
+		System.out.println("Programs: " + data.getNumberOfTvPrograms());
 		//System.out.println("Events: " + data.getEventsData().map(RecsysTVEvent::getEventID).distinct().count());
 	}
 }
