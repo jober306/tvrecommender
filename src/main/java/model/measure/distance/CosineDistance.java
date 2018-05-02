@@ -2,6 +2,11 @@ package model.measure.distance;
 
 import model.measure.similarity.CosineSimilarity;
 
+/**
+ * Singleton class used to calculate cosine distance.
+ * @author Jonathan Bergeron
+ *
+ */
 public class CosineDistance extends DistanceMeasure{
 	
 	private static final CosineDistance instance = new CosineDistance();

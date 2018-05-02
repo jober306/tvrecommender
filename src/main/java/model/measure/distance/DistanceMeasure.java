@@ -6,6 +6,12 @@ import org.apache.spark.mllib.linalg.SparseVector;
 import model.measure.Measure;
 import model.measure.similarity.SimilarityMeasure;
 
+/**
+ * Class that calculates a distance measure using a similarity measure.
+ * It simply substract from 1 the result of the similarity measure. 
+ * @author Jonathan Bergeron
+ *
+ */
 public abstract class DistanceMeasure implements Measure{
 	
 	final SimilarityMeasure similarityMeasure;

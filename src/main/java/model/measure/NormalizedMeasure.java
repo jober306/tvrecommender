@@ -5,10 +5,20 @@ import org.apache.spark.mllib.linalg.SparseVector;
 
 import util.spark.mllib.MllibUtilities;
 
-public class NormalizedMeasure implements Measure{
+/**
+ * Abstract class that represents the normalized version of a given measure.
+ * This class normalizes the vectors before calculating the given measure.
+ * @author Jonathan Bergeron
+ *
+ */
+public abstract class NormalizedMeasure implements Measure{
 	
 	final Measure measure;
 	
+	/**
+	 * Abstract constructor of this class.
+	 * @param measure The measure to normalize when calculating it.
+	 */
 	public NormalizedMeasure(Measure measure) {
 		this.measure = measure;
 	}

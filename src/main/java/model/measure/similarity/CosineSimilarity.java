@@ -9,7 +9,12 @@ import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.spark_project.guava.primitives.Ints;
 
-public class CosineSimilarity extends SimilarityMeasure{
+/**
+ * Singleton class used to calculate cosine similarity.
+ * @author Jonathan Bergeron
+ *
+ */
+public class CosineSimilarity implements SimilarityMeasure{
 	
 	private static final CosineSimilarity instance = new CosineSimilarity();
 	
