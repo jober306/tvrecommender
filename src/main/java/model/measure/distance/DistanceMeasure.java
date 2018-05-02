@@ -12,7 +12,7 @@ import model.measure.similarity.SimilarityMeasure;
  * @author Jonathan Bergeron
  *
  */
-public abstract class DistanceMeasure implements Measure{
+public class DistanceMeasure implements Measure{
 	
 	final SimilarityMeasure similarityMeasure;
 	

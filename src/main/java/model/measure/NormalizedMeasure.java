@@ -11,7 +11,7 @@ import util.spark.mllib.MllibUtilities;
  * @author Jonathan Bergeron
  *
  */
-public abstract class NormalizedMeasure implements Measure{
+public class NormalizedMeasure implements Measure{
 	
 	final Measure measure;
 	
