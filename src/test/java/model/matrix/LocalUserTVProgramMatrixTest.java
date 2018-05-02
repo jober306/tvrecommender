@@ -8,8 +8,8 @@ import model.data.TVProgram;
 import model.data.User;
 import model.data.mapping.IdentityMapping;
 import model.matrix.LocalUserTVProgramMatrix;
-import model.similarity.NormalizedCosineSimilarity;
-import model.similarity.SimilarityMeasure;
+import model.measure.Measure;
+import model.measure.similarity.NormalizedCosineSimilarity;
 
 import org.apache.spark.mllib.linalg.Matrix;
 import org.junit.After;
@@ -81,7 +81,7 @@ public class LocalUserTVProgramMatrixTest extends UserTVProgramFixture{
 	
 	@Test
 	public void getItemSimilaritiesTest(){
-		SimilarityMeasure measure = NormalizedCosineSimilarity.getInstance();
+		Measure measure = NormalizedCosineSimilarity.getInstance();
 		Matrix denseS = denseMatrix.getItemSimilarities(measure);
 		Matrix sparseS = sparseMatrix.getItemSimilarities(measure);
 		int expectedMatrixSize = 4;
@@ -91,8 +91,8 @@ public class LocalUserTVProgramMatrixTest extends UserTVProgramFixture{
 		assertEquals(denseS.numCols(), sparseS.numCols());
 		for(int col1 = 0; col1 < expectedMatrixSize; col1++){
 			for(int col2 = 0; col2 < expectedMatrixSize; col2++){
-				double expectedDenseSim = measure.calculateSimilarity(denseMatrix.getColumn(col1), denseMatrix.getColumn(col2));
-				double expectedSparseSim = measure.calculateSimilarity(sparseMatrix.getColumn(col1), sparseMatrix.getColumn(col2));
+				double expectedDenseSim = measure.calculate(denseMatrix.getColumn(col1), denseMatrix.getColumn(col2));
+				double expectedSparseSim = measure.calculate(sparseMatrix.getColumn(col1), sparseMatrix.getColumn(col2));
 				if(col1 == col2){
 					expectedDenseSim = 1.0d;
 					expectedSparseSim = 1.0d;

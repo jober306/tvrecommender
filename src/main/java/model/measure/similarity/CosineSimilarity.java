@@ -1,4 +1,4 @@
-package model.similarity;
+package model.measure.similarity;
 
 import java.util.HashSet;
 import java.util.List;
@@ -9,18 +9,18 @@ import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.spark_project.guava.primitives.Ints;
 
-public class CosineSimilarity implements SimilarityMeasure{
+public class CosineSimilarity extends SimilarityMeasure{
 	
 	private static final CosineSimilarity instance = new CosineSimilarity();
 	
 	private CosineSimilarity(){};
 	
-	public static CosineSimilarity getInstance(){
+	public static CosineSimilarity instance(){
 		return instance;
 	}
 	
 	@Override
-	public double calculateSimilarity(SparseVector i, SparseVector j) {
+	public double calculate(SparseVector i, SparseVector j) {
 		List<Integer> indicesListI = Ints.asList(i.indices());
 		List<Integer> indicesListJ = Ints.asList(j.indices());
 		Set<Integer> indices = new HashSet<Integer>(indicesListI);
@@ -30,7 +30,7 @@ public class CosineSimilarity implements SimilarityMeasure{
 	}
 
 	@Override
-	public double calculateSimilarity(DenseVector i, DenseVector j) {
+	public double calculate(DenseVector i, DenseVector j) {
 		return IntStream.range(0, Math.min(i.size(), j.size())).mapToDouble(index -> i.apply(index) * j.apply(index)).sum();
 	}
 }

@@ -11,8 +11,8 @@ import model.data.TVProgram;
 import model.data.User;
 import model.data.mapping.IdentityMapping;
 import model.matrix.DistributedUserTVProgramMatrix;
-import model.similarity.NormalizedCosineSimilarity;
-import model.similarity.SimilarityMeasure;
+import model.measure.Measure;
+import model.measure.similarity.NormalizedCosineSimilarity;
 import util.spark.SparkUtilities;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -78,14 +78,14 @@ public class DistributedUserTVProgramMatrixTest extends UserTVProgramFixture{
 	
 	@Test
 	public void getItemSimilaritiesTest(){
-		SimilarityMeasure measure = NormalizedCosineSimilarity.getInstance();
+		Measure measure = NormalizedCosineSimilarity.getInstance();
 		Matrix S = R.getItemSimilarities(measure);
 		int expectedMatrixSize = 4;
 		assertEquals(expectedMatrixSize, S.numRows());
 		assertEquals(expectedMatrixSize, S.numCols());
 		for(int col1 = 0; col1 < expectedMatrixSize; col1++){
 			for(int col2 = 0; col2 < expectedMatrixSize; col2++){
-				double expectedSim = measure.calculateSimilarity(R.getColumn(col1), R.getColumn(col2));
+				double expectedSim = measure.calculate(R.getColumn(col1), R.getColumn(col2));
 				if(col1 == col2){
 					expectedSim = 1.0d;
 				}

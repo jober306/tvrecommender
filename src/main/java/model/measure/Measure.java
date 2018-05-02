@@ -1,24 +1,24 @@
-package model.similarity;
+package model.measure;
 
 import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vector;
 
-public interface SimilarityMeasure {
+public interface Measure {
 	
-	public double calculateSimilarity(SparseVector i, SparseVector j);
-	public double calculateSimilarity(DenseVector i, DenseVector j);
+	public double calculate(SparseVector i, SparseVector j);
+	public double calculate(DenseVector i, DenseVector j);
 	
-	public default double calculateSimilarity(Vector i, Vector j){
+	public default double calculate(Vector i, Vector j){
 		if(i instanceof DenseVector && j instanceof DenseVector){
 			DenseVector sparseI = (DenseVector) i;
 			DenseVector sparseJ = (DenseVector) j;
-			return calculateSimilarity(sparseI, sparseJ);
+			return calculate(sparseI, sparseJ);
 		}
 		else{
 			SparseVector denseI = i.toSparse();
 			SparseVector denseJ = j.toSparse();
-			return calculateSimilarity(denseI, denseJ);
+			return calculate(denseI, denseJ);
 		}
 	}
 }

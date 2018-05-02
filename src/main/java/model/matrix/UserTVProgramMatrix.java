@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import model.data.TVProgram;
 import model.data.User;
 import model.data.mapping.Mapping;
-import model.similarity.SimilarityMeasure;
+import model.measure.Measure;
 import scala.Tuple3;
 import util.spark.mllib.MllibUtilities;
 
@@ -159,21 +159,21 @@ public abstract class UserTVProgramMatrix<U extends User, UM, P extends TVProgra
 	 * 
 	 * @return A sparse matrix containing the similarity between each item.
 	 */
-	public Matrix getItemSimilarities(SimilarityMeasure simMeasure) {
+	public Matrix getItemSimilarities(Measure simMeasure) {
 		final long numCols = getNumCols();
 		List<MatrixEntry> entries = createSparseSimilarityMatrixEntries(numCols, simMeasure);
 		Tuple3<int[], int[], double[]> matrixData = MllibUtilities.sparseMatrixFormatToCSCMatrixFormat((int) numCols, entries);
 		return Matrices.sparse((int)getNumCols(), (int)getNumCols(), matrixData._1(), matrixData._2(), matrixData._3());
 	}
 	
-	private List<MatrixEntry> createSparseSimilarityMatrixEntries(long numCols, SimilarityMeasure simMeasure){
+	private List<MatrixEntry> createSparseSimilarityMatrixEntries(long numCols, Measure simMeasure){
 		final Map<Integer, Vector> columnVectorMap = columnVectorMap();
 		return IntStream.range(0, (int)numCols).boxed().flatMap(colIndex1 -> {
 			return IntStream.range(colIndex1, (int)numCols).boxed().flatMap(colIndex2 -> {
 				if(colIndex1 == colIndex2){
 					return Stream.of(new MatrixEntry(colIndex1, colIndex2, 1.0d));
 				}
-				double sim = simMeasure.calculateSimilarity(columnVectorMap.get(colIndex1), columnVectorMap.get(colIndex2));
+				double sim = simMeasure.calculate(columnVectorMap.get(colIndex1), columnVectorMap.get(colIndex2));
 				if(sim != 0){
 					MatrixEntry entry = new MatrixEntry(colIndex1, colIndex2, sim);
 					MatrixEntry symmetricEntry = new MatrixEntry(colIndex2, colIndex1, sim);

@@ -17,9 +17,9 @@ import model.data.User;
 import model.data.mapping.TVProgramIDMapping;
 import model.data.mapping.UserIDMapping;
 import model.matrix.UserTVProgramMatrix;
+import model.measure.similarity.NormalizedCosineSimilarity;
 import model.recommendation.Recommendations;
 import model.recommendation.ScoredRecommendation;
-import model.similarity.NormalizedCosineSimilarity;
 import scala.Tuple2;
 
 /**
