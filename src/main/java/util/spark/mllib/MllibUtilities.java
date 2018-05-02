@@ -44,6 +44,43 @@ import util.spark.SparkUtilities;
 public class MllibUtilities {
 	
 	/**
+	 * Method that takes a dense vector as input and return a normalized deep copy of it.
+	 * @param v The dense vector.
+	 * @return A normalized and dense deep copy of the given vector.
+	 */
+	public static DenseVector normalize(DenseVector v){
+		double norm = calculateL2Norm(v);
+		if(norm == 0.0d){
+			return v;
+		}
+		double[] values = v.values();
+		double[] normalizedValues = new double[v.size()];
+		for(int index = 0; index < v.size(); index++){
+			normalizedValues[index] = values[index] / norm;
+		}
+		return new DenseVector(normalizedValues);
+	}
+	
+	/**
+	 * Method that takes a sparse vector as input and return a normalized deep copy of it.
+	 * @param v The sparse vector.
+	 * @return A normalized and sparse deep copy of the given vector.
+	 */
+	public static SparseVector normalize(SparseVector v){
+		double norm = calculateL2Norm(v);
+		if(norm == 0.0d){
+			return v;
+		}
+		double[] values = v.values();
+		int[] indices = v.indices();
+		double[] normalizedValues = new double[values.length];
+		for(int index = 0; index < indices.length; index++){
+			normalizedValues[index] = values[index] / norm;
+		}
+		return new SparseVector(v.size(), indices, normalizedValues);
+	}
+	
+	/**
 	 * Method that returns the euclidean norm of the given vector.
 	 * @param v A vector in dense representation.
 	 * @return The eucledean norm of the vector v.

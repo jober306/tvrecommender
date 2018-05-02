@@ -10,8 +10,10 @@ import java.util.List;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.linalg.DenseMatrix;
+import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.Matrices;
 import org.apache.spark.mllib.linalg.Matrix;
+import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
@@ -46,7 +48,39 @@ public class MllibUtilitiesTest {
 		rows = SparkUtilities.<IndexedRow> elementsToJavaRDD(rowList, sc);
 		R = new IndexedRowMatrix(rows.rdd());
 	}
-
+	
+	@Test
+	public void normalizeDenseZeroVector(){
+		DenseVector zero = new DenseVector(new double[]{0.0d, 0.0d, 0.0d});
+		double[] expectedValues = zero.values();
+		double[] actualValues = MllibUtilities.normalize(zero).values();
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
+	}
+	
+	@Test
+	public void normalizeStandardDenseVector(){
+		DenseVector v = new DenseVector(new double[]{1.0d, 0.0d, 2.0d, 3.0d});
+		double[] expectedValues = new double[]{0.267, 0.0, 0.534, 0.802};
+		double[] actualValues = MllibUtilities.normalize(v).values();
+		assertArrayEquals(expectedValues, actualValues, 0.001d);
+	}
+	
+	@Test
+	public void normalizeSparseZeroVector(){
+		SparseVector zero = new SparseVector(3, new int[]{}, new double[]{});
+		double[] expectedValues = zero.values();
+		double[] actualValues = MllibUtilities.normalize(zero).values();
+		assertArrayEquals(expectedValues, actualValues, 0.0d);
+	}
+	
+	@Test
+	public void normalizeStandardSparseVector(){
+		SparseVector v = new SparseVector(4, new int[]{0,2,3}, new double[]{1.0d, 2.0d, 3.0d});
+		double[] expectedValues = new double[]{0.267, 0.0, 0.534, 0.802};
+		double[] actualValues = MllibUtilities.normalize(v).toDense().values();
+		assertArrayEquals(expectedValues, actualValues, 0.001d);
+	}
+	
 	@Test
 	public void transposeTest() {
 		IndexedRowMatrix Rt = MllibUtilities.transpose(R);
