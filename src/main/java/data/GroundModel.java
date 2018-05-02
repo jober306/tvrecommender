@@ -33,14 +33,14 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 * @param tvProgram The tv program.
 	 * @return The probability that the given tv program is chosen by a random user.
 	 */
-	public double tvProgramIsChosenProbability(P tvProgram){
+	public double probabilityTVProgramIsChosen(P tvProgram){
 		final long totalNumberOfEvents = dataset.count();
 		final Integer currentTVProgramId = tvProgram.id();
 		final long numberOfEventsTVProgram = dataset.events()
 			.map(E::programID)
 			.filter(currentTVProgramId::equals)
 			.count();
-		return (double) numberOfEventsTVProgram / totalNumberOfEvents;
+		return totalNumberOfEvents == 0 ? 0.0d : (double) numberOfEventsTVProgram / totalNumberOfEvents;
 	}
 	
 	/**
@@ -49,7 +49,7 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 * @param tvProgram The tv program.
 	 * @return The probability that the given tv program is chosen by a random user.
 	 */
-	public double tvProgramIsChosenByUserProbability(P tvProgram, U user){
+	public double probabilityTVProgramIsChosenByUser(P tvProgram, U user){
 		JavaRDD<E> eventsRelativeToUser = dataset.events()
 				.filter(event -> event.user().equals(user))
 				.cache();
@@ -57,7 +57,7 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 		final long numberOfEventsTVProgramRelativeToUser = eventsRelativeToUser
 			.filter(event -> event.programID() == tvProgram.id())
 			.count();
-		return (double) numberOfEventsTVProgramRelativeToUser / totalNumberOfEventsRelativeToUser;
+		return totalNumberOfEventsRelativeToUser == 0 ? 0.0d :(double) numberOfEventsTVProgramRelativeToUser / totalNumberOfEventsRelativeToUser;
 	}
 	
 	/**
@@ -66,14 +66,14 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 * @param tvProgram The tv program.
 	 * @return The probability that the given tv program is known by a random user.
 	 */
-	public double tvProgramIsKnownProbability(P tvProgram){
+	public double probabilityTVProgramIsKnown(P tvProgram){
 		long totalNumberOfUsers = dataset.numberOfUsers();
 		long numberOfUsersThatHaveSeenTVProgram = dataset.events()
 			.filter(event -> event.programID() == tvProgram.id())
 			.map(E::user)
 			.distinct()
 			.count();
-		return (double) numberOfUsersThatHaveSeenTVProgram / totalNumberOfUsers;
+		return totalNumberOfUsers == 0 ? 0.0d : (double) numberOfUsersThatHaveSeenTVProgram / totalNumberOfUsers;
 	}
 	
 }
