@@ -16,14 +16,18 @@ import model.data.User;
  */
 public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<U, P>> {
 	
-	final TVDataSet<U, P, E> dataset;
+	final TVDataSet<U, P, E> tvDataSet;
 	
 	/**
 	 * Base constructor of the class.
 	 * @param dataset The tv data set.
 	 */
-	public GroundModel(TVDataSet<U, P, E> dataset){
-		this.dataset = dataset;
+	public GroundModel(TVDataSet<U, P, E> tvDataSet){
+		this.tvDataSet = tvDataSet;
+	}
+	
+	public TVDataSet<U, P, E> tvDataSet(){
+		return tvDataSet;
 	}
 	
 	/**
@@ -34,9 +38,9 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 * @return The probability that the given tv program is chosen by a random user.
 	 */
 	public double probabilityTVProgramIsChosen(P tvProgram){
-		final long totalNumberOfEvents = dataset.count();
+		final long totalNumberOfEvents = tvDataSet.count();
 		final Integer currentTVProgramId = tvProgram.id();
-		final long numberOfEventsTVProgram = dataset.events()
+		final long numberOfEventsTVProgram = tvDataSet.events()
 			.map(E::programID)
 			.filter(currentTVProgramId::equals)
 			.count();
@@ -50,7 +54,7 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 * @return The probability that the given tv program is chosen by a random user.
 	 */
 	public double probabilityTVProgramIsChosenByUser(P tvProgram, U user){
-		JavaRDD<E> eventsRelativeToUser = dataset.events()
+		JavaRDD<E> eventsRelativeToUser = tvDataSet.events()
 				.filter(event -> event.user().equals(user))
 				.cache();
 		final long totalNumberOfEventsRelativeToUser = eventsRelativeToUser.count();
@@ -67,8 +71,8 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 * @return The probability that the given tv program is known by a random user.
 	 */
 	public double probabilityTVProgramIsKnown(P tvProgram){
-		long totalNumberOfUsers = dataset.numberOfUsers();
-		long numberOfUsersThatHaveSeenTVProgram = dataset.events()
+		long totalNumberOfUsers = tvDataSet.numberOfUsers();
+		long numberOfUsersThatHaveSeenTVProgram = tvDataSet.events()
 			.filter(event -> event.programID() == tvProgram.id())
 			.map(E::user)
 			.distinct()
