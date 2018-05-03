@@ -12,7 +12,6 @@ import model.data.TVProgram;
 import model.data.User;
 import model.information.Informative;
 import model.recommendation.RecommendFunction;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
 /**
@@ -38,7 +37,7 @@ import model.recommendation.Recommendations;
  * @param <E> The type of tv event.
  * @param <R> The type of recommendations made by this recommender.
  */
-public abstract class TVRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>, R extends Recommendation> implements Informative{
+public abstract class TVRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>> implements Informative{
 	
 	/**
 	 * Method to recommend in a normal setting, i.e. when the instance of context is Context.
@@ -46,7 +45,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 * @param tvPrograms The list of tv programs that can be recommended.
 	 * @return
 	 */
-	abstract protected Recommendations<U, R> recommendNormally(U user, List<? extends P> tvPrograms);
+	abstract protected Recommendations<U, P> recommendNormally(U user, List<P> tvPrograms);
 	
 	/**
 	 * Method to recommend in a test setting, i.e. when the instance of context is EvaluationContext.
@@ -54,7 +53,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 * @param tvPrograms The list of tv programs that can be recommended.
 	 * @return
 	 */
-	abstract protected Recommendations<U, R> recommendForTesting(U user, List<? extends P> tvPrograms);
+	abstract protected Recommendations<U, P> recommendForTesting(U user, List<P> tvPrograms);
 	
 	/**
 	 * 
@@ -72,7 +71,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 */
 	protected Context<U, P, E> context;
 
-	RecommendFunction<U, P, R> recommendFunctionRef;
+	RecommendFunction<U, P> recommendFunctionRef;
 	
 	protected int numberOfRecommendations;
 	
@@ -109,7 +108,7 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 		return new RecommenderInfo(this.getClass().getSimpleName(), parameters());
 	}
 	
-	public Context<? extends U, ? extends P, ? extends E> getContext() {
+	public Context<U, P, E> getContext() {
 		return this.context;
 	}
 	
@@ -135,8 +134,8 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 *            The number of results that will be returned.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public Recommendations<U, R> recommend(U user, LocalDateTime targetWatchTime) {
-		List<? extends P> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
+	public Recommendations<U, P> recommend(U user, LocalDateTime targetWatchTime) {
+		List<P> tvPrograms = context.getEPG().getListProgramsAtWatchTime(
 				targetWatchTime);
 		return recommend(user, tvPrograms);
 	}
@@ -159,14 +158,14 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 *            The number of results that will be returned.
 	 * @return The indexes in decreasing order from best of the best tv show.
 	 */
-	public Recommendations<U, R> recommend(U user, LocalDateTime startTargetTime,
+	public Recommendations<U, P> recommend(U user, LocalDateTime startTargetTime,
 			LocalDateTime endTargetTime) {
-		List<? extends P> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
+		List<P> tvPrograms = context.getEPG().getListProgramsBetweenTimes(
 				startTargetTime, endTargetTime);
 		return recommend(user, tvPrograms);
 	}
 
-	public Recommendations<U, R> recommend(U user, List<? extends P> tvProrams) {
+	public Recommendations<U, P> recommend(U user, List<P> tvProrams) {
 		return recommendFunctionRef.recommend(user, tvProrams);
 	}
 }

@@ -17,7 +17,6 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import model.data.User;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
@@ -50,9 +49,9 @@ public class TopChannelPerUserRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, RecsysTVProgram> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
-		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().id());
+		assertEquals(expectedProgramId, recommendations.get(0).id());
 	}
 	
 	@Test
@@ -68,11 +67,11 @@ public class TopChannelPerUserRecommenderTest {
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram1, mostWatchedChannelTVProgram2, mostWatchedChannelTVProgram3, notWatchedChannelTVProgram);
 		int expectedNumberOfResults = 4;
 		recommender.setNumberOfRecommendations(tvPrograms.size());
-		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, RecsysTVProgram> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
-		assertEquals(expectedFirstProgramId1, recommendations.get(0).tvProgram().id());
-		assertEquals(expectedSecondProgramId2, recommendations.get(1).tvProgram().id());
-		assertEquals(expectedThirdProgramId3, recommendations.get(2).tvProgram().id());
+		assertEquals(expectedFirstProgramId1, recommendations.get(0).id());
+		assertEquals(expectedSecondProgramId2, recommendations.get(1).id());
+		assertEquals(expectedThirdProgramId3, recommendations.get(2).id());
 	}
 	
 	@AfterClass

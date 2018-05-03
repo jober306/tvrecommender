@@ -10,15 +10,16 @@ import org.junit.Test;
 import org.spark_project.guava.collect.Sets;
 
 import model.data.TVProgram;
+import model.data.User;
 
 public class PrecisionMetricTest extends RecommendationsFixture{
 
 	
-	Precision precision;
+	Precision<User, TVProgram> precision;
 	
 	@Test
 	public void precisionAt5TestNoGoodRecommendationsTest() {
-		precision = new Precision(5);
+		precision = new Precision<>(5);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow11, tvShow12, tvShow13, tvShow14, tvShow15);
 		double actualResult = precision.evaluate(allRecommendations, groundTruth);
 		
@@ -28,7 +29,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt2TestNoDuplicateRecommendationWithSomeGoodTest() {
-		precision = new Precision(2);
+		precision = new Precision<>(2);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = precision.evaluate(distinctRecommendations, groundTruth);
 
@@ -38,7 +39,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt3TestNoDuplicateRecommendationWithSomeGoodTest() {
-		precision = new Precision(3);
+		precision = new Precision<>(3);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = precision.evaluate(distinctRecommendations, groundTruth);
 
@@ -48,7 +49,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt2TestAllRecommendationWithSomeGoodTest() {
-		precision = new Precision(2);
+		precision = new Precision<>(2);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = precision.evaluate(allRecommendations, groundTruth);
 
@@ -58,7 +59,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt3TestAllRecommendationWithSomeGoodTest() {
-		precision = new Precision(3);
+		precision = new Precision<>(3);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = precision.evaluate(allRecommendations, groundTruth);
 
@@ -68,7 +69,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt10TestAllRecommendationWithSomeGoodTest() {
-		precision = new Precision(10);
+		precision = new Precision<>(10);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = precision.evaluate(allRecommendations, groundTruth);
 
@@ -78,7 +79,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt10GroundTruthEmptyTest() {
-		precision = new Precision(10);
+		precision = new Precision<>(10);
 		Set<TVProgram> groundTruth = Collections.emptySet();
 		double actualResult = precision.evaluate(allRecommendations, groundTruth);
 
@@ -88,7 +89,7 @@ public class PrecisionMetricTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt15HigherThanRecommendationsSizeTest() {
-		precision = new Precision(15);
+		precision = new Precision<>(15);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = precision.evaluate(allRecommendations, groundTruth);
 

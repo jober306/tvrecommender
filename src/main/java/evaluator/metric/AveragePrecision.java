@@ -1,12 +1,9 @@
 package evaluator.metric;
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.List;
 import java.util.Set;
 
 import model.data.TVProgram;
-import model.recommendation.Recommendation;
+import model.data.User;
 import model.recommendation.Recommendations;
 
 /**
@@ -14,7 +11,7 @@ import model.recommendation.Recommendations;
  * @author Jonathan Bergeron
  *
  */
-public class AveragePrecision implements EvaluationMetric<Recommendation>{
+public class AveragePrecision<U extends User, P extends TVProgram> implements EvaluationMetric<U, P>{
 	
 	/**
 	 * The number of recommendations that will be considered
@@ -39,18 +36,11 @@ public class AveragePrecision implements EvaluationMetric<Recommendation>{
 	}
 	
 	@Override
-	public double evaluate(Recommendations<?, ? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
-		List<? extends TVProgram> recommendedTVShowIndexes = recommendations.stream()
-				.map(Recommendation::tvProgram)
-				.collect(toList());
-		return calculateAveragePrecision(cutoff, recommendedTVShowIndexes, groundTruth);
-	}
-
-	private double calculateAveragePrecision(int cutoff, List<? extends TVProgram> recommendedTVShows, Set<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth){	
 		double averagePrecision = 0.0d;
 		double truePositiveRecommendedTVShow = 0;
-		for (int k = 1; k <= Math.min(recommendedTVShows.size(), cutoff); k++) {
-			TVProgram recommendation = recommendedTVShows.get(k-1);
+		for (int k = 1; k <= Math.min(recommendations.size(), cutoff); k++) {
+			TVProgram recommendation = recommendations.get(k-1);
 			if (groundTruth.contains(recommendation)) {
 				truePositiveRecommendedTVShow++;
 				averagePrecision += truePositiveRecommendedTVShow / k;

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Stream;
 
+import model.data.TVProgram;
 import model.data.User;
 
 /**
@@ -12,7 +13,7 @@ import model.data.User;
  *
  * @param <T> The type of recommendations
  */
-public class Recommendations<U extends User, T extends Recommendation> implements Serializable{
+public class Recommendations<U extends User, P extends TVProgram> implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -24,7 +25,7 @@ public class Recommendations<U extends User, T extends Recommendation> implement
 	/**
 	 * The sorted list of recommendations, from most relevant to less relevant.
 	 */
-	final List<T> recommendations;
+	final List<P> recommendations;
 	
 	/**
 	 * Main constructor of the class.
@@ -32,7 +33,7 @@ public class Recommendations<U extends User, T extends Recommendation> implement
 	 * @param recommendations The sorted list of recommendations made for the user. It should be sorted from most
 	 * relevant to less relevant.
 	 */
-	public Recommendations(U user, List<T> recommendations) {
+	public Recommendations(U user, List<P> recommendations) {
 		this.user = user;
 		this.recommendations = recommendations;
 	}
@@ -50,7 +51,7 @@ public class Recommendations<U extends User, T extends Recommendation> implement
 	 * @param index The index.
 	 * @return The index'th recommendation.
 	 */
-	public T get(int index){
+	public P get(int index){
 		return recommendations.get(index);
 	}
 	
@@ -58,7 +59,7 @@ public class Recommendations<U extends User, T extends Recommendation> implement
 	 * Method that returns the stream of recommendations.
 	 * @return The stream of recommendations.
 	 */
-	public Stream<T> stream(){
+	public Stream<P> stream(){
 		return recommendations.stream();
 	}
 	

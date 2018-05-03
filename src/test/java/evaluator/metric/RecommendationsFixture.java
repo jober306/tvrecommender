@@ -8,7 +8,6 @@ import org.junit.Before;
 
 import model.data.TVProgram;
 import model.data.User;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 
 /**
@@ -35,31 +34,20 @@ public abstract class RecommendationsFixture {
 	protected static final TVProgram tvShow13 = new TVProgram(time, time, 0,7);
 	protected static final TVProgram tvShow14 = new TVProgram(time, time, 0,8);
 	protected static final TVProgram tvShow15 = new TVProgram(time, time, 0,9);
-	
-	static final Recommendation rec1 = new Recommendation(tvShow1);
-	static final Recommendation rec2 = new Recommendation(tvShow2);
-	static final Recommendation rec3 = new Recommendation(tvShow3);
-	static final Recommendation rec4 = new Recommendation(tvShow4);
-	static final Recommendation rec5= new Recommendation(tvShow5);
-	static final Recommendation rec6 = new Recommendation(tvShow6);
-	static final Recommendation rec7 = new Recommendation(tvShow7);
-	static final Recommendation rec8 = new Recommendation(tvShow8);
-	static final Recommendation rec9 = new Recommendation(tvShow9);
-	static final Recommendation rec10 = new Recommendation(tvShow10);
 
 
 	
 	
 	
-	protected Recommendations<User, Recommendation> distinctRecommendations;
-	protected Recommendations<User, Recommendation> allRecommendations;
-	protected Recommendations<User, Recommendation> sameRecommendations;
+	protected Recommendations<User, TVProgram> distinctRecommendations;
+	protected Recommendations<User, TVProgram> allRecommendations;
+	protected Recommendations<User, TVProgram> sameRecommendations;
 	
 	@Before
 	public void setUp() {
-		distinctRecommendations = new Recommendations<>(new User(1), Arrays.asList(rec1, rec2, rec3, rec4));
-		allRecommendations = new Recommendations<>(new User(2), Arrays.asList(rec1, rec2, rec3, rec4, rec5, rec6, rec7, rec8, rec9, rec10));
-		sameRecommendations = new Recommendations<>(new User(3), Arrays.asList(rec1, rec1, rec1 ,rec1));
+		distinctRecommendations = new Recommendations<>(new User(1), Arrays.asList(tvShow1, tvShow2, tvShow3, tvShow4));
+		allRecommendations = new Recommendations<>(new User(2), Arrays.asList(tvShow1, tvShow2, tvShow3, tvShow4, tvShow5, tvShow6, tvShow7, tvShow8, tvShow9, tvShow10));
+		sameRecommendations = new Recommendations<>(new User(3), Arrays.asList(tvShow1, tvShow1, tvShow1 ,tvShow1));
 	}
 	
 	@After

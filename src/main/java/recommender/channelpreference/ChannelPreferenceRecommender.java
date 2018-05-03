@@ -20,7 +20,6 @@ import data.recsys.RecsysTVProgram;
 import data.recsys.tensor.RecsysUserPreferenceTensorCalculator;
 import model.data.User;
 import model.data.feature.ChannelFeatureExtractor;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
 import model.tensor.UserPreferenceTensorCollection;
@@ -28,7 +27,7 @@ import recommender.TVRecommender;
 import scala.Tuple2;
 import scala.Tuple3;
 
-public abstract class ChannelPreferenceRecommender extends TVRecommender<User, RecsysTVProgram, RecsysTVEvent, Recommendation> {
+public abstract class ChannelPreferenceRecommender extends TVRecommender<User, RecsysTVProgram, RecsysTVEvent> {
 		
 	protected UserPreferenceTensorCollection userPreferenceCollection;
 	
@@ -63,13 +62,12 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 	}
 
 	@Override
-	protected Recommendations<User, Recommendation> recommendNormally(User user, List<? extends RecsysTVProgram> tvPrograms){
-		List<Recommendation> recommendations = tvPrograms.stream()
+	protected Recommendations<User, RecsysTVProgram> recommendNormally(User user, List<RecsysTVProgram> tvPrograms){
+		List<RecsysTVProgram> recommendations = tvPrograms.stream()
 				.map(curry1(this::toProgramWatchTime, user))
 				.sorted(comparing(Tuple2<RecsysTVProgram, Integer>::_2).reversed())
 				.limit(numberOfRecommendations)
 				.map(Tuple2<RecsysTVProgram, Integer>::_1)
-				.map(Recommendation::new)
 				.collect(Collectors.toList());
 		return new Recommendations<>(user, recommendations);
 	}
@@ -93,11 +91,11 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 
 	}
 	
-	protected List<Recommendation> recommendTopChannelsWithRespectToWatchTime(Collection<Tuple2<Integer, Integer>> topChannelsWatchTime, int numberOfResults, List<? extends RecsysTVProgram> tvPrograms){
-		List<Recommendation> recommendations = new ArrayList<Recommendation>();
+	protected List<RecsysTVProgram> recommendTopChannelsWithRespectToWatchTime(Collection<Tuple2<Integer, Integer>> topChannelsWatchTime, int numberOfResults, List<RecsysTVProgram> tvPrograms){
+		List<RecsysTVProgram> recommendations = new ArrayList<RecsysTVProgram>();
 		for(Tuple2<Integer, Integer> topChannelWatchTime : topChannelsWatchTime){
 			int channelIndex = topChannelWatchTime._1();
-			List<Recommendation> recommendationsForChannel = tvPrograms.stream().filter(program -> program.channelId() == channelIndex).map(Recommendation::new).collect(Collectors.toList());
+			List<RecsysTVProgram> recommendationsForChannel = tvPrograms.stream().filter(program -> program.channelId() == channelIndex).collect(Collectors.toList());
 			recommendations.addAll(recommendationsForChannel);
 			if(recommendations.size() > numberOfResults) {
 					break;
@@ -107,7 +105,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 	}
 	
 	@Override
-	protected Recommendations<User, Recommendation> recommendForTesting(User user, List<? extends RecsysTVProgram> tvPrograms){
+	protected Recommendations<User, RecsysTVProgram> recommendForTesting(User user, List<RecsysTVProgram> tvPrograms){
 		return recommendNormally(user, tvPrograms);
 	}
 }

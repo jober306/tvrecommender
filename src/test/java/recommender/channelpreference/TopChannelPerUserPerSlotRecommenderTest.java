@@ -17,7 +17,6 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import model.data.User;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
@@ -51,7 +50,7 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 0;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, RecsysTVProgram> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
 	}
 	
@@ -66,9 +65,9 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, RecsysTVProgram> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
-		assertEquals(expectedProgramId, recommendations.get(0).tvProgram().id());
+		assertEquals(expectedProgramId, recommendations.get(0).id());
 	}
 	
 	@Test
@@ -80,10 +79,10 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 2;
 		recommender.setNumberOfRecommendations(expectedNumberOfResults);
-		Recommendations<User, Recommendation> recommendations = recommender.recommend(user, tvPrograms);
+		Recommendations<User, RecsysTVProgram> recommendations = recommender.recommend(user, tvPrograms);
 		assertEquals(expectedNumberOfResults, recommendations.size());
-		assertEquals(mostWatchedChannelAndSlotTVProgram.id(), recommendations.get(0).tvProgram().id());
-		assertEquals(secondMostWatchedChannelAndSlotTVProgram.id(), recommendations.get(1).tvProgram().id());
+		assertEquals(mostWatchedChannelAndSlotTVProgram.id(), recommendations.get(0).id());
+		assertEquals(secondMostWatchedChannelAndSlotTVProgram.id(), recommendations.get(1).id());
 	}
 	
 	@AfterClass

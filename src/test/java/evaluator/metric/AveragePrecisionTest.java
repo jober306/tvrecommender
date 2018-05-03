@@ -9,14 +9,15 @@ import org.junit.Test;
 
 import jersey.repackaged.com.google.common.collect.Sets;
 import model.data.TVProgram;
+import model.data.User;
 
 public class AveragePrecisionTest extends RecommendationsFixture{
 	
-	AveragePrecision avgPrecision;
+	AveragePrecision<User, TVProgram> avgPrecision;
 	
 	@Test
 	public void averagePrecisionAt3NoGoodRecommendations() {
-		avgPrecision = new AveragePrecision(3);
+		avgPrecision = new AveragePrecision<>(3);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow11, tvShow12, tvShow13, tvShow14, tvShow15);
 		double actualResult = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
@@ -26,7 +27,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	
 	@Test
 	public void averagePrecisionAt3OneGoodRecommendation() {
-		avgPrecision = new AveragePrecision(3);
+		avgPrecision = new AveragePrecision<>(3);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow3,tvShow12, tvShow13, tvShow14);
 		double actualResult = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
@@ -36,7 +37,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	
 	@Test
 	public void averagePrecisionAt3OneGoodRecommendationBigGroundTruthWithDuplicate() {
-		avgPrecision = new AveragePrecision(3);
+		avgPrecision = new AveragePrecision<>(3);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow3,tvShow12, tvShow13, tvShow14,tvShow14, tvShow14, tvShow14, tvShow14);
 		double actualResult = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
@@ -46,7 +47,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	
 	@Test
 	public void averagePrecisionAt5GroundTruthEmptyTest() {
-		avgPrecision = new AveragePrecision(5);
+		avgPrecision = new AveragePrecision<>(5);
 		Set<TVProgram> groundTruth = Collections.emptySet();
 		double actualResult = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
@@ -56,7 +57,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	
 	@Test
 	public void averagePrecisionAt1GoodRecommendationsAt2Test() {
-		avgPrecision = new AveragePrecision(1);
+		avgPrecision = new AveragePrecision<>(1);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow12,tvShow3, tvShow13, tvShow14);
 		double actualResult = avgPrecision.evaluate(allRecommendations, groundTruth);
 		
@@ -66,7 +67,7 @@ public class AveragePrecisionTest extends RecommendationsFixture{
 	
 	@Test
 	public void averagePrecisionAt15HigherThanRecommendations() {
-		avgPrecision = new AveragePrecision(15);
+		avgPrecision = new AveragePrecision<>(15);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow3,tvShow12, tvShow13, tvShow14);
 		double actualResult = avgPrecision.evaluate(allRecommendations, groundTruth);
 		

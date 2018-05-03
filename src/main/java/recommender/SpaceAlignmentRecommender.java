@@ -38,7 +38,7 @@ import model.data.mapping.UserIDMapping;
 import model.data.mapping.UserMapping;
 import model.matrix.UserTVProgramMatrix;
 import model.recommendation.Recommendations;
-import model.recommendation.ScoredRecommendation;
+import scala.Tuple2;
 import util.spark.mllib.MllibUtilities;
 
 /**
@@ -52,7 +52,7 @@ import util.spark.mllib.MllibUtilities;
  * @author Jonathan Bergeron
  */
 public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>>
-		extends TVRecommender<U, P, E, ScoredRecommendation> {
+		extends TVRecommender<U, P, E> {
 
 	/**
 	 * The java spark context. It is necessary to create matrix entries in the
@@ -177,7 +177,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		this.localC = toDenseLocalVectors(C);
 		calculateMprime(userMapping, tvProgramMapping);
 		if (context instanceof EvaluationContext) {
-			EvaluationContext<? extends User, ? extends P, ? extends E> evalContext = (EvaluationContext<? extends User, ? extends P, ? extends E>) context;
+			EvaluationContext<U, P, E> evalContext = (EvaluationContext<U, P, E>) context;
 			this.newTVShowsSimilarities = initializeNewTVShowSimilarities(evalContext.getTestPrograms());
 		}
 	}
@@ -186,7 +186,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		System.out.println(Mprime.toString());
 	}
 
-	private Map<P, List<Double>> initializeNewTVShowSimilarities(List<? extends P> tvPrograms) {
+	private Map<P, List<Double>> initializeNewTVShowSimilarities(List<P> tvPrograms) {
 		return tvPrograms.stream().collect(toMap(Function.identity(),
 				t -> calculateNewTVShowSimilarities(extractor.extractFeaturesFromProgram(t))));
 	}
@@ -198,24 +198,28 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 	}
 
 	@Override
-	protected Recommendations<U, ScoredRecommendation> recommendNormally(U user, List<? extends P> tvPrograms) {
+	protected Recommendations<U, P> recommendNormally(U user, List<P> tvPrograms) {
 		Map<P, Vector> newTvShows = tvPrograms.stream()
 				.collect(toMap(Function.identity(), extractor::extractFeaturesFromProgram));
-		List<ScoredRecommendation> recommendations = newTvShows.entrySet().stream()
+		List<P> recommendations = newTvShows.entrySet().stream()
 				.map(entry -> scoreTVProgram(user, entry))
-				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed()).limit(numberOfRecommendations)
+				.sorted(Comparator.comparing(Tuple2<P, Double>::_2).reversed())
+				.limit(numberOfRecommendations)
+				.map(Tuple2::_1)
 				.collect(toList());
 		return new Recommendations<>(user, recommendations);
 	}
 
 	@Override
-	protected Recommendations<U, ScoredRecommendation> recommendForTesting(U user, List<? extends P> tvPrograms) {
+	protected Recommendations<U, P> recommendForTesting(U user, List<P> tvPrograms) {
 		EvaluationContext<U, P, E> evalContext = (EvaluationContext<U, P, E>) context;
 		List<Integer> itemIndexesSeenByUser = evalContext.getGroundTruth().get(user)
 				.stream().map(P::id).collect(toList());
-		List<ScoredRecommendation> recommendations = tvPrograms.stream()
+		List<P> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
-				.sorted(Comparator.comparing(ScoredRecommendation::score).reversed()).limit(numberOfRecommendations)
+				.sorted(Comparator.comparing(Tuple2<P, Double>::_2).reversed())
+				.limit(numberOfRecommendations)
+				.map(Tuple2::_1)
 				.collect(toList());
 		return new Recommendations<>(user, recommendations);
 	}
@@ -230,14 +234,14 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		return parameters;
 	}
 
-	private ScoredRecommendation scoreTVProgram(U user, Entry<P, Vector> programWithFeatures) {
+	private Tuple2<P, Double> scoreTVProgram(U user, Entry<P, Vector> programWithFeatures) {
 		P program = programWithFeatures.getKey();
 		Vector programFeatures = programWithFeatures.getValue();
-		return new ScoredRecommendation(program, calculateScore(user, programFeatures));
+		return new Tuple2<P, Double>(program, calculateScore(user, programFeatures));
 	}
 
-	private ScoredRecommendation scoreTVProgram(List<Integer> itemIndexesSeenByUser, P tvProgram) {
-		return new ScoredRecommendation(tvProgram, getScore(itemIndexesSeenByUser, tvProgram));
+	private Tuple2<P, Double> scoreTVProgram(List<Integer> itemIndexesSeenByUser, P tvProgram) {
+		return new Tuple2<P, Double>(tvProgram, getScore(itemIndexesSeenByUser, tvProgram));
 	}
 
 	private double calculateScore(U user, Vector vector) {

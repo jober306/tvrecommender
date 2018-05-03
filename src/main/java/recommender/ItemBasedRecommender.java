@@ -19,7 +19,6 @@ import model.data.mapping.UserIDMapping;
 import model.matrix.UserTVProgramMatrix;
 import model.measure.similarity.NormalizedCosineSimilarity;
 import model.recommendation.Recommendations;
-import model.recommendation.ScoredRecommendation;
 import scala.Tuple2;
 
 /**
@@ -30,7 +29,7 @@ import scala.Tuple2;
  *
  */
 public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>>
-		extends TVRecommender<U, P, E, ScoredRecommendation> {
+		extends TVRecommender<U, P, E> {
 	
 	/**
 	 * The electronic programming guide used by this recommender.
@@ -127,13 +126,13 @@ public class ItemBasedRecommender<U extends User, P extends TVProgram, E extends
 	}
 
 	@Override
-	protected Recommendations<U, ScoredRecommendation> recommendNormally(U user, List<? extends P> tvPrograms) {
+	protected Recommendations<U, P> recommendNormally(U user, List<P> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected Recommendations<U, ScoredRecommendation> recommendForTesting(U user, List<? extends P> tvPrograms) {
+	protected Recommendations<U, P> recommendForTesting(U user, List<P> tvPrograms) {
 		// TODO Auto-generated method stub
 		return null;
 	}

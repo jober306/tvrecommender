@@ -3,7 +3,7 @@ package evaluator.metric;
 import java.util.Set;
 
 import model.data.TVProgram;
-import model.recommendation.Recommendation;
+import model.data.User;
 import model.recommendation.Recommendations;
 
 /**
@@ -13,12 +13,12 @@ import model.recommendation.Recommendations;
  *
  * @param <R> The type of the recommendation.
  */
-public class IncrementMetric implements EvaluationMetric<Recommendation> {
+public class IncrementMetric<U extends User, P extends TVProgram> implements EvaluationMetric<U, P> {
 	
 	int currentValue = 1;
 	
 	@Override
-	public double evaluate(Recommendations<?, ? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth) {
 		return currentValue++;
 	}
 	

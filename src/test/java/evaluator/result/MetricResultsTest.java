@@ -24,7 +24,6 @@ import data.recsys.loader.RecsysTVDataSetLoader;
 import evaluator.metric.IncrementMetric;
 import evaluator.metric.OneMetric;
 import model.data.User;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
@@ -39,8 +38,8 @@ public class MetricResultsTest {
 	
 	Map<Integer, Double> usersScore;
 	
-	OneMetric oneMetric;
-	IncrementMetric incMetric;
+	OneMetric<User, RecsysTVProgram> oneMetric;
+	IncrementMetric<User, RecsysTVProgram> incMetric;
 	
 	@BeforeClass
 	public static void setUpOnce() {
@@ -57,8 +56,8 @@ public class MetricResultsTest {
 		usersScore.put(2, 0.6d);
 		usersScore.put(3, 0.7d);
 		usersScore.put(4, 0.8d);
-		this.oneMetric = new OneMetric();
-		this.incMetric = new IncrementMetric();
+		this.oneMetric = new OneMetric<>();
+		this.incMetric = new IncrementMetric<>();
 	}
 	
 	@Test
@@ -76,11 +75,11 @@ public class MetricResultsTest {
 	
 	@Test
 	public void evaluatingMeanTest() {
-		Recommendations<User, Recommendation> recommendations1 = new Recommendations<>(new User(1), Collections.emptyList());
-		Recommendations<User, Recommendation> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
-		Recommendations<User, Recommendation> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
+		Recommendations<User, RecsysTVProgram> recommendations1 = new Recommendations<>(new User(1), Collections.emptyList());
+		Recommendations<User, RecsysTVProgram> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
+		Recommendations<User, RecsysTVProgram> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
 
-		Stream<Recommendations<User, Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		Stream<Recommendations<User, RecsysTVProgram>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
 		MetricResults result = incMetric.evaluate(recommendationsStream, context);
 		double expectedMean = 2.0d;
 		assertEquals(expectedMean, result.mean(), 0.0d);
@@ -102,10 +101,10 @@ public class MetricResultsTest {
 	
 	@Test
 	public void evaluatingGeometricMeanTest() {
-		Recommendations<User, Recommendation> recommendations1 = new Recommendations<>(new User(1), Collections.emptyList());
-		Recommendations<User, Recommendation> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
-		Recommendations<User, Recommendation> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
-		Stream<Recommendations<User, Recommendation>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
+		Recommendations<User, RecsysTVProgram> recommendations1 = new Recommendations<>(new User(1), Collections.emptyList());
+		Recommendations<User, RecsysTVProgram> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
+		Recommendations<User, RecsysTVProgram> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
+		Stream<Recommendations<User, RecsysTVProgram>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
 		MetricResults result = incMetric.evaluate(recommendationsStream, context);
 		double expectedGeoMean = 1.8171205928321d;
 		assertEquals(expectedGeoMean, result.geometricMean(), 0.000001d);

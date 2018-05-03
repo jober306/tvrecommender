@@ -127,7 +127,7 @@ public class EvaluationContext<U extends User, P extends TVProgram, E extends TV
 	}
 	
 	private void addEvent(Map<U, Set<P>> groundTruth, E event){
-		groundTruth.get(event.userID()).add(event.program());
+		groundTruth.get(event.user()).add(event.program());
 	}
 	
 	private List<P> createTestPrograms(LocalDateTime testStartTime, LocalDateTime testEndTime){

@@ -14,7 +14,6 @@ import data.Context;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import model.data.User;
-import model.recommendation.Recommendation;
 import model.recommendation.Recommendations;
 import model.tensor.UserPreference;
 import scala.Tuple2;
@@ -31,11 +30,11 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 	}
 	
 	@Override
-	protected Recommendations<User, Recommendation> recommendNormally(User user, List<? extends RecsysTVProgram> tvPrograms) {
+	protected Recommendations<User, RecsysTVProgram> recommendNormally(User user, List<RecsysTVProgram> tvPrograms) {
 		return recommendByAggregatingSlots(user, tvPrograms);
 	}
 	
-	private Recommendations<User, Recommendation> recommendByAggregatingSlots(User user, List<? extends RecsysTVProgram> tvPrograms) {
+	private Recommendations<User, RecsysTVProgram> recommendByAggregatingSlots(User user, List<RecsysTVProgram> tvPrograms) {
 		Stream<Short> allPossibleSlots = tvPrograms.stream()
 				.map(RecsysTVProgram::slot)
 				.distinct();
@@ -51,7 +50,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 				.map(entry -> new Tuple2<Integer, Integer>(entry.getKey(), entry.getValue()))
 				.sorted(comparing(Tuple2<Integer, Integer>::_2).reversed())
 				.collect(Collectors.toList());
-		List<Recommendation> recommendations = recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfRecommendations, tvPrograms);
+		List<RecsysTVProgram> recommendations = recommendTopChannelsWithRespectToWatchTime(sortedChannelsWatchTime, numberOfRecommendations, tvPrograms);
 		return new Recommendations<>(user, recommendations);
 	}
 	

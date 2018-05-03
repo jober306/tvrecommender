@@ -3,7 +3,7 @@ package evaluator.metric;
 import java.util.Set;
 
 import model.data.TVProgram;
-import model.recommendation.Recommendation;
+import model.data.User;
 import model.recommendation.Recommendations;
 
 /**
@@ -11,7 +11,7 @@ import model.recommendation.Recommendations;
  * @author Jonathan Bergeron
  *
  */
-public class Recall implements EvaluationMetric<Recommendation>{
+public class Recall<U extends User, P extends TVProgram> implements EvaluationMetric<U, P>{
 	
 
 	/**
@@ -28,10 +28,9 @@ public class Recall implements EvaluationMetric<Recommendation>{
 	}
 
 	@Override
-	public double evaluate(Recommendations<?, ? extends Recommendation> recommendations, Set<? extends TVProgram> groundTruth) {
+	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth){	
 		double truePositive = (double) recommendations.stream()
 			.limit(cutoff)
-			.map(Recommendation::tvProgram)
 			.filter(groundTruth::contains)
 			.count();
 		return groundTruth.size() == 0 ? 0.0d : (double) truePositive / groundTruth.size();

@@ -9,14 +9,15 @@ import org.junit.Test;
 import org.spark_project.guava.collect.Sets;
 
 import model.data.TVProgram;
+import model.data.User;
 
 public class RecallTest extends RecommendationsFixture{
 
-	Recall recall;
+	Recall<User, TVProgram> recall;
 	
 	@Test
 	public void recallAt5TestNoGoodRecommendationsTest() {
-		recall = new Recall(5);
+		recall = new Recall<>(5);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow11, tvShow12, tvShow13, tvShow14, tvShow15);
 		double actualResult = recall.evaluate(allRecommendations, groundTruth);
 		
@@ -26,7 +27,7 @@ public class RecallTest extends RecommendationsFixture{
 	
 	@Test
 	public void recallAt2TestNoDuplicateRecommendationWithSomeGoodTest() {
-		recall = new Recall(2);
+		recall = new Recall<>(2);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = recall.evaluate(distinctRecommendations, groundTruth);
 
@@ -36,7 +37,7 @@ public class RecallTest extends RecommendationsFixture{
 	
 	@Test
 	public void recallAt3TestNoDuplicateRecommendationWithSomeGoodTest() {
-		recall = new Recall(3);
+		recall = new Recall<>(3);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow3, tvShow4);
 		double actualResult = recall.evaluate(distinctRecommendations, groundTruth);
 
@@ -46,7 +47,7 @@ public class RecallTest extends RecommendationsFixture{
 	
 	@Test
 	public void recallAt10TestAllRecommendationWithSomeGoodTest() {
-		recall = new Recall(10);
+		recall = new Recall<>(10);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow2, tvShow11);
 		double actualResult = recall.evaluate(allRecommendations, groundTruth);
 
@@ -56,7 +57,7 @@ public class RecallTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt10GroundTruthEmptyTest() {
-		recall = new Recall(10);
+		recall = new Recall<>(10);
 		Set<TVProgram> groundTruth = Collections.emptySet();
 		double actualResult = recall.evaluate(allRecommendations, groundTruth);
 
@@ -66,7 +67,7 @@ public class RecallTest extends RecommendationsFixture{
 	
 	@Test
 	public void precisionAt15HigherThanRecommendationsSizeTest() {
-		recall = new Recall(200);
+		recall = new Recall<>(200);
 		Set<TVProgram> groundTruth = Sets.newHashSet(tvShow1, tvShow2);
 		double actualResult = recall.evaluate(allRecommendations, groundTruth);
 

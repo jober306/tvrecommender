@@ -17,7 +17,6 @@ import data.recsys.feature.RecsysBooleanFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
 import model.data.User;
 import model.recommendation.Recommendations;
-import model.recommendation.ScoredRecommendation;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
 
@@ -46,7 +45,7 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		Recommendations<User, ScoredRecommendation> prediction = recommender.recommend(new User(userId), START_TIME.plusHours(19));
+		Recommendations<User, RecsysTVProgram> prediction = recommender.recommend(new User(userId), START_TIME.plusHours(19));
 		assertEquals(numberOfResults, prediction.size());
 	}
 
