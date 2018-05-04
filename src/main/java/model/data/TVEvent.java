@@ -15,6 +15,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class TVEvent<U extends User, P extends TVProgram> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
+	final int hashCode;
 
 	/**
 	 * The time at which the user started watching.
@@ -48,6 +49,12 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 		this.user = user;
 		this.eventID = eventId;
 		this.watchDuration = watchDuration;
+		this.hashCode = new HashCodeBuilder().append(watchTime)
+				.append(program)
+				.append(user)
+				.append(eventID)
+				.append(watchDuration)
+				.hashCode();
 	}
 
 	/**
@@ -117,12 +124,17 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 			return false;
 		}
 		TVEvent<?,?> tvEvent = (TVEvent<?,?>) other;
-		return new EqualsBuilder().append(eventID, tvEvent.eventID).isEquals();
+		return new EqualsBuilder().append(watchTime, tvEvent.watchTime)
+				.append(program, tvEvent.program)
+				.append(user, tvEvent.user)
+				.append(eventID, tvEvent.eventID)
+				.append(watchDuration, tvEvent.watchDuration)
+				.isEquals();
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder(17, 37).append(eventID).toHashCode();
+		return this.hashCode;
 	}
 
 }

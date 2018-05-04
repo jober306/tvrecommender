@@ -18,6 +18,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class TVProgram implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+	final int hashCode;
 
 	/**
 	 * The start date time of the program. This is considered inclusive.
@@ -65,6 +66,11 @@ public class TVProgram implements Serializable {
 		this.duration = Duration.between(startTime, endTime);
 		this.channelId = channelId;
 		this.id = programId;
+		this.hashCode = new HashCodeBuilder(17, 37).append(startTime)
+				.append(endTime)
+				.append(channelId)
+				.append(id)
+				.toHashCode();
 	}
 
 	/**
@@ -114,13 +120,13 @@ public class TVProgram implements Serializable {
 		return new EqualsBuilder().append(startTime, tvProgram.startTime)
 				.append(endTime, tvProgram.endTime)
 				.append(channelId, tvProgram.channelId)
-				.append(id, tvProgram.id).isEquals();
+				.append(id, tvProgram.id)
+				.isEquals();
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder(17, 37).append(channelId).append(id).append(startTime).append(endTime)
-				.toHashCode();
+		return this.hashCode;
 	}
 
 	@Override

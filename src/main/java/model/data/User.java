@@ -8,11 +8,13 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class User implements Serializable{
 
 	private static final long serialVersionUID = 1L;
+	final int hashCode;
 	
 	final int id;
 	
 	public User(int id){
 		this.id = id;
+		this.hashCode = new HashCodeBuilder(17, 37).append(id()).toHashCode();
 	}
 	
 	public int id(){
@@ -33,6 +35,6 @@ public class User implements Serializable{
 	
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder(17, 37).append(id()).toHashCode();
+		return this.hashCode;
 	}
 }
