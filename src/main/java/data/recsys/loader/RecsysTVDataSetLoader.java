@@ -153,7 +153,7 @@ public class RecsysTVDataSetLoader {
 	 * @return The program implicitly created from the events.
 	 */
 	private JavaRDD<RecsysTVProgram> createProgramsImplicitlyFromEvents(JavaRDD<RecsysTVEvent> events) {
-		return events.map(RecsysTVEvent::program).distinct();
+		return events.map(event -> event.program()).distinct();
 	}
 
 	public static void main(String[] args) {

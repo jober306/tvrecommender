@@ -10,7 +10,7 @@ import java.util.Set;
 import org.apache.spark.api.java.JavaRDD;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
@@ -47,14 +47,14 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void getProgramIndexesSeenByExistingUserOnValidDatasetTest(){
-		Set<Integer> expectedIndexSeenUser1 = Sets.newHashSet(Arrays.asList(1,3));
+		Set<Integer> expectedIndexSeenUser1 = ImmutableSet.copyOf(Arrays.asList(1,3));
 		Set<Integer> actualIndexSeenUser1 = dataset.tvProgramIndexesSeenByUser(new User(1));
 		assertEquals(expectedIndexSeenUser1, actualIndexSeenUser1);
 	}
 	
 	@Test
 	public void getProgramSeenByExistingUserOnValidDatasetTest(){
-		Set<TVProgram> expectedProgramSeenUser1 = Sets.newHashSet(program11, program23);
+		Set<TVProgram> expectedProgramSeenUser1 = ImmutableSet.copyOf(Arrays.asList(program11, program23));
 		Set<TVProgram> actualProgramSeenUser1 = dataset.tvProgramSeenByUser(new User(1));
 		assertEquals(expectedProgramSeenUser1, actualProgramSeenUser1);
 	}
@@ -92,8 +92,8 @@ public class TVDataSetTest extends TVDataSetFixture{
 		double[] ratios = { 0.17, 0.43, 0.40 };
 		Set<TVDataSet<User, TVProgram, TVEvent<User, TVProgram>>> splittedDataSet = dataset.splitTVEventsRandomly(ratios);
 		JavaRDD<TVEvent<User, TVProgram>> unions = splittedDataSet.stream().map(TVDataSet::events).reduce(JavaRDD::union).get();
-		Set<TVEvent<User, TVProgram>> expectedTVEvents = Sets.newHashSet(Arrays.asList(event1, event2, event3, event4, event5, event6));
-		Set<TVEvent<User, TVProgram>> actualTVEvents = Sets.newHashSet(unions.collect());
+		Set<TVEvent<User, TVProgram>> expectedTVEvents = ImmutableSet.copyOf(Arrays.asList(event1, event2, event3, event4, event5, event6));
+		Set<TVEvent<User, TVProgram>> actualTVEvents = ImmutableSet.copyOf(unions.collect());
 		assertEquals(expectedTVEvents, actualTVEvents);
 	}
 	
@@ -108,7 +108,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allUserIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,2,3));
+		Set<Integer> expectedSet = ImmutableSet.copyOf(Arrays.asList(1,2,3));
 		Set<Integer> actualSet = dataset.allUserIds();
 		assertEquals(expectedSet, actualSet);
 	}
@@ -121,7 +121,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allTVProgramIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1,2,3,4,5));
+		Set<Integer> expectedSet = ImmutableSet.copyOf(Arrays.asList(1,2,3,4,5));
 		Set<Integer> actualSet = dataset.allProgramIds();
 		assertEquals(expectedSet, actualSet);
 	}
@@ -134,7 +134,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allEventIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(0,1,2,3,4,5));
+		Set<Integer> expectedSet = ImmutableSet.copyOf(Arrays.asList(0,1,2,3,4,5));
 		Set<Integer> actualSet = dataset.allEventIds();
 		assertEquals(expectedSet, actualSet);
 	}
@@ -147,7 +147,7 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allChannelIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = Sets.newHashSet(Arrays.asList(1, 2, 3, 4));
+		Set<Integer> expectedSet = ImmutableSet.copyOf(Arrays.asList(1, 2, 3, 4));
 		Set<Integer> actualSet = dataset.allChannelIds();
 		assertEquals(expectedSet, actualSet);
 	}

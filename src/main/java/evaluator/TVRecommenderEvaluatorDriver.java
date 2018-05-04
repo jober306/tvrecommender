@@ -14,7 +14,10 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import data.EPG;
 import data.EvaluationContext;
+import data.GroundModel;
 import data.TVDataSet;
+import data.recsys.RecsysEPG;
+import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.feature.RecsysBooleanFeatureExtractor;
@@ -51,10 +54,10 @@ public class TVRecommenderEvaluatorDriver {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		int minDuration = 5;
 		System.out.print("Loading data...");
-		Tuple2<EPG<RecsysTVProgram>, TVDataSet<User, RecsysTVProgram, RecsysTVEvent>> data = loader.loadDataSet(minDuration);
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet(minDuration);
 		System.out.println("Done!");
-		EPG<RecsysTVProgram> epg = data._1;
-		TVDataSet<User, RecsysTVProgram, RecsysTVEvent> events = data._2;
+		RecsysEPG epg = data._1;
+		RecsysTVDataSet events = data._2;
 		EvaluationContext<User, RecsysTVProgram, RecsysTVEvent> evalContext = new EvaluationContext<>(epg, events, trainingStartTimes, trainingEndTimes, testingStartTimes, testingEndTimes);
 		ChannelPreferenceRecommender recommender = new TopChannelRecommender(evalContext, 10);
 		recommender.train();
@@ -71,11 +74,11 @@ public class TVRecommenderEvaluatorDriver {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(sc);
 		int minDuration = 5;
 		System.out.print("Loading data...");
-		Tuple2<EPG<RecsysTVProgram>, TVDataSet<User, RecsysTVProgram, RecsysTVEvent>> data = loader.loadDataSet(minDuration);
+		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet(minDuration);
 		System.out.println("Done!");
-		EPG<RecsysTVProgram> epg = data._1;
-		TVDataSet<User, RecsysTVProgram, RecsysTVEvent> events = data._2;
-		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = spaceAlignementEvaluator(sc, epg);
+		RecsysEPG epg = data._1;
+		RecsysTVDataSet events = data._2;
+		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = topChannelEvaluator(data._2());
 		Set<EvaluationResult> results = evaluator.evaluateMovingTimeWindow(epg, events, startTime, window, endTime);
 		Stream<MetricResults> metricResults = results.stream().map(EvaluationResult::metricsResults).flatMap(List::stream);
 		Map<String, Double> averagePerMetric = StreamUtilities.toMapAverage(metricResults, MetricResults::metricName, MetricResults::mean);
@@ -86,7 +89,7 @@ public class TVRecommenderEvaluatorDriver {
 		sc.close();
 	}
 
-	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> spaceAlignementEvaluator(JavaSparkContext sc, EPG<RecsysTVProgram> epg) {
+	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> spaceAlignementEvaluator(JavaSparkContext sc, RecsysEPG epg) {
 		int rank = 50;
 		int neighbourhoodSize = 10;
 		SpaceAlignmentRecommender<User, RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, new RecsysBooleanFeatureExtractor(epg), rank, neighbourhoodSize, sc);
@@ -94,9 +97,11 @@ public class TVRecommenderEvaluatorDriver {
 		return evaluator;
 	}
 	
-	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> topChannelEvaluator(TVDataSet<User, RecsysTVProgram, RecsysTVEvent> tvDataSet) {
+	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> topChannelEvaluator(RecsysTVDataSet tvDataSet) {
 		ChannelPreferenceRecommender recommender = new TopChannelRecommender(10);
-		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<>(recommender, getMetrics().add(new Novelty<User, RecsysTVProgram>(tvDataSet)));
+		Set<EvaluationMetric<User, RecsysTVProgram>> metrics = getMetrics();
+		metrics.add(new Novelty<>(new GroundModel<>(tvDataSet)));
+		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<>(recommender, metrics);
 		return evaluator;
 	}
 	

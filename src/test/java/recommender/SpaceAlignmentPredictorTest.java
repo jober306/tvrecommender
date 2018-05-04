@@ -1,6 +1,5 @@
 package recommender;
 
-import static data.recsys.RecsysTVDataSet.START_TIME;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.spark.api.java.JavaSparkContext;
@@ -15,6 +14,7 @@ import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.feature.RecsysBooleanFeatureExtractor;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.utility.RecsysUtilities;
 import model.data.User;
 import model.recommendation.Recommendations;
 import scala.Tuple2;
@@ -45,7 +45,7 @@ public class SpaceAlignmentPredictorTest {
 	@Test
 	public void recommendTest() {
 		int userId = 2;
-		Recommendations<User, RecsysTVProgram> prediction = recommender.recommend(new User(userId), START_TIME.plusHours(19));
+		Recommendations<User, RecsysTVProgram> prediction = recommender.recommend(new User(userId), RecsysUtilities.START_TIME.plusHours(19));
 		assertEquals(numberOfResults, prediction.size());
 	}
 

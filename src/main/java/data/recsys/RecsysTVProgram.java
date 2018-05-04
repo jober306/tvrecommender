@@ -58,6 +58,18 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 		this.subGenreId = subGenreId;
 		this.slot = slot;
 	}
+	
+	/**
+	 * Constructor that implicitly construct a recsys tv program from a recsys tv event. 
+	 * @param tvEvent The recsys tv event.
+	 */
+	public RecsysTVProgram(RecsysTVEvent tvEvent) {
+		super(getStartTimeFromWeekAndSlot(tvEvent.getWeek(), tvEvent.getSlot()),
+				getEndTimeFromWeekAndSlot(tvEvent.getWeek(), tvEvent.getSlot()), tvEvent.channelId(), tvEvent.programID());
+		this.genreId = tvEvent.getGenreID();
+		this.subGenreId = tvEvent.getSubgenreID();
+		this.slot = tvEvent.getSlot();
+	}
 
 	/**
 	 * @return the genreId

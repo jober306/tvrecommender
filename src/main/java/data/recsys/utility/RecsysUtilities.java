@@ -4,13 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
 
-import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 
 /**
@@ -18,7 +19,17 @@ import data.recsys.RecsysTVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysUtilities {
+public class RecsysUtilities implements Serializable{
+	
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * The date the data set started recording tv audience behavior (This is not
+	 * the real one). Monday, april 1995 at midnigh.
+	 */
+	public static final LocalDateTime START_TIME = LocalDateTime.of(1995,
+			Month.APRIL, 10, 0, 0);
 	
 	static final String GENRE_SUBGENRE_MAPPING_PATH = "/tv-audience-dataset/genreSubgenreMapping.txt";
 	
@@ -114,7 +125,7 @@ public class RecsysUtilities {
 	 * @return The time corresponding to this week and slot.
 	 */
 	public static LocalDateTime getStartTimeFromWeekAndSlot(short week, short slot){
-		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot-1);
+		return START_TIME.plusWeeks(week-1).plusHours(slot-1);
 	}
 	
 	/**
@@ -125,7 +136,7 @@ public class RecsysUtilities {
 	 * @return The time corresponding to this week and slot.
 	 */
 	public static LocalDateTime getEndTimeFromWeekAndSlot(short week, short slot){
-		return RecsysTVDataSet.START_TIME.plusWeeks(week-1).plusHours(slot);
+		return START_TIME.plusWeeks(week-1).plusHours(slot);
 	}
 	
 	/**

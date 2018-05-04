@@ -1,6 +1,5 @@
 package recommender.channelpreference;
 
-import static data.recsys.RecsysTVDataSet.START_TIME;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.spark.api.java.JavaSparkContext;
@@ -14,6 +13,7 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.utility.RecsysUtilities;
 import model.data.User;
 import scala.Tuple2;
 import util.spark.SparkUtilities;
@@ -38,7 +38,7 @@ public class TopChannelRecommenderTest {
 	@Test
 	public void recommendTest() {
 		int expectedRecommendation = 254329;
-		int recommendation = recommender.recommend(new User(0), START_TIME.plusHours(19)).get(0).id();
+		int recommendation = recommender.recommend(new User(0), RecsysUtilities.START_TIME.plusHours(19)).get(0).id();
 		assertEquals(expectedRecommendation, recommendation);
 	}
 	

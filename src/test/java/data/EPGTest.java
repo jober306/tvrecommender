@@ -54,6 +54,17 @@ public class EPGTest extends TVDataSetFixture{
 		assertEquals(expectedSize, results.size());
 		assertEquals(expectedResults, results);
 	}
+	
+	@Test
+	public void getJavaRDDProgramBetweenTimeWithProgramEnding() {
+		List<TVProgram> results = epg.getJavaRDDProgramsBetweenTimes(
+				baseTime.plusMinutes(30), baseTime.plusMinutes(90)).collect();
+		int expectedSize = 6;
+		List<TVProgram> expectedResults = Arrays.asList(program11, program13,
+				program22, program32, program34, program44);
+		assertEquals(expectedSize, results.size());
+		assertEquals(expectedResults, results);
+	}
 
 	@Test
 	public void getListProgramBetweenTimeNoprogram() {

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
@@ -23,8 +23,8 @@ public class UserTVProgramFixture {
 	protected final static TVProgram program2 = new TVProgram(NOW, NOW, 0, 2);
 	protected final static TVProgram program3 = new TVProgram(NOW, NOW, 0, 3);
 	
-	protected final static Set<User> allUsers = Sets.newHashSet(Arrays.asList(user0, user1, user2)); 
-	protected final static Set<TVProgram> allPrograms = Sets.newHashSet(Arrays.asList(program0, program1, program2, program3)); 
+	protected final static Set<User> allUsers = ImmutableSet.copyOf(Arrays.asList(user0, user1, user2)); 
+	protected final static Set<TVProgram> allPrograms = ImmutableSet.copyOf(Arrays.asList(program0, program1, program2, program3)); 
 	
 	protected final static TVEvent<User, TVProgram> event1 = new TVEvent<>(NOW, program0, user1, 0, 0);
 	protected final static TVEvent<User, TVProgram> event2 = new TVEvent<>(NOW, program0, user2, 0, 0);

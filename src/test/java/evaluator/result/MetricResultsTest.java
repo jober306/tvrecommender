@@ -21,6 +21,7 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import data.recsys.loader.RecsysTVDataSetLoader;
+import data.recsys.utility.RecsysUtilities;
 import evaluator.metric.IncrementMetric;
 import evaluator.metric.OneMetric;
 import model.data.User;
@@ -46,7 +47,7 @@ public class MetricResultsTest {
 		sc = SparkUtilities.getADefaultSparkContext();
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		data = loader.loadDataSet();
-		context = new EvaluationContext<>(data._1(), data._2(), RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME, RecsysTVDataSet.START_TIME);
+		context = new EvaluationContext<>(data._1(), data._2(), RecsysUtilities.START_TIME, RecsysUtilities.START_TIME, RecsysUtilities.START_TIME, RecsysUtilities.START_TIME);
 	}
 	
 	@Before

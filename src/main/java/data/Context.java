@@ -3,9 +3,6 @@ package data;
 import static util.TVDataSetUtilities.createSubDataSet;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-
-import org.spark_project.guava.collect.Sets;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
@@ -62,7 +59,6 @@ public class Context<U extends User, P extends TVProgram, E extends TVEvent<U, P
 		this.trainingStartTime = trainingStartTime;
 		this.trainingEndTime = trainingEndTime;
 		this.trainingSet = createSubDataSet(events, trainingStartTime, trainingEndTime);
-		Sets.newHashSet(Arrays.asList("hey"));
 	}
 	
 	/**

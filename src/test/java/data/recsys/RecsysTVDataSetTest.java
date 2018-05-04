@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import data.recsys.feature.RecsysFeatureExtractor;
+import data.recsys.utility.RecsysUtilities;
 import model.data.User;
 import model.data.mapping.IdentityMapping;
 import model.matrix.DistributedUserTVProgramMatrix;
@@ -73,7 +74,7 @@ public class RecsysTVDataSetTest {
 	
 	@Test
 	public void startTimeConvertedProperlyTest(){
-		LocalDateTime expectedTime = RecsysTVDataSet.START_TIME.plusWeeks(2).plusHours(1);
+		LocalDateTime expectedTime = RecsysUtilities.START_TIME.plusWeeks(2).plusHours(1);
 		LocalDateTime actualTime = tvEvent1.watchTime();
 		assertEquals(expectedTime, actualTime);
 	}

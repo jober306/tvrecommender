@@ -21,7 +21,7 @@ import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.apache.spark.mllib.recommendation.Rating;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 import model.data.TVEvent;
 import model.data.TVProgram;
@@ -151,7 +151,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 				.filter(tvEvent -> tvEvent.userID() == user.id())
 				.map(E::program)
 				.collect();
-		return Sets.newHashSet(tvShowsSeenByUser);
+		return ImmutableSet.copyOf(tvShowsSeenByUser);
 	}
 
 	/**
@@ -309,7 +309,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	 * @return The set of tv program ids.
 	 */
 	public Set<Integer> allProgramIds() {
-		return Sets.newHashSet(events.map(E::programID).distinct().collect());
+		return ImmutableSet.copyOf(events.map(E::programID).distinct().collect());
 	}
 	
 	/**
@@ -390,27 +390,27 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	}
 	
 	private Set<Integer> initAllUserIds(){
-		return Sets.newHashSet(allUsers().stream().map(U::id).collect(Collectors.toList()));
+		return ImmutableSet.copyOf(allUsers().stream().map(U::id).collect(Collectors.toList()));
 	}
 	
 	private Set<U> initAllUsers(){
-		return Sets.newHashSet(events.map(E::user).distinct().collect());
+		return ImmutableSet.copyOf(events.map(E::user).distinct().collect());
 	}
 	
 	private Set<Integer> initAllProgramIds(){
-		return Sets.newHashSet(allPrograms().stream().map(P::id).collect(Collectors.toList()));
+		return ImmutableSet.copyOf(allPrograms().stream().map(P::id).collect(Collectors.toList()));
 	}
 	
 	private Set<P> initAllPrograms(){
-		return Sets.newHashSet(events.map(E::program).distinct().collect());
+		return ImmutableSet.copyOf((events.map(E::program).distinct().collect()));
 	}
 	
 	private Set<Integer> initAllEventIds(){
-		return Sets.newHashSet(events.map(E::eventID).distinct().collect());
+		return ImmutableSet.copyOf(events.map(E::eventID).distinct().collect());
 	}
 	
 	private Set<Integer> initAllChannelIds(){
-		return Sets.newHashSet(events.map(E::channelId).distinct().collect());
+		return ImmutableSet.copyOf(events.map(E::channelId).distinct().collect());
 	}
 	
 	private int initNumberOfUsers(){

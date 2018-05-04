@@ -7,7 +7,7 @@ import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.spark_project.guava.primitives.Ints;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 import util.spark.mllib.MllibUtilities;
 
@@ -28,8 +28,8 @@ public class CosineSimilarity implements SimilarityMeasure{
 	
 	@Override
 	public double calculate(SparseVector i, SparseVector j) {
-		Set<Integer> indicesI = Sets.newHashSet(Ints.asList(i.indices()));
-		Set<Integer> indicesJ = Sets.newHashSet(Ints.asList(j.indices()));
+		Set<Integer> indicesI = ImmutableSet.copyOf(Ints.asList(i.indices()));
+		Set<Integer> indicesJ = ImmutableSet.copyOf(Ints.asList(j.indices()));
 		indicesI.retainAll(indicesJ);
 		double dotProduct = indicesI.stream().mapToDouble(index -> i.apply(index) * j.apply(index)).sum();
 		double normI = MllibUtilities.calculateL2Norm(i);
