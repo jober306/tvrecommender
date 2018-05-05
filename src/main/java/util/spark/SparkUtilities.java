@@ -3,9 +3,33 @@ package util.spark;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.ivy.ant.IvyMakePom.Mapping;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import data.recsys.RecsysTVEvent;
+import data.recsys.RecsysTVProgram;
+import data.recsys.feature.RecsysBooleanFeatureExtractor;
+import data.recsys.feature.RecsysFeatureExtractor;
+import model.data.TVEvent;
+import model.data.TVProgram;
+import model.data.User;
+import model.data.feature.ChannelFeatureExtractor;
+import model.data.feature.FeatureExtractor;
+import model.data.mapping.AbstractMapping;
+import model.data.mapping.IdentityMapping;
+import model.data.mapping.TVProgramIDMapping;
+import model.data.mapping.TVProgramMapping;
+import model.data.mapping.UserIDMapping;
+import model.data.mapping.UserMapping;
+import model.tensor.UserPreference;
+import model.tensor.UserPreferenceTensor;
+import model.tensor.UserPreferenceTensorCollection;
+import model.tensor.UserPreferenceTensorCollectionAccumulator;
+import util.function.SerializableFunction;
+import util.function.SerializableSupplier;
+import util.time.LocalDateTimeDTO;
 
 /**
  * Class that offers some utility method to use spark.
@@ -41,9 +65,39 @@ public class SparkUtilities {
 	 * @return The default java spark context.
 	 */
 	public static JavaSparkContext getADefaultSparkContext(){
-		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("App with default spark context");
+		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("TV Recommender");
+		conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+		conf.registerKryoClasses(classesToSerialize());
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		sc.setLogLevel("WARN");
 		return sc;
+	}
+	
+	private static Class<?>[] classesToSerialize(){
+		return new Class<?>[] {
+			TVEvent.class, 
+			User.class, 
+			TVProgram.class, 
+			RecsysTVEvent.class, 
+			RecsysTVProgram.class,
+			FeatureExtractor.class,
+			ChannelFeatureExtractor.class,
+			RecsysFeatureExtractor.class,
+			RecsysBooleanFeatureExtractor.class,
+			Mapping.class,
+			AbstractMapping.class,
+			IdentityMapping.class,
+			TVProgramIDMapping.class,
+			TVProgramMapping.class,
+			UserIDMapping.class,
+			UserMapping.class,
+			UserPreference.class,
+			UserPreferenceTensor.class,
+			UserPreferenceTensorCollection.class,
+			UserPreferenceTensorCollectionAccumulator.class,
+			SerializableFunction.class,
+			SerializableSupplier.class,
+			LocalDateTimeDTO.class
+			};
 	}
 }

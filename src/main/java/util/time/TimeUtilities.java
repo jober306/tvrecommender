@@ -1,6 +1,5 @@
 package util.time;
 
-import java.io.Serializable;
 import java.time.LocalTime;
 import java.time.chrono.ChronoLocalDateTime;
 
@@ -9,12 +8,7 @@ import java.time.chrono.ChronoLocalDateTime;
  * @author Jonathan Bergeron
  *
  */
-public class TimeUtilities implements Serializable{
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class TimeUtilities {
 
 	/**
 	 * Method that checks if a target time is between the inclusive start time and the exclusive end time.

@@ -1,6 +1,8 @@
 package model.data.mapping;
 
-public interface Mapping<V, VM> {
+import java.io.Serializable;
+
+public interface Mapping<V, VM> extends Serializable{
 	
 	public int valueToIndex(V value);
 	
