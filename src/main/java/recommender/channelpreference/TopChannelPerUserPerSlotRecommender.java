@@ -38,7 +38,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 		Stream<Short> allPossibleSlots = tvPrograms.stream()
 				.map(RecsysTVProgram::slot)
 				.distinct();
-		List<Integer> allPossibleChannels = tvPrograms.stream()
+		List<Short> allPossibleChannels = tvPrograms.stream()
 				.map(RecsysTVProgram::channelId)
 				.distinct()
 				.collect(Collectors.toList());
@@ -54,7 +54,7 @@ public class TopChannelPerUserPerSlotRecommender extends ChannelPreferenceRecomm
 		return new Recommendations<>(user, recommendations);
 	}
 	
-	private Tuple3<Integer, Vector, Short> toUserPreferenceTuple(int userId, int channelId, short slot) {
+	private Tuple3<Integer, Vector, Short> toUserPreferenceTuple(int userId, short channelId, short slot) {
 		return new Tuple3<Integer, Vector, Short>(userId, Vectors.dense(new double[] {channelId}), slot);
 	}
 	

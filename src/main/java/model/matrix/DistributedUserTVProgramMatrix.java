@@ -1,6 +1,5 @@
 package model.matrix;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,9 +25,7 @@ import util.spark.SparkUtilities;
  * @author Jonathan Bergeron
  *
  */
-public class DistributedUserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> extends UserTVProgramMatrix<U, UM, P, PM> implements Serializable{
-
-	private static final long serialVersionUID = -135750142194246162L;
+public class DistributedUserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> extends UserTVProgramMatrix<U, UM, P, PM>{
 	
 	/**
 	 * The mllib distributed matrix.

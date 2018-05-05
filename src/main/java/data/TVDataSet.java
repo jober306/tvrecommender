@@ -3,7 +3,6 @@ package data;
 import static java.util.stream.Collectors.toSet;
 import static util.spark.mllib.MllibUtilities.sparseMatrixFormatToCSCMatrixFormat;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -48,10 +47,8 @@ import util.time.LocalDateTimeDTO;
  * @param <P> The type of tv pgoram contained in this data set.
  * @param <E> The type of tv event contained in this data set.
  */
-public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U, P>> implements Serializable, Informative {
-	
-	private static final long serialVersionUID = 1L;
-	
+public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U, P>> implements Informative {
+		
 	/**
 	 * Utility methods to lazily load some fields expensive to compute. See the lazy interface for more information.
 	 */
@@ -82,7 +79,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	SerializableSupplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
 	SerializableSupplier<Set<P>> allPrograms = lazily(() -> allPrograms = value(initAllPrograms()));
 	SerializableSupplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
-	SerializableSupplier<Set<Integer>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
+	SerializableSupplier<Set<Short>> allChannelIds = lazily(() -> allChannelIds = value(initAllChannelIds()));
 	SerializableSupplier<LocalDateTime> startTime = lazily(() -> startTime = value(initStartTime()));
 	SerializableSupplier<LocalDateTime> endTime = lazily(() -> endTime = value(initEndTime()));	
 	
@@ -149,7 +146,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	public Set<P> tvProgramSeenByUser(U user){
 		List<P> tvShowsSeenByUser = events
 				.filter(tvEvent -> tvEvent.userID() == user.id())
-				.map(E::program)
+				.map(tvEvent -> tvEvent.program())
 				.collect();
 		return ImmutableSet.copyOf(tvShowsSeenByUser);
 	}
@@ -182,8 +179,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	 * @return A java RDD of the <class>Rating</class> class.
 	 */
 	public JavaRDD<Rating> convertToMLlibRatings() {
-		JavaRDD<Rating> ratings = events.map(event -> new Rating(event
-				.userID(), event.program().id(), 1.0));
+		JavaRDD<Rating> ratings = events.map(event -> new Rating(event.userID(), event.programID(), 1.0));
 		return ratings;
 	}
 
@@ -309,7 +305,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	 * @return The set of tv program ids.
 	 */
 	public Set<Integer> allProgramIds() {
-		return ImmutableSet.copyOf(events.map(E::programID).distinct().collect());
+		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.programID()).distinct().collect());
 	}
 	
 	/**
@@ -332,7 +328,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	 * Method that returns all the unique channel ids contained in this data set.
 	 * @return The set of channel ids.
 	 */
-	public Set<Integer> allChannelIds() {
+	public Set<Short> allChannelIds() {
 		return allChannelIds.get();
 	}
 	
@@ -394,7 +390,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	}
 	
 	private Set<U> initAllUsers(){
-		return ImmutableSet.copyOf(events.map(E::user).distinct().collect());
+		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.user()).distinct().collect());
 	}
 	
 	private Set<Integer> initAllProgramIds(){
@@ -402,27 +398,27 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	}
 	
 	private Set<P> initAllPrograms(){
-		return ImmutableSet.copyOf((events.map(E::program).distinct().collect()));
+		return ImmutableSet.copyOf((events.map(tvEvent -> tvEvent.program()).distinct().collect()));
 	}
 	
 	private Set<Integer> initAllEventIds(){
-		return ImmutableSet.copyOf(events.map(E::eventID).distinct().collect());
+		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.eventID()).distinct().collect());
 	}
 	
-	private Set<Integer> initAllChannelIds(){
-		return ImmutableSet.copyOf(events.map(E::channelId).distinct().collect());
+	private Set<Short> initAllChannelIds(){
+		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.channelId()).distinct().collect());
 	}
 	
 	private int initNumberOfUsers(){
-		return (int)events.map(E::userID).distinct().count();
+		return allUsers().size();
 	}
 
 	private int initNumberOfTVShows(){
-		return (int)events.map(E::program).distinct().count();
+		return allPrograms().size();
 	}
 	
 	private int initNumberOfTVShowIndexes(){
-		return (int) events.map(E::programID).distinct().count();
+		return allProgramIds().size();
 	}
 	
 	private LocalDateTime initStartTime(){

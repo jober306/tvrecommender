@@ -1,7 +1,5 @@
 package data.recsys;
 
-import java.io.Serializable;
-
 import org.apache.spark.api.java.JavaRDD;
 
 import data.TVDataSet;
@@ -15,9 +13,7 @@ import model.data.User;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysTVDataSet extends TVDataSet<User, RecsysTVProgram, RecsysTVEvent> implements Serializable{
-
-	private static final long serialVersionUID = 1L;
+public class RecsysTVDataSet extends TVDataSet<User, RecsysTVProgram, RecsysTVEvent> {
 
 	/**
 	 * Main constructor of the class. Use the

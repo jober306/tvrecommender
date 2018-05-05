@@ -1,12 +1,8 @@
 package data;
 
-import java.io.Serializable;
-
 import model.information.AbstractInformation;
 
-public class TVDataSetInfo extends AbstractInformation implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
+public class TVDataSetInfo extends AbstractInformation {
 	
 	final String name;
 	final int numberOfUsers;

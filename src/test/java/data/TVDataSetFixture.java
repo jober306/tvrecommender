@@ -72,18 +72,18 @@ public class TVDataSetFixture {
 	}
 
 	static void initializeTVPrograms() {
-		program11 = new TVProgram(baseTime, baseTime.plusHours(1), 1, 1);
-		program13 = new TVProgram(baseTime.plusHours(1), baseTime.plusMinutes(90), 1, 3);
-		program12 = new TVProgram(baseTime.plusMinutes(90), baseTime.plusMinutes(150), 1, 2);
-		program23 = new TVProgram(baseTime, baseTime.plusMinutes(30), 2, 3);
-		program22 = new TVProgram(baseTime.plusMinutes(30), baseTime.plusMinutes(90), 2, 2);
-		program25 = new TVProgram(baseTime.plusMinutes(90), baseTime.plusMinutes(120), 2, 5);
-		program26 = new TVProgram(baseTime.plusMinutes(120), baseTime.plusMinutes(150), 2, 6);
-		program32 = new TVProgram(baseTime, baseTime.plusMinutes(60), 3, 2);
-		program34 = new TVProgram(baseTime.plusMinutes(60), baseTime.plusMinutes(150), 3, 4);
-		program44 = new TVProgram(baseTime, baseTime.plusMinutes(90), 4, 4);
-		program46 = new TVProgram(baseTime.plusMinutes(90), baseTime.plusMinutes(120), 4, 6);
-		program45 = new TVProgram(baseTime.plusMinutes(120), baseTime.plusMinutes(150), 4, 5);
+		program11 = new TVProgram(baseTime, baseTime.plusHours(1), (short)1, 1);
+		program13 = new TVProgram(baseTime.plusHours(1), baseTime.plusMinutes(90), (short)1, 3);
+		program12 = new TVProgram(baseTime.plusMinutes(90), baseTime.plusMinutes(150), (short)1, 2);
+		program23 = new TVProgram(baseTime, baseTime.plusMinutes(30), (short)2, 3);
+		program22 = new TVProgram(baseTime.plusMinutes(30), baseTime.plusMinutes(90), (short)2, 2);
+		program25 = new TVProgram(baseTime.plusMinutes(90), baseTime.plusMinutes(120), (short)2, 5);
+		program26 = new TVProgram(baseTime.plusMinutes(120), baseTime.plusMinutes(150), (short)2, 6);
+		program32 = new TVProgram(baseTime, baseTime.plusMinutes(60), (short)3, 2);
+		program34 = new TVProgram(baseTime.plusMinutes(60), baseTime.plusMinutes(150), (short)3, 4);
+		program44 = new TVProgram(baseTime, baseTime.plusMinutes(90), (short)4, 4);
+		program46 = new TVProgram(baseTime.plusMinutes(90), baseTime.plusMinutes(120), (short)4, 6);
+		program45 = new TVProgram(baseTime.plusMinutes(120), baseTime.plusMinutes(150), (short)4, 5);
 	}
 	
 	static void initializeTVProgramsRDD() {

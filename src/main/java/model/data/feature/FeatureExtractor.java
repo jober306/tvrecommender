@@ -18,8 +18,7 @@ import model.data.TVProgram;
  * @param <E>
  *            The tv event class from which the features will be extracted.
  */
-public abstract class FeatureExtractor<P extends TVProgram, E extends TVEvent<?, ?>>
-		implements Serializable {
+public abstract class FeatureExtractor<P extends TVProgram, E extends TVEvent<?, ?>> implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 

@@ -1,6 +1,5 @@
 package model.matrix;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,9 +17,7 @@ import model.data.mapping.Mapping;
  * @author Jonathan Bergeron
  *
  */
-public class LocalUserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> extends UserTVProgramMatrix<U, UM, P, PM> implements Serializable{
-
-	private static final long serialVersionUID = 6401494865309223613L;
+public class LocalUserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> extends UserTVProgramMatrix<U, UM, P, PM> {
 	
 	/**
 	 * The mllib user item matrix.

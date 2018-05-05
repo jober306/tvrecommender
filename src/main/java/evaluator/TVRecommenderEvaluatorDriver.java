@@ -89,10 +89,10 @@ public class TVRecommenderEvaluatorDriver {
 		sc.close();
 	}
 
-	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> spaceAlignementEvaluator(JavaSparkContext sc, RecsysEPG epg) {
+	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> spaceAlignementEvaluator(JavaSparkContext sc, RecsysTVDataSet dataSet) {
 		int rank = 50;
 		int neighbourhoodSize = 10;
-		SpaceAlignmentRecommender<User, RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, new RecsysBooleanFeatureExtractor(epg), rank, neighbourhoodSize, sc);
+		SpaceAlignmentRecommender<User, RecsysTVProgram, RecsysTVEvent> recommender = new SpaceAlignmentRecommender<>(10, RecsysBooleanFeatureExtractor.instance(), rank, neighbourhoodSize, sc);
 		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<>(recommender, getMetrics());
 		return evaluator;
 	}

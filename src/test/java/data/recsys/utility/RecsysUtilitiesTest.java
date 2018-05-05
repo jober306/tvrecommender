@@ -1,6 +1,7 @@
 package data.recsys.utility;
 
 import static data.recsys.utility.RecsysUtilities.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import org.junit.Test;
 import data.recsys.RecsysTVEvent;
 import util.spark.SparkUtilities;
 
-public class RecsysTVDataSetUtilitiesTest {
+public class RecsysUtilitiesTest {
 	
 	
 	static final RecsysTVEvent tvEvent1 = new RecsysTVEvent((short) 1, (short) 2,
@@ -38,6 +39,18 @@ public class RecsysTVDataSetUtilitiesTest {
 		sc = SparkUtilities.getADefaultSparkContext();
 		dataSet = SparkUtilities.<RecsysTVEvent> elementsToJavaRDD(events, sc);
 	}
+	
+	@Test
+	public void mapSizeTest() {
+		int expectedChannelSize = 217;
+		int expectedGenreSize = 8;
+		int expectedSubgenreSize = 114;
+		int expectedSlotSize = 168;
+		assertThat(expectedChannelSize, equalTo(RecsysUtilities.getChannelIDMap().size()));
+		assertThat(expectedSlotSize, equalTo(RecsysUtilities.getSlotIDMap().size()));
+		assertThat(expectedGenreSize, equalTo(RecsysUtilities.getGenreIDMap().size()));
+		assertThat(expectedSubgenreSize, equalTo(RecsysUtilities.getSubgenreIDMap().size()));
+	}
 
 	@Test
 	public void filterByIntervalOfWeekTest() {
@@ -57,14 +70,9 @@ public class RecsysTVDataSetUtilitiesTest {
 		assertEquals(1, filtered.count());
 	}
 	
-	@AfterClass
-	public static void tearDownOnce(){
-		sc.close();
-	}
-	
 	@Test
 	public void testResourceFileExists(){
-		InputStream stream = RecsysTVDataSetUtilitiesTest.class.getResourceAsStream(RecsysUtilities.GENRE_SUBGENRE_MAPPING_PATH);
+		InputStream stream = RecsysUtilitiesTest.class.getResourceAsStream(RecsysUtilities.GENRE_SUBGENRE_MAPPING_PATH);
 		assertTrue(stream != null);
 	}
 	
@@ -80,5 +88,10 @@ public class RecsysTVDataSetUtilitiesTest {
 		assertTrue(RecsysUtilities.getGenreName((byte)4).equals("society"));
 		assertTrue(RecsysUtilities.getSubgenreName((byte) 2, (byte) 14).equals("skiing"));
 		assertTrue(RecsysUtilities.getSubgenreName((byte) 6, (byte) 90).equals("economics"));
+	}
+
+	@AfterClass
+	public static void tearDownOnce(){
+		sc.close();
 	}
 }

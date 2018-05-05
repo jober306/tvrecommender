@@ -56,7 +56,7 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 	}
 	
 	private UserPreferenceTensorCollection calculateUserPrefCollection(){
-		ChannelFeatureExtractor channelExtractor = new ChannelFeatureExtractor();
+		ChannelFeatureExtractor channelExtractor = ChannelFeatureExtractor.instance();
 		RecsysUserPreferenceTensorCalculator userPrefCalculator = new RecsysUserPreferenceTensorCalculator();
 		return userPrefCalculator.calculateUserPreferenceTensorForDataSet(context.getTrainingSet(), channelExtractor, anyUsers, false, anySlots);		
 	}

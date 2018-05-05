@@ -80,7 +80,7 @@ public class TVEvent<U extends User, P extends TVProgram> implements Serializabl
 	/**
 	 * @return the channelId
 	 */
-	public int channelId() {
+	public short channelId() {
 		return program.channelId();
 	}
 	

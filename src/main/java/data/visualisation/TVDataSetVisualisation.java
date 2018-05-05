@@ -1,6 +1,5 @@
 package data.visualisation;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,9 +16,7 @@ import model.data.TVEvent;
 import util.function.SerializableFunction;
 import util.jfreechart.JFreeChartUtilities;
 
-public class TVDataSetVisualisation implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
+public class TVDataSetVisualisation {
 
 	public static <E extends TVEvent<?, ?>> void createAndSaveSortedProgramIdCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
 		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::programID, dataset, "");

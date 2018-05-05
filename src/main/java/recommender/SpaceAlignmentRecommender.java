@@ -51,8 +51,7 @@ import util.spark.mllib.MllibUtilities;
  * 
  * @author Jonathan Bergeron
  */
-public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>>
-		extends TVRecommender<U, P, E> {
+public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E extends TVEvent<U, P>> extends TVRecommender<U, P, E> {
 
 	/**
 	 * The java spark context. It is necessary to create matrix entries in the

@@ -1,6 +1,5 @@
 package model.recommendation;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -13,9 +12,7 @@ import model.data.User;
  *
  * @param <T> The type of recommendations
  */
-public class Recommendations<U extends User, P extends TVProgram> implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
+public class Recommendations<U extends User, P extends TVProgram> {
 	
 	/**
 	 * The user id for whom recommendations were made.

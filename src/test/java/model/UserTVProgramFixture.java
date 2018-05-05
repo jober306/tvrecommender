@@ -18,10 +18,10 @@ public class UserTVProgramFixture {
 	protected final static User user1 = new User(1);
 	protected final static User user2 = new User(2);
 	
-	protected final static TVProgram program0 = new TVProgram(NOW, NOW, 0, 0);
-	protected final static TVProgram program1 = new TVProgram(NOW, NOW, 0, 1);
-	protected final static TVProgram program2 = new TVProgram(NOW, NOW, 0, 2);
-	protected final static TVProgram program3 = new TVProgram(NOW, NOW, 0, 3);
+	protected final static TVProgram program0 = new TVProgram(NOW, NOW, (short)0, 0);
+	protected final static TVProgram program1 = new TVProgram(NOW, NOW, (short)0, 1);
+	protected final static TVProgram program2 = new TVProgram(NOW, NOW, (short)0, 2);
+	protected final static TVProgram program3 = new TVProgram(NOW, NOW, (short)0, 3);
 	
 	protected final static Set<User> allUsers = ImmutableSet.copyOf(Arrays.asList(user0, user1, user2)); 
 	protected final static Set<TVProgram> allPrograms = ImmutableSet.copyOf(Arrays.asList(program0, program1, program2, program3)); 

@@ -27,25 +27,13 @@ final public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implemen
 	 * slot: hour inside the week relative to the start of the view, from 1 to
 	 * 24*7 = 168.
 	 */
-	protected short slot;
-	
-	/**
-	 * Method that return all the possible values that the slot field can take.
-	 * @return A list containing all the possible values.
-	 */
-	public static List<Short> getAllPossibleSlots(){
-		List<Short> allPossibleSlots = new ArrayList<Short>(168);
-		for(int i = 1; i <= 168; i++){
-			allPossibleSlots.add((short) i);
-		}
-		return allPossibleSlots;
-	}
+	short slot;
 
 	/**
 	 * week: week from 1 to 19. Weeks 14 and 19 should not be used because they
 	 * contain errors.
 	 */
-	protected short week;
+	short week;
 
 	/**
 	 * genre ID: it is the id of the genre, form 1 to 8.
@@ -62,7 +50,7 @@ final public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implemen
 	 * this class for param documentation. The watch time is initialized
 	 * implicitly, considering the recsys tv events data set started
 	 */
-	public RecsysTVEvent(int channelID, short slot, short week, byte genreID,
+	public RecsysTVEvent(short channelID, short slot, short week, byte genreID,
 			byte subgenreID, int userID, int programID, int eventID, int duration) {
 		super(getStartTimeFromWeekAndSlot(week, slot), new RecsysTVProgram(week, slot, channelID, programID, genreID, subgenreID), new User(userID), eventID, duration);
 		this.slot = slot;
@@ -105,6 +93,18 @@ final public class RecsysTVEvent extends TVEvent<User, RecsysTVProgram> implemen
 	 */
 	public byte getSubgenreID() {
 		return subgenreID;
+	}
+	
+	/**
+	 * Method that return all the possible values that the slot field can take.
+	 * @return A list containing all the possible values.
+	 */
+	public static List<Short> getAllPossibleSlots(){
+		List<Short> allPossibleSlots = new ArrayList<Short>(168);
+		for(int i = 1; i <= 168; i++){
+			allPossibleSlots.add((short) i);
+		}
+		return allPossibleSlots;
 	}
 
 	/**

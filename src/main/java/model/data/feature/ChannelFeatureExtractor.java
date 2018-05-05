@@ -19,7 +19,13 @@ public class ChannelFeatureExtractor extends FeatureExtractor<TVProgram, TVEvent
 
 	private static final long serialVersionUID = 1L;
 	
-	public ChannelFeatureExtractor() {};
+	private static ChannelFeatureExtractor INSTANCE = new ChannelFeatureExtractor();
+	
+	private ChannelFeatureExtractor() {};
+	
+	public static ChannelFeatureExtractor instance() {
+		return INSTANCE;
+	}
 	
 	/**
 	 * Method that extracts the channel from the tv program.

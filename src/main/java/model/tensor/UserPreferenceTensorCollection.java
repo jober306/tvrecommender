@@ -33,12 +33,6 @@ public class UserPreferenceTensorCollection implements Serializable {
 	final boolean anySlot;
 	final int vectorSize;
 
-	public static Vector getAnyFeatureVector(int size) {
-		double[] features = new double[size];
-		Arrays.fill(features, ANY);
-		return Vectors.dense(features);
-	}
-
 	/**
 	 * The synchronised map containing the user preference tensor. The total
 	 * watch time of a specific tensor is held in the value of the map.
@@ -54,8 +48,7 @@ public class UserPreferenceTensorCollection implements Serializable {
 		this.anyProgram = anyProgram;
 		this.vectorSize = vectorSize;
 		this.anySlot = anySlot;
-		syncMap = Collections
-				.synchronizedMap(new HashMap<UserPreference, UserPreferenceTensor>());
+		this.syncMap = Collections.synchronizedMap(new HashMap<UserPreference, UserPreferenceTensor>());
 	}
 	
 	public boolean anyUser(){
@@ -172,6 +165,12 @@ public class UserPreferenceTensorCollection implements Serializable {
 
 	private Map<UserPreference, UserPreferenceTensor> getSyncMap() {
 		return syncMap;
+	}
+	
+	public static Vector getAnyFeatureVector(int size) {
+		double[] features = new double[size];
+		Arrays.fill(features, ANY);
+		return Vectors.dense(features);
 	}
 
 }

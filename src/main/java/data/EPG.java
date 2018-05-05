@@ -2,7 +2,6 @@ package data;
 
 import static util.time.TimeUtilities.isDateTimeBetween;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,17 +16,15 @@ import model.data.TVProgram;
  * 
  * @author Jonathan Bergeron
  *
- * @param <T>
+ * @param <P>
  *            The child class of TVProgram that this EPG will contain.
  */
-public class EPG<T extends TVProgram> implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class EPG<P extends TVProgram> {
 
 	/**
-	 * The java rdd containing all the tv program.
+	 * The java rdd containing all the tv programs.
 	 */
-	transient protected JavaRDD<T> electronicProgrammingGuide;
+	transient protected JavaRDD<P> tvPrograms;
 
 	/**
 	 * The spark context used to load the EPG.
@@ -37,15 +34,15 @@ public class EPG<T extends TVProgram> implements Serializable {
 	/**
 	 * Abstract constructor that simply initialize the parameter
 	 * 
-	 * @param electronicProgrammingGuide
+	 * @param tvPrograms
 	 */
-	public EPG(JavaRDD<T> electronicProgrammingGuide) {
-		this.electronicProgrammingGuide = electronicProgrammingGuide;
-		this.sc = new JavaSparkContext(electronicProgrammingGuide.context());
+	public EPG(JavaRDD<P> tvPrograms) {
+		this.tvPrograms = tvPrograms;
+		this.sc = new JavaSparkContext(tvPrograms.context());
 	}
 	
 	public void cache(){
-		electronicProgrammingGuide = electronicProgrammingGuide.cache();
+		tvPrograms.cache();
 	}
 
 	/**
@@ -54,8 +51,8 @@ public class EPG<T extends TVProgram> implements Serializable {
 	 * 
 	 * @return The java rdd containing tv program of this EPG.
 	 */
-	public JavaRDD<T> getEPG() {
-		return electronicProgrammingGuide;
+	public JavaRDD<P> tvPrograms() {
+		return tvPrograms;
 	}
 
 	/**
@@ -66,10 +63,8 @@ public class EPG<T extends TVProgram> implements Serializable {
 	 *            The target watch time.
 	 * @return The java rdd of tv programs occurring during target watch time.
 	 */
-	public JavaRDD<T> getJavaRDDProgramsAtWatchTime(
-			LocalDateTime targetWatchTime) {
-		return electronicProgrammingGuide.filter(program -> isDateTimeBetween(
-				program.startTime(), program.endTime(), targetWatchTime));
+	public JavaRDD<P> getJavaRDDProgramsAtWatchTime(LocalDateTime targetWatchTime) {
+		return tvPrograms.filter(program -> isDateTimeBetween(program.startTime(), program.endTime(), targetWatchTime));
 	}
 
 	/**
@@ -82,12 +77,8 @@ public class EPG<T extends TVProgram> implements Serializable {
 	 *            The end target time.
 	 * @return The java rdd of tv programs occurring during target watch time.
 	 */
-	public JavaRDD<T> getJavaRDDProgramsBetweenTimes(
-			LocalDateTime startTargetTime, LocalDateTime endTargetTime) {
-		electronicProgrammingGuide.count();
-		return electronicProgrammingGuide.filter(program -> startTargetTime
-				.isBefore(program.endTime())
-				&& endTargetTime.isAfter(program.startTime()));
+	public JavaRDD<P> getJavaRDDProgramsBetweenTimes(LocalDateTime startTargetTime, LocalDateTime endTargetTime) {
+		return tvPrograms.filter(program -> startTargetTime.isBefore(program.endTime()) && endTargetTime.isAfter(program.startTime()));
 	}
 
 	/**
@@ -98,7 +89,7 @@ public class EPG<T extends TVProgram> implements Serializable {
 	 *            The target watch time.
 	 * @return The list of all tv programs occurring during target watch time.
 	 */
-	public List<T> getListProgramsAtWatchTime(LocalDateTime targetWatchTime) {
+	public List<P> getListProgramsAtWatchTime(LocalDateTime targetWatchTime) {
 		return getJavaRDDProgramsAtWatchTime(targetWatchTime).collect();
 	}
 
@@ -114,9 +105,7 @@ public class EPG<T extends TVProgram> implements Serializable {
 	 * @return The list of program indexes that occurs between start and end
 	 *         target time.
 	 */
-	public List<T> getListProgramsBetweenTimes(LocalDateTime startTargetTime,
-			LocalDateTime endTargetTime) {
-		return getJavaRDDProgramsBetweenTimes(startTargetTime, endTargetTime)
-				.collect();
+	public List<P> getListProgramsBetweenTimes(LocalDateTime startTargetTime, LocalDateTime endTargetTime) {
+		return getJavaRDDProgramsBetweenTimes(startTargetTime, endTargetTime).collect();
 	}
 }

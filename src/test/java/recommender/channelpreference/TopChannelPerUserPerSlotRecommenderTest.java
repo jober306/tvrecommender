@@ -43,9 +43,9 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 	public void testRecommendMostWatchedProgramButNotInGoodSlotUser1(){
 		User user = new User(1);
 		int expectedProgramId = 10;
-		RecsysTVProgram mostWatchedChannelTVProgramNotInSlot = new RecsysTVProgram((short)0, (short)0, 46, expectedProgramId, (byte) 0, (byte) 0);
-		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, 1, 1, (byte) 0, (byte) 0);
-		RecsysTVProgram notWatchedChannelTVProgram2 = new RecsysTVProgram((short)0, (short)0, 2, 2, (byte) 0, (byte) 0);
+		RecsysTVProgram mostWatchedChannelTVProgramNotInSlot = new RecsysTVProgram((short)0, (short)0, (short)46, expectedProgramId, (byte) 0, (byte) 0);
+		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, (short)1, 1, (byte) 0, (byte) 0);
+		RecsysTVProgram notWatchedChannelTVProgram2 = new RecsysTVProgram((short)0, (short)0, (short)2, 2, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgramNotInSlot, notWatchedChannelTVProgram1, notWatchedChannelTVProgram2);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 0;
@@ -58,9 +58,9 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 	public void testRecommendMostWatchedProgramUser1(){
 		User user = new User(1);
 		int expectedProgramId = 10;
-		RecsysTVProgram mostWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)19, 46, expectedProgramId, (byte) 0, (byte) 0);
-		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, 1, 1, (byte) 0, (byte) 0);
-		RecsysTVProgram notWatchedChannelTVProgram2 = new RecsysTVProgram((short)0, (short)0, 2, 2, (byte) 0, (byte) 0);
+		RecsysTVProgram mostWatchedChannelTVProgram = new RecsysTVProgram((short)0, (short)19, (short)46, expectedProgramId, (byte) 0, (byte) 0);
+		RecsysTVProgram notWatchedChannelTVProgram1 = new RecsysTVProgram((short)0, (short)0, (short)1, 1, (byte) 0, (byte) 0);
+		RecsysTVProgram notWatchedChannelTVProgram2 = new RecsysTVProgram((short)0, (short)0, (short)2, 2, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelTVProgram, notWatchedChannelTVProgram1, notWatchedChannelTVProgram2);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 1;
@@ -73,8 +73,8 @@ public class TopChannelPerUserPerSlotRecommenderTest {
 	@Test
 	public void testRecommendMosWatchedProgramPerSlotUser1(){
 		User user = new User(1);
-		RecsysTVProgram mostWatchedChannelAndSlotTVProgram = new RecsysTVProgram((short)0, (short)20, 46, 2345, (byte) 0, (byte) 0);
-		RecsysTVProgram secondMostWatchedChannelAndSlotTVProgram = new RecsysTVProgram((short)0, (short)19, 46, 1234, (byte) 0, (byte) 0);
+		RecsysTVProgram mostWatchedChannelAndSlotTVProgram = new RecsysTVProgram((short)0, (short)20, (short)46, 2345, (byte) 0, (byte) 0);
+		RecsysTVProgram secondMostWatchedChannelAndSlotTVProgram = new RecsysTVProgram((short)0, (short)19, (short)46, 1234, (byte) 0, (byte) 0);
 		List<RecsysTVProgram> tvPrograms = Arrays.asList(mostWatchedChannelAndSlotTVProgram, secondMostWatchedChannelAndSlotTVProgram);
 		//Programs that are on a channel that the user has never watched are not recommended at all.
 		int expectedNumberOfResults = 2;

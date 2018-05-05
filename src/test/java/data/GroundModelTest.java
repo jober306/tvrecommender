@@ -24,7 +24,7 @@ public class GroundModelTest extends TVDataSetFixture{
 	@Test
 	public void probabilityNonExistingTVProgramIsChosenTest(){
 		double expectedProbability = 0.0d;
-		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), -1, -1);
+		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), (short)-1, -1);
 		double actualProbability = model.probabilityTVProgramIsChosen(neverSeenTVProgram);
 		assertEquals(expectedProbability, actualProbability, 0.0d);
 	}
@@ -46,7 +46,7 @@ public class GroundModelTest extends TVDataSetFixture{
 	@Test
 	public void probabilityNonExistingTVProgramIsChosenByUserTest(){
 		double expectedProbability = 0.0d;
-		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), -1, -1);
+		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), (short)-1, -1);
 		double actualProbability = model.probabilityTVProgramIsChosenByUser(neverSeenTVProgram, new User(1));
 		assertEquals(expectedProbability, actualProbability, 0.0d);
 	}
@@ -76,7 +76,7 @@ public class GroundModelTest extends TVDataSetFixture{
 	@Test
 	public void probabilityNonExistingTVProgramIsKnownTest(){
 		double expectedProbability = 0.0d;
-		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), -1, -1);
+		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), (short)-1, -1);
 		double actualProbability = model.probabilityTVProgramIsKnown(neverSeenTVProgram);
 		assertEquals(expectedProbability, actualProbability, 0.0d);
 	}

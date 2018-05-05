@@ -136,8 +136,7 @@ public class RecsysTVDataSetTest {
 
 	@Test
 	public void getContentMatrixTest() {
-		IndexedRowMatrix C = dataSet.computeContentMatrix(RecsysFeatureExtractor
-				.getInstance(), tvProgramMapping);
+		IndexedRowMatrix C = dataSet.computeContentMatrix(RecsysFeatureExtractor.getInstance(), tvProgramMapping);
 		assertEquals(3, C.rows().count());
 		assertEquals(3, C.numRows());
 		assertEquals(4, C.numCols());

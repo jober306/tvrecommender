@@ -19,21 +19,21 @@ public abstract class RecommendationsFixture {
 	
 	static final LocalDateTime time = LocalDateTime.of(2018, 03, 21, 16, 6);
 	
-	protected static final TVProgram tvShow1 = new TVProgram(time, time, 0, 1);
-	protected static final TVProgram tvShow2 = new TVProgram(time, time, 0, 2);
-	protected static final TVProgram tvShow3 = new TVProgram(time, time, 0, 3);
-	protected static final TVProgram tvShow4 = new TVProgram(time, time, 0, 4);
-	protected static final TVProgram tvShow5= new TVProgram(time.plusHours(1), time.plusHours(2), 0, 2);
-	protected static final TVProgram tvShow6 = new TVProgram(time, time.plusHours(1), 0, 3);
-	protected static final TVProgram tvShow7 = new TVProgram(time, time, 0, 4);
-	protected static final TVProgram tvShow8 = new TVProgram(time.plusHours(1), time.plusHours(2), 0, 3);
-	protected static final TVProgram tvShow9 = new TVProgram(time, time, 0, 4);
-	protected static final TVProgram tvShow10 = new TVProgram(time, time, 0, 4);
-	protected static final TVProgram tvShow11 = new TVProgram(time, time, 0,5);
-	protected static final TVProgram tvShow12 = new TVProgram(time, time, 0,6);
-	protected static final TVProgram tvShow13 = new TVProgram(time, time, 0,7);
-	protected static final TVProgram tvShow14 = new TVProgram(time, time, 0,8);
-	protected static final TVProgram tvShow15 = new TVProgram(time, time, 0,9);
+	protected static final TVProgram tvShow1 = new TVProgram(time, time, (short)0, 1);
+	protected static final TVProgram tvShow2 = new TVProgram(time, time, (short)0, 2);
+	protected static final TVProgram tvShow3 = new TVProgram(time, time, (short)0, 3);
+	protected static final TVProgram tvShow4 = new TVProgram(time, time, (short)0, 4);
+	protected static final TVProgram tvShow5= new TVProgram(time.plusHours(1), time.plusHours(2), (short)0, 2);
+	protected static final TVProgram tvShow6 = new TVProgram(time, time.plusHours(1), (short)0, 3);
+	protected static final TVProgram tvShow7 = new TVProgram(time, time, (short)0, 4);
+	protected static final TVProgram tvShow8 = new TVProgram(time.plusHours(1), time.plusHours(2), (short)0, 3);
+	protected static final TVProgram tvShow9 = new TVProgram(time, time, (short)0, 4);
+	protected static final TVProgram tvShow10 = new TVProgram(time, time, (short)0, 4);
+	protected static final TVProgram tvShow11 = new TVProgram(time, time, (short)0,5);
+	protected static final TVProgram tvShow12 = new TVProgram(time, time, (short)0,6);
+	protected static final TVProgram tvShow13 = new TVProgram(time, time, (short)0,7);
+	protected static final TVProgram tvShow14 = new TVProgram(time, time, (short)0,8);
+	protected static final TVProgram tvShow15 = new TVProgram(time, time, (short)0,9);
 
 
 	

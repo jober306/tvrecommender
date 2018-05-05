@@ -4,13 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.spark.api.java.JavaRDD;
+
+import com.google.common.collect.ImmutableMap;
 
 import data.recsys.RecsysTVEvent;
 
@@ -19,22 +20,19 @@ import data.recsys.RecsysTVEvent;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysUtilities implements Serializable{
-	
-
-	private static final long serialVersionUID = 1L;
+public class RecsysUtilities {
 
 	/**
 	 * The date the data set started recording tv audience behavior (This is not
 	 * the real one). Monday, april 1995 at midnigh.
 	 */
-	public static final LocalDateTime START_TIME = LocalDateTime.of(1995,
-			Month.APRIL, 10, 0, 0);
+	public static final LocalDateTime START_TIME = LocalDateTime.of(1995, Month.APRIL, 10, 0, 0);
 	
-	static final String GENRE_SUBGENRE_MAPPING_PATH = "/tv-audience-dataset/genreSubgenreMapping.txt";
+	final static String GENRE_SUBGENRE_MAPPING_PATH = "/tv-audience-dataset/genreSubgenreMapping.txt";
 	
-	static Map<Byte, String> genreToNameMap;
-	static Map<Byte, Map<Byte,String>> subgenreToNameMap;
+	final static Map<Byte, String> genreToNameMap;
+	final static Map<Byte, Map<Byte,String>> subgenreToNameMap;
+	
 	static{
 		genreToNameMap = new HashMap<Byte,String>();
 		subgenreToNameMap = new HashMap<Byte, Map<Byte,String>>();
@@ -59,6 +57,42 @@ public class RecsysUtilities implements Serializable{
 		}
 	}
 	
+	static Map<Short, Integer> channelIDMap;
+	static Map<Short, Integer> slotIDMap;
+	static Map<Byte, Integer> genreIDMap;
+	static Map<Byte, Integer> subgenreIDMap;
+	
+	static{
+		int mappedID = 0;
+		Map<Short, Integer> tempChannelIDMap = new HashMap<Short, Integer>();
+		for (short channelID = 1; channelID <= 217; channelID++) {
+			tempChannelIDMap.put(channelID, mappedID);
+			mappedID++;
+		}
+		channelIDMap = ImmutableMap.copyOf(tempChannelIDMap);
+
+		Map<Short, Integer> tempSlotIDMap = new HashMap<Short, Integer>();
+		for(short slotID = 1; slotID <= 168; slotID++){
+			tempSlotIDMap.put(slotID, mappedID);
+			mappedID++;
+		}
+		slotIDMap = ImmutableMap.copyOf(tempSlotIDMap);
+
+		Map<Byte, Integer> tempGenreIDMap = new HashMap<Byte, Integer>();
+		for (byte genreID = 1; genreID <= 8; genreID++) {
+			tempGenreIDMap.put(genreID, mappedID);
+			mappedID++;
+		}
+		genreIDMap = ImmutableMap.copyOf(tempGenreIDMap);
+
+		Map<Byte, Integer> tempSubGenreIDMap = new HashMap<Byte, Integer>();
+		for (byte subgenreID = 1; subgenreID <= 114; subgenreID++) {
+			tempSubGenreIDMap.put(subgenreID, mappedID);
+			mappedID++;
+		}
+		subgenreIDMap = ImmutableMap.copyOf(tempSubGenreIDMap);
+	}
+	
 	/**
 	 * Getter method that maps a genre id to the genre it represents.
 	 * @param genreID The genre id.
@@ -75,6 +109,41 @@ public class RecsysUtilities implements Serializable{
 	 */
 	public static String getSubgenreName(byte genreID, byte subgenreID){
 		return subgenreToNameMap.get(genreID).get(subgenreID);
+	}
+	
+	/**
+	 * Getter method that returns the channelIDMap. The map is read-only.
+	 * 
+	 * @return The read-only channelIDMap
+	 */
+	public static Map<Short, Integer> getChannelIDMap() {
+		return channelIDMap;
+	}
+	
+	/**
+	 * Method that returns the slot id map.
+	 * @return The slot id map.
+	 */
+	public static Map<Short, Integer> getSlotIDMap(){
+		return slotIDMap;
+	}
+	
+	/**
+	 * Getter method that returns the genreIDMap. The map is read-only.
+	 * 
+	 * @return The read-only genreIDMap
+	 */
+	public static Map<Byte, Integer> getGenreIDMap() {
+		return genreIDMap;
+	}
+
+	/**
+	 * Getter method that returns the subgenreIDMap. The map is read-only.
+	 * 
+	 * @return The read-only subgenreIDMap
+	 */
+	public static Map<Byte, Integer> getSubgenreIDMap() {
+		return subgenreIDMap;
 	}
 	
 	/**
@@ -146,20 +215,20 @@ public class RecsysUtilities implements Serializable{
 	 * @param slot2 The second slot.
 	 * @return The distance between the two slots.
 	 */
-	public int slotDistance(int slot1, int slot2){
+	public static int slotDistance(int slot1, int slot2){
 		int dayDist = dayDistance(slot1, slot2);
 		int minDist = minDistance(slot1, slot2);
 		int indicFunction = bothWeekendOrBothWeekDay(slot1, slot2); 
 		return (dayDist + (minDist / 60)) * indicFunction;
 	}
 	
-	private int dayDistance(int slot1, int slot2){
+	private static int dayDistance(int slot1, int slot2){
 		int day1 = (slot1 -1) % 24;
 		int day2 = (slot2 -1) % 24;
 		return Math.abs(day1 - day2);
 	}
 	
-	private int minDistance(int slot1, int slot2){
+	private static int minDistance(int slot1, int slot2){
 		int slot1Day = (slot1 -1) % 24;
 		int slot2Day = (slot2 -1) % 24;
 		if(Math.abs(slot1Day-slot2Day) > 12){
@@ -171,7 +240,7 @@ public class RecsysUtilities implements Serializable{
 		}
 	}
 	
-	private int bothWeekendOrBothWeekDay(int slot1, int slot2){
+	private static int bothWeekendOrBothWeekDay(int slot1, int slot2){
 		if((isAWeekDay(slot1) && isAWeekDay(slot2)) || (isAWeekendDay(slot1) && isAWeekendDay(slot2))){
 			return 1;
 		}else{
@@ -179,12 +248,12 @@ public class RecsysUtilities implements Serializable{
 		}
 	}
 	
-	private boolean isAWeekDay(int slot){
+	private static boolean isAWeekDay(int slot){
 		int day = (slot -1) % 24;
 		return day <= 4;
 	}
 	
-	private boolean isAWeekendDay(int slot){
+	private static boolean isAWeekendDay(int slot){
 		int day = (slot -1) % 24;
 		return day >= 5;
 	}

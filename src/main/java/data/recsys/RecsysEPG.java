@@ -1,7 +1,5 @@
 package data.recsys;
 
-import java.io.Serializable;
-
 import org.apache.spark.api.java.JavaRDD;
 
 import data.EPG;
@@ -11,9 +9,7 @@ import data.EPG;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysEPG extends EPG<RecsysTVProgram> implements Serializable{
-
-	private static final long serialVersionUID = 1L;
+public class RecsysEPG extends EPG<RecsysTVProgram> {
 
 	/**
 	 * Constructor of the recsys epg that simply encapsulate the epg data. 

@@ -147,14 +147,14 @@ public class TVDataSetTest extends TVDataSetFixture{
 	
 	@Test
 	public void allChannelIdsOnValidDatasetTest(){
-		Set<Integer> expectedSet = ImmutableSet.copyOf(Arrays.asList(1, 2, 3, 4));
-		Set<Integer> actualSet = dataset.allChannelIds();
+		Set<Short> expectedSet = ImmutableSet.copyOf(Arrays.asList((short)1, (short)2, (short)3, (short)4));
+		Set<Short> actualSet = dataset.allChannelIds();
 		assertEquals(expectedSet, actualSet);
 	}
 	
 	@Test
 	public void allChannelIdsOnEmptyDatasetShouldBeEmptyTest(){
-		Set<Integer> actualSet = emptyDataset.allChannelIds();
+		Set<Short> actualSet = emptyDataset.allChannelIds();
 		assertTrue(actualSet.isEmpty());
 	}
 	

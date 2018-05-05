@@ -1,6 +1,5 @@
 package model.matrix;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,9 +25,7 @@ import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
  * @author Jonathan Bergeron
  *
  */
-public abstract class UserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> implements Serializable{
-	
-	private static final long serialVersionUID = -7905292446619491537L;
+public abstract class UserTVProgramMatrix<U extends User, UM, P extends TVProgram, PM> {
 	
 	/**
 	 * Method that returns the value at specified row index and column index.

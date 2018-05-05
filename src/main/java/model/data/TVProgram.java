@@ -39,7 +39,7 @@ public class TVProgram implements Serializable {
 	/**
 	 * The channel id on which the program is broadcasted.
 	 */
-	protected final int channelId;
+	protected final short channelId;
 
 	/**
 	 * The id of the prorgram.
@@ -59,8 +59,7 @@ public class TVProgram implements Serializable {
 	 * @param programId
 	 *            The id of this program.
 	 */
-	public TVProgram(LocalDateTime startTime, LocalDateTime endTime,
-			int channelId, int programId) {
+	public TVProgram(LocalDateTime startTime, LocalDateTime endTime, short channelId, int programId) {
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.duration = Duration.between(startTime, endTime);
@@ -97,7 +96,7 @@ public class TVProgram implements Serializable {
 	/**
 	 * @return the channelId
 	 */
-	public int channelId() {
+	public short channelId() {
 		return channelId;
 	}
 

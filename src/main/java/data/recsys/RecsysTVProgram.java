@@ -50,7 +50,7 @@ public class RecsysTVProgram extends TVProgram implements Serializable {
 	 * @param subGenreId
 	 *            The subgenre id of this program.
 	 */
-	public RecsysTVProgram(short week, short slot, int channelId,
+	public RecsysTVProgram(short week, short slot, short channelId,
 			int programId, byte genreId, byte subGenreId) {
 		super(getStartTimeFromWeekAndSlot(week, slot),
 				getEndTimeFromWeekAndSlot(week, slot), channelId, programId);

@@ -58,7 +58,7 @@ public class RecsysTVDataSetLoaderTest {
 	@Test
 	public void loadedEPGCorrectlyTest() {
 		RecsysEPG epg = data._1();
-		List<RecsysTVProgram> epgTVPrograms = epg.getEPG().collect();
+		List<RecsysTVProgram> epgTVPrograms = epg.tvPrograms().collect();
 		assertTrue(epgTVPrograms.contains(tvProgram1InMock));
 		assertTrue(epgTVPrograms.contains(tvProgram1InMock));
 		assertTrue(epgTVPrograms.contains(tvProgram1InMock));

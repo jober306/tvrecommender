@@ -37,7 +37,7 @@ public class SpaceAlignmentPredictorTest {
 		RecsysTVDataSetLoader loader = new RecsysTVDataSetLoader(path, sc);
 		Tuple2<RecsysEPG, RecsysTVDataSet> data = loader.loadDataSet();
 		Context<User, RecsysTVProgram, RecsysTVEvent> context = new Context<>(data._1, data._2);
-		RecsysBooleanFeatureExtractor featureExtractor = new RecsysBooleanFeatureExtractor(data._1());
+		RecsysBooleanFeatureExtractor featureExtractor = RecsysBooleanFeatureExtractor.instance();
 		recommender = new SpaceAlignmentRecommender<>(context, numberOfResults, featureExtractor, r, neighbourhoodSize, loader.getJavaSparkContext());
 		recommender.train();
 	}

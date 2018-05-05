@@ -1,7 +1,5 @@
 package data.recsys.feature;
 
-import java.io.Serializable;
-
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
@@ -15,12 +13,10 @@ import model.data.feature.FeatureExtractor;
  * @author Jonathan Bergeron
  *
  */
-public class RecsysFeatureExtractor extends
-		FeatureExtractor<RecsysTVProgram, RecsysTVEvent> implements
-		Serializable {
+public class RecsysFeatureExtractor extends FeatureExtractor<RecsysTVProgram, RecsysTVEvent> {
 
 	private static final long serialVersionUID = 1L;
-
+	
 	private static final RecsysFeatureExtractor RECSYS_FEATURE_EXTRACTOR = new RecsysFeatureExtractor();
 
 	private RecsysFeatureExtractor() {

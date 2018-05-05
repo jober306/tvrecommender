@@ -1,5 +1,6 @@
 package model.measure.similarity;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -28,7 +29,7 @@ public class CosineSimilarity implements SimilarityMeasure{
 	
 	@Override
 	public double calculate(SparseVector i, SparseVector j) {
-		Set<Integer> indicesI = ImmutableSet.copyOf(Ints.asList(i.indices()));
+		Set<Integer> indicesI = new HashSet<>(Ints.asList(i.indices()));
 		Set<Integer> indicesJ = ImmutableSet.copyOf(Ints.asList(j.indices()));
 		indicesI.retainAll(indicesJ);
 		double dotProduct = indicesI.stream().mapToDouble(index -> i.apply(index) * j.apply(index)).sum();
