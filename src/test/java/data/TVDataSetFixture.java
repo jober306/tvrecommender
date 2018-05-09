@@ -29,10 +29,16 @@ public class TVDataSetFixture {
 	static protected TVDataSetMock dataset;
 	static protected TVDataSetMock emptyDataset;
 	
+	static protected EvaluationContext<User, TVProgram, TVEvent<User, TVProgram>> evaluationContext;
+	
 	/**
 	 * Nikola Tesla was born this day!
 	 */
 	static protected LocalDateTime baseTime = LocalDateTime.of(1856, 7, 10, 0, 0);
+	static protected LocalDateTime trainingStartTime = baseTime;
+	static protected LocalDateTime trainingEndTime = baseTime.plusMinutes(106);
+	static protected LocalDateTime testingStartTime = baseTime.plusMinutes(110);
+	static protected LocalDateTime testingEndTime = baseTime.plusMinutes(140);
 
 	static protected TVProgram program11;
 	static protected TVProgram program13;	
@@ -54,9 +60,15 @@ public class TVDataSetFixture {
 	static protected TVEvent<User, TVProgram> event5;
 	static protected TVEvent<User, TVProgram> event6;
 	
+	static protected User user1;
+	static protected User user2;
+	static protected User user3;
+	
 	@BeforeClass
 	public static void createDatatSet() {
 		initializeSparkContext();
+		
+		initializeUser();
 		
 		initializeTVPrograms();
 		initializeTVProgramsRDD();
@@ -65,10 +77,18 @@ public class TVDataSetFixture {
 		initializeTVEvents();
 		initializeTVEventsRDD();
 		initializeTVDataset();
+		
+		initializeEvaluationContext();
 	}
 	
 	static void initializeSparkContext(){
 		sc = SparkUtilities.getADefaultSparkContext();
+	}
+	
+	static void initializeUser() {
+		user1 = new User(1);
+		user2 = new User(2);
+		user3 = new User(3);
 	}
 
 	static void initializeTVPrograms() {
@@ -110,12 +130,12 @@ public class TVDataSetFixture {
 	
 	private static void initializeTVEvents(){
 		//watch time/program id/channel id/user id/event/duration
-		event1 = new TVEvent<>(baseTime.plusMinutes(15), program11, new User(1), 0, 5);
-		event2 = new TVEvent<>(baseTime.plusMinutes(110), program12, new User(2), 1, 10);
-		event3 = new TVEvent<>(baseTime.plusMinutes(105), program25, new User(2), 2, 15);
-		event4 = new TVEvent<>(baseTime.plusHours(1), program34, new User(2), 3, 15);
-		event5 = new TVEvent<>(baseTime.plusMinutes(135), program45, new User(3), 4, 5);
-		event6 = new TVEvent<>(baseTime, program23,new User(1),5, 15);
+		event1 = new TVEvent<>(baseTime.plusMinutes(15), program11, user1, 0, 5);
+		event2 = new TVEvent<>(baseTime.plusMinutes(110), program12, user2, 1, 10);
+		event3 = new TVEvent<>(baseTime.plusMinutes(105), program25, user2, 2, 15);
+		event4 = new TVEvent<>(baseTime.plusHours(1), program34, user2, 3, 15);
+		event5 = new TVEvent<>(baseTime.plusMinutes(135), program45, user3, 4, 5);
+		event6 = new TVEvent<>(baseTime, program23, user1,5, 15);
 	}
 	
 	
@@ -127,6 +147,10 @@ public class TVDataSetFixture {
 	static void initializeTVDataset(){
 		dataset = new TVDataSetMock(tvEventsRDD);
 		emptyDataset = new TVDataSetMock(sc.emptyRDD());
+	}
+	
+	static void initializeEvaluationContext() {
+		evaluationContext = new EvaluationContext<>(epg, dataset, trainingStartTime, trainingEndTime, testingStartTime, testingEndTime);
 	}
 
 	@AfterClass
@@ -145,6 +169,15 @@ public class TVDataSetFixture {
 		program44 = null;
 		program46 = null;
 		program45 = null;
+		event1 = null;
+		event2 = null;
+		event3 = null;
+		event4 = null;
+		event5 = null;
+		event6 = null;
+		user1 = null;
+		user2 = null;
+		user3 = null;
 		tvProgramsRDD = null;
 		epg = null;
 		emptyEPG = null;

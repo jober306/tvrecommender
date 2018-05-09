@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,6 +78,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	SerializableSupplier<Long> numberOfTvEvents = lazily(() -> numberOfTvEvents = value(events.count()));
 	SerializableSupplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
 	SerializableSupplier<Set<U>> allUsers = lazily(() -> allUsers = value(initAllUsers()));
+	SerializableSupplier<Map<Integer, Long>> tvProgramIdsCount = lazily(()-> tvProgramIdsCount = value(initTVProgramsIdsCount()));
 	SerializableSupplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
 	SerializableSupplier<Set<P>> allPrograms = lazily(() -> allPrograms = value(initAllPrograms()));
 	SerializableSupplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
@@ -149,14 +152,6 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 				.map(tvEvent -> tvEvent.program())
 				.collect();
 		return ImmutableSet.copyOf(tvShowsSeenByUser);
-	}
-
-	/**
-	 * Method that return the size of the data set. It is the same as
-	 * getNumberOfEvents.
-	 */
-	public int count() {
-		return (int) events.count();
 	}
 
 	/**
@@ -300,12 +295,16 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 		return allUsers.get();
 	}
 	
+	public Map<Integer, Long> tvProgramIdsCount(){
+		return tvProgramIdsCount.get();
+	}
+	
 	/**
 	 * Method that returns all the unique tv program ids contained in this data set.
 	 * @return The set of tv program ids.
 	 */
 	public Set<Integer> allProgramIds() {
-		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.programID()).distinct().collect());
+		return allProgramIds.get();
 	}
 	
 	/**
@@ -393,12 +392,16 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.user()).distinct().collect());
 	}
 	
+	private Map<Integer, Long> initTVProgramsIdsCount(){
+		return events.map(tvEvent -> tvEvent.programID()).countByValue();
+	}
+	
 	private Set<Integer> initAllProgramIds(){
-		return ImmutableSet.copyOf(allPrograms().stream().map(P::id).collect(Collectors.toList()));
+		return ImmutableSet.copyOf(tvProgramIdsCount().entrySet().stream().map(Entry::getKey).collect(Collectors.toSet()));
 	}
 	
 	private Set<P> initAllPrograms(){
-		return ImmutableSet.copyOf((events.map(tvEvent -> tvEvent.program()).distinct().collect()));
+		return ImmutableSet.copyOf(events.map(tvEvent -> tvEvent.program()).collect());
 	}
 	
 	private Set<Integer> initAllEventIds(){

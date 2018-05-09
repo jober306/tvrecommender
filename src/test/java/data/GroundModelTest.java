@@ -6,14 +6,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import model.data.TVEvent;
 import model.data.TVProgram;
 import model.data.User;
 
 public class GroundModelTest extends TVDataSetFixture{
 	
-	GroundModel<User, TVProgram, TVEvent<User, TVProgram>> model;
-	GroundModel<User, TVProgram, TVEvent<User, TVProgram>> emptyModel;
+	GroundModel<User, TVProgram> model;
+	GroundModel<User, TVProgram> emptyModel;
 	
 	@Before
 	public void setUp(){
@@ -23,9 +22,9 @@ public class GroundModelTest extends TVDataSetFixture{
 	
 	@Test
 	public void probabilityNonExistingTVProgramIsChosenTest(){
-		double expectedProbability = 0.0d;
+		double expectedProbability = 1/11.0d;
 		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), (short)-1, -1);
-		double actualProbability = model.probabilityTVProgramIsChosen(neverSeenTVProgram);
+		double actualProbability = model.probabilityTVProgramIsChosen(neverSeenTVProgram, 1.0d);
 		assertEquals(expectedProbability, actualProbability, 0.0d);
 	}
 	
@@ -45,9 +44,9 @@ public class GroundModelTest extends TVDataSetFixture{
 	
 	@Test
 	public void probabilityNonExistingTVProgramIsChosenByUserTest(){
-		double expectedProbability = 0.0d;
+		double expectedProbability = 1/4.0d;
 		TVProgram neverSeenTVProgram = new TVProgram(baseTime, baseTime.plusHours(1), (short)-1, -1);
-		double actualProbability = model.probabilityTVProgramIsChosenByUser(neverSeenTVProgram, new User(1));
+		double actualProbability = model.probabilityTVProgramIsChosenByUser(neverSeenTVProgram, new User(1), 1.0d);
 		assertEquals(expectedProbability, actualProbability, 0.0d);
 	}
 	
@@ -90,7 +89,7 @@ public class GroundModelTest extends TVDataSetFixture{
 	
 	@Test
 	public void probabilitySeenTVProgramIsKnownTest(){
-		double expectedProbability = 2.0d / 3.0d;
+		double expectedProbability = 1.0d / 3.0d;
 		double actualProbability1 = model.probabilityTVProgramIsKnown(program25);
 		double actualProbability2 = model.probabilityTVProgramIsKnown(program45);
 		assertEquals(expectedProbability, actualProbability1, 0.0d);

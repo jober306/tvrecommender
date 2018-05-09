@@ -149,6 +149,7 @@ public class TVRecommenderEvaluator<U extends User, P extends TVProgram, E exten
 			).collect(Collectors.toList());
 		Instant metricEndTime = Instant.now();
 		System.out.println("Done in " + SECONDS.between(metricStartTime, metricEndTime) + " seconds!");
+		System.out.println(results.get(0).metricName() + ": " + results.get(0).mean());
 		Instant infoStartTime = Instant.now();
 		EvaluationInfo evaluationInfo = null;
 		if(isEvaluationInfoGenerated()){

@@ -68,14 +68,14 @@ public class TVDataSetTest extends TVDataSetFixture{
 	@Test
 	public void countOnValidDatasetTest(){
 		int expectedCount = 6;
-		int actualCount = dataset.count();
+		int actualCount = (int)dataset.numberOfTvEvents();
 		assertEquals(expectedCount, actualCount);
 	}
 	
 	@Test
 	public void countOnEmptyDatasetShouldBeZeroTest(){
 		int expectedCount = 0;
-		int actualCount = emptyDataset.count();
+		int actualCount = (int)emptyDataset.numberOfTvEvents();
 		assertEquals(expectedCount, actualCount);
 	}
 	

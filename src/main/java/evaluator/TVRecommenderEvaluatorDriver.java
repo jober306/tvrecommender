@@ -12,10 +12,7 @@ import java.util.stream.Stream;
 
 import org.apache.spark.api.java.JavaSparkContext;
 
-import data.EPG;
 import data.EvaluationContext;
-import data.GroundModel;
-import data.TVDataSet;
 import data.recsys.RecsysEPG;
 import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
@@ -78,7 +75,7 @@ public class TVRecommenderEvaluatorDriver {
 		System.out.println("Done!");
 		RecsysEPG epg = data._1;
 		RecsysTVDataSet events = data._2;
-		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = topChannelEvaluator(data._2());
+		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = topChannelEvaluator();
 		Set<EvaluationResult> results = evaluator.evaluateMovingTimeWindow(epg, events, startTime, window, endTime);
 		Stream<MetricResults> metricResults = results.stream().map(EvaluationResult::metricsResults).flatMap(List::stream);
 		Map<String, Double> averagePerMetric = StreamUtilities.toMapAverage(metricResults, MetricResults::metricName, MetricResults::mean);
@@ -97,10 +94,9 @@ public class TVRecommenderEvaluatorDriver {
 		return evaluator;
 	}
 	
-	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> topChannelEvaluator(RecsysTVDataSet tvDataSet) {
+	private static TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> topChannelEvaluator() {
 		ChannelPreferenceRecommender recommender = new TopChannelRecommender(10);
 		Set<EvaluationMetric<User, RecsysTVProgram>> metrics = getMetrics();
-		metrics.add(new Novelty<>(new GroundModel<>(tvDataSet)));
 		TVRecommenderEvaluator<User, RecsysTVProgram, RecsysTVEvent> evaluator = new TVRecommenderEvaluator<>(recommender, metrics);
 		return evaluator;
 	}
@@ -118,7 +114,8 @@ public class TVRecommenderEvaluatorDriver {
 	}
 	
 	private static Set<EvaluationMetric<User, RecsysTVProgram>> getMetrics() {
-		Set<EvaluationMetric<User, RecsysTVProgram>> measures = new HashSet<>();
-		return measures;
+		Set<EvaluationMetric<User, RecsysTVProgram>> metrics = new HashSet<>();
+		metrics.add(new Novelty<>());
+		return metrics;
 	}
 }

@@ -2,6 +2,7 @@ package evaluator.metric;
 
 import java.util.Set;
 
+import data.EvaluationContext;
 import model.data.TVProgram;
 import model.data.User;
 import model.recommendation.Recommendations;
@@ -26,14 +27,19 @@ public class Recall<U extends User, P extends TVProgram> implements EvaluationMe
 	public Recall(int cutoff) {
 		this.cutoff = cutoff;
 	}
-
+	
 	@Override
-	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth){	
+	public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P,?> evaluationContext){
+		Set<P> groundTruth = evaluationContext.getGroundTruth().get(recommendations.user());
+		return evaluate(recommendations, groundTruth);
+	}
+	
+	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth) {
 		double truePositive = (double) recommendations.stream()
-			.limit(cutoff)
-			.filter(groundTruth::contains)
-			.count();
-		return groundTruth.size() == 0 ? 0.0d : (double) truePositive / groundTruth.size();
+				.limit(cutoff)
+				.filter(groundTruth::contains)
+				.count();
+			return groundTruth.size() == 0 ? 0.0d : (double) truePositive / groundTruth.size();
 	}
 	
 	@Override

@@ -7,61 +7,92 @@ import model.data.TVProgram;
 import model.data.User;
 
 /**
- * Class to obtains different probabilities given a tv data set.
+ * Class to obtains different probabilities based on a tv data set.
  * @author Jonathan Bergeron
  *
  * @param <U> The type of user.
  * @param <P> The type of tv program.
  * @param <E> The type of tv event.
  */
-public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<U, P>> {
+public class GroundModel<U extends User, P extends TVProgram> {
 	
-	final TVDataSet<U, P, E> tvDataSet;
+	final TVDataSet<U, P, ? extends TVEvent<U, P>> tvDataSet;
 	
 	/**
 	 * Base constructor of the class.
 	 * @param dataset The tv data set.
 	 */
-	public GroundModel(TVDataSet<U, P, E> tvDataSet){
+	public GroundModel(TVDataSet<U, P, ?> tvDataSet){
 		this.tvDataSet = tvDataSet;
 	}
 	
-	public TVDataSet<U, P, E> tvDataSet(){
+	public TVDataSet<U, P, ?> tvDataSet(){
 		return tvDataSet;
 	}
 	
 	/**
 	 * Method that gives the probability that a given tv program is chosen by a random user.
-	 * It approximates the probability by using maximum likelihood with the given data set.
-	 * occurences of same tv program.
+	 * It approximates the probability by using maximum likelihood on the tv data set 
+	 * by counting the number of times the given tv program was watched.
 	 * @param tvProgram The tv program.
 	 * @return The probability that the given tv program is chosen by a random user.
 	 */
 	public double probabilityTVProgramIsChosen(P tvProgram){
-		final long totalNumberOfEvents = tvDataSet.count();
-		final Integer currentTVProgramId = tvProgram.id();
-		final long numberOfEventsTVProgram = tvDataSet.events()
-			.map(E::programID)
-			.filter(currentTVProgramId::equals)
-			.count();
-		return totalNumberOfEvents == 0 ? 0.0d : (double) numberOfEventsTVProgram / totalNumberOfEvents;
+		return probabilityTVProgramIsChosen(tvProgram, 0.0d);
 	}
 	
 	/**
 	 * Method that gives the probability that a given tv program is chosen by a given user.
-	 * It approximates the probability by using maximum likelihood with the given data set.
+	 * It approximates the probability by using maximum likelihood on the tv data set 
+	 * by counting the number of times the given tv program was watched by the given user.
 	 * @param tvProgram The tv program.
-	 * @return The probability that the given tv program is chosen by a random user.
+	 * @param user The user.
+	 * @return The probability that the given tv program is chosen by the given user.
 	 */
-	public double probabilityTVProgramIsChosenByUser(P tvProgram, U user){
-		JavaRDD<E> eventsRelativeToUser = tvDataSet.events()
+	public double probabilityTVProgramIsChosenByUser(P tvProgram, U user) {
+		return probabilityTVProgramIsChosenByUser(tvProgram, user, 0.0d);
+	}
+	
+	/**
+	 * Method that gives the probability that a given tv program is chosen by a random user 
+	 * using additive smoothing. It approximates the probability by using maximum likelihood
+	 * on the tv data set by counting the number of times the given tv program was watched.
+	 * @param tvProgram The tv program.
+	 * @param additiveSmoothing The additive smoothing.
+	 * @return The smoothed probability that the given tv program is chosen by a random user.
+	 */
+	public double probabilityTVProgramIsChosen(P tvProgram, double additiveSmoothing) {
+		final long totalNumberOfEvents = tvDataSet.numberOfTvEvents();
+		if(totalNumberOfEvents == 0) {
+			return 0.0d;
+		}
+		final long totalNumberOfTVProgramIds = tvDataSet.allProgramIds().size();
+		final long numberOfTVEventsAboutTVProgramId = tvDataSet.tvProgramIdsCount().getOrDefault(tvProgram.id(), 0l);
+		return (double) (numberOfTVEventsAboutTVProgramId + additiveSmoothing) / (totalNumberOfEvents + additiveSmoothing * totalNumberOfTVProgramIds);
+	}
+	
+	/**
+	 * Method that gives the probability that a given tv program is chosen by a given user 
+	 * using additive smoothing. It approximates the probability by using maximum likelihood
+	 * on the tv data set by counting the number of times the given tv program was watched by the given user.
+	 * @param tvProgram The tv program.
+	 * @param additiveSmoothing The additive smoothing.
+	 * @return The smoothed probability that the given tv program is chosen by the given user.
+	 */
+	public double probabilityTVProgramIsChosenByUser(P tvProgram, U user, double additiveSmoothing){
+		JavaRDD<? extends TVEvent<U, P>> eventsRelativeToUser = tvDataSet.events()
 				.filter(event -> event.user().equals(user))
 				.cache();
 		final long totalNumberOfEventsRelativeToUser = eventsRelativeToUser.count();
-		final long numberOfEventsTVProgramRelativeToUser = eventsRelativeToUser
-			.filter(event -> event.programID() == tvProgram.id())
+		if(totalNumberOfEventsRelativeToUser == 0) {
+			return 0.0d;
+		}
+		final long totalNumberOfTVProgramIdsRelativeToUser = eventsRelativeToUser.map(event -> event.programID()).distinct().count();
+		final long numberOfEventsTVProgramIdRelativeToUser = eventsRelativeToUser
+			.map(event -> event.program())
+			.filter(tvProgram::equals)
 			.count();
-		return totalNumberOfEventsRelativeToUser == 0 ? 0.0d :(double) numberOfEventsTVProgramRelativeToUser / totalNumberOfEventsRelativeToUser;
+		return (double) (numberOfEventsTVProgramIdRelativeToUser + additiveSmoothing) / (totalNumberOfEventsRelativeToUser + additiveSmoothing * totalNumberOfTVProgramIdsRelativeToUser);
 	}
 	
 	/**
@@ -72,12 +103,15 @@ public class GroundModel<U extends User, P extends TVProgram, E extends TVEvent<
 	 */
 	public double probabilityTVProgramIsKnown(P tvProgram){
 		long totalNumberOfUsers = tvDataSet.numberOfUsers();
+		if(totalNumberOfUsers == 0) {
+			return 0.0d;
+		}
 		long numberOfUsersThatHaveSeenTVProgram = tvDataSet.events()
-			.filter(event -> event.programID() == tvProgram.id())
-			.map(E::user)
+			.filter(event -> event.program().equals(tvProgram))
+			.map(event -> event.user())
 			.distinct()
 			.count();
-		return totalNumberOfUsers == 0 ? 0.0d : (double) numberOfUsersThatHaveSeenTVProgram / totalNumberOfUsers;
+		return (double) numberOfUsersThatHaveSeenTVProgram / totalNumberOfUsers;
 	}
 	
 }

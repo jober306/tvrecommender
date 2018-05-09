@@ -1,7 +1,6 @@
 package evaluator.metric;
 
-import java.util.Set;
-
+import data.EvaluationContext;
 import model.data.TVProgram;
 import model.data.User;
 import model.recommendation.Recommendations;
@@ -18,7 +17,7 @@ public class IncrementMetric<U extends User, P extends TVProgram> implements Eva
 	int currentValue = 1;
 	
 	@Override
-	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth) {
+	public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P, ?> evaluationContext) {
 		return currentValue++;
 	}
 	

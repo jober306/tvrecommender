@@ -1,7 +1,6 @@
 package evaluator.metric;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import data.EvaluationContext;
@@ -39,16 +38,5 @@ public interface EvaluationMetric<U extends User, P extends TVProgram> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return The evaluation result
 	 */
-	default public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P,?> context) {
-		Set<P> groundTruth = context.getGroundTruth().get(recommendations.user());
-		return evaluate(recommendations, groundTruth);
-	}
-	
-	/**
-	 * Method that evaluates recommendations given the ground truth.
-	 * @param recommendations The recommendations made by a recommender.
-	 * @param groundTruth The list of program id actually relevant.
-	 * @return The evaluation result
-	 */
-	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth);
+	public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P,?> evaluationContext);
 }

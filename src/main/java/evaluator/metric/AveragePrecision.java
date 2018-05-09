@@ -2,6 +2,7 @@ package evaluator.metric;
 
 import java.util.Set;
 
+import data.EvaluationContext;
 import model.data.TVProgram;
 import model.data.User;
 import model.recommendation.Recommendations;
@@ -36,7 +37,12 @@ public class AveragePrecision<U extends User, P extends TVProgram> implements Ev
 	}
 	
 	@Override
-	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth){	
+	public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P,?> evaluationContext){
+		Set<P> groundTruth = evaluationContext.getGroundTruth().get(recommendations.user());
+		return evaluate(recommendations, groundTruth);
+	}
+	
+	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth) {
 		double averagePrecision = 0.0d;
 		double truePositiveRecommendedTVShow = 0;
 		for (int k = 1; k <= Math.min(recommendations.size(), cutoff); k++) {

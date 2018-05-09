@@ -1,33 +1,53 @@
 package evaluator.metric;
 
-import java.util.Set;
-
+import data.EvaluationContext;
 import data.GroundModel;
 import model.data.TVProgram;
 import model.data.User;
 import model.recommendation.Recommendations;
 
+/**
+ * The Novelty metric class. It calculates the expected entropy given a recommendation list by using a GroundModel
+ * on the training data set.
+ * @author Jonathan Bergeron
+ *
+ * @param <U> The type of user
+ * @param <P> The type of tv program
+ */
 public class Novelty<U extends User, P extends TVProgram> implements EvaluationMetric<U, P>{
-
-	final GroundModel<U, P, ?> groundModel;
 	
-	public Novelty(GroundModel<U, P, ?> groundModel) {
-		this.groundModel = groundModel;
+	final double additiveSmoothing;
+	
+	/**
+	 * Default constructor of this class. Sets the additive smoothing when
+	 * computing probabilities to 1 by default.
+	 */
+	public Novelty() {
+		additiveSmoothing = 1.0d;
+	}
+	
+	/**
+	 * Constructor of this class.
+	 * @param additiveSmoothing The additive smoothing used when computing probabilities.
+	 */
+	public Novelty(double additiveSmoothing) {
+		this.additiveSmoothing = additiveSmoothing;
 	}
 	
 	@Override
 	public String name() {
-		return "Novelty";
+		return "Novelty (smoothing = " + additiveSmoothing + ")";
 	}
 
 	@Override
-	public double evaluate(Recommendations<U, P> recommendations, Set<P> groundTruth){	
+	public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P,?> evaluationContext){	
+		GroundModel<U, P> groundModel = new GroundModel<>(evaluationContext.getTrainingSet()); 
 		int recommendationsSize = recommendations.size();
-		int numberOfTVPrograms = groundModel.tvDataSet().numberOfTvPrograms();
+		int numberOfTVPrograms = evaluationContext.getTrainingSet().allProgramIds().size();
 		double ratio = (double) numberOfTVPrograms / recommendationsSize; 
 		final double log2 = Math.log(2);
 		double sum = recommendations.stream()
-				.mapToDouble(groundModel::probabilityTVProgramIsChosen)
+				.mapToDouble(recommendation -> groundModel.probabilityTVProgramIsChosen(recommendation, 1.0d))
 				.map(p -> p * Math.log(p) / log2)
 				.sum();
 		return -1.0d * ratio * sum;

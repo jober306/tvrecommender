@@ -6,6 +6,8 @@ import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 
+import data.EvaluationContext;
+import model.data.TVEvent;
 import model.data.TVProgram;
 import model.data.User;
 import model.recommendation.Recommendations;
@@ -42,6 +44,8 @@ public abstract class RecommendationsFixture {
 	protected Recommendations<User, TVProgram> distinctRecommendations;
 	protected Recommendations<User, TVProgram> allRecommendations;
 	protected Recommendations<User, TVProgram> sameRecommendations;
+	
+	protected EvaluationContext<User, TVProgram, TVEvent<User, TVProgram>> evaluationContext;
 	
 	@Before
 	public void setUp() {
