@@ -7,7 +7,7 @@ import model.measure.NormalizedMeasure;
  * @author Jonathan Bergeron
  *
  */
-public class NormalizedCosineDistance extends NormalizedMeasure{
+public class NormalizedCosineDistance extends NormalizedMeasure implements DistanceMeasure{
 	
 	private static final NormalizedCosineDistance instance = new NormalizedCosineDistance();
 	

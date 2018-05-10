@@ -7,7 +7,7 @@ import model.measure.similarity.CosineSimilarity;
  * @author Jonathan Bergeron
  *
  */
-public class CosineDistance extends DistanceMeasure{
+public class CosineDistance extends InversedSimilarityMeasure {
 	
 	private static final CosineDistance instance = new CosineDistance();
 	

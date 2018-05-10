@@ -3,7 +3,6 @@ package model.measure.distance;
 import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;
 
-import model.measure.Measure;
 import model.measure.similarity.SimilarityMeasure;
 
 /**
@@ -12,11 +11,11 @@ import model.measure.similarity.SimilarityMeasure;
  * @author Jonathan Bergeron
  *
  */
-public class DistanceMeasure implements Measure{
+public class InversedSimilarityMeasure implements DistanceMeasure{
 	
 	final SimilarityMeasure similarityMeasure;
 	
-	public DistanceMeasure(SimilarityMeasure similarityMeasure){
+	public InversedSimilarityMeasure(SimilarityMeasure similarityMeasure){
 		this.similarityMeasure = similarityMeasure;
 	}
 	
