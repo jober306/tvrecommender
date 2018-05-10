@@ -50,6 +50,84 @@ public class MllibUtilitiesTest {
 	}
 	
 	@Test
+	public void substractDenseZeroVector() {
+		DenseVector v = new DenseVector(new double[]{1.0d, 0.0d, 2.0d, 3.0d});
+		DenseVector zero = new DenseVector(new double[4]);
+		double[] expectedResult = v.values();
+		double[] actualResult = MllibUtilities.subtract(v, zero).values();
+		assertArrayEquals(expectedResult, actualResult, 0.0d);
+	}
+	
+	@Test
+	public void substractSparseZeroVector() {
+		SparseVector v = new SparseVector(4, new int[] {0,1,2}, new double[]{1.0d, 2.0d, 3.0d});
+		SparseVector zero = new SparseVector(4, new int[] {}, new double[]{});
+		int[] expectedIndicesResult = v.indices();
+		double[] expectedValuesResult = v.values();
+		SparseVector result = MllibUtilities.subtract(v, zero);
+		int[] actualIndicesResult = result.indices();
+		double[] actualValuesResult = result.values();
+		assertArrayEquals(expectedIndicesResult, actualIndicesResult);
+		assertArrayEquals(expectedValuesResult, actualValuesResult, 0.0d);
+	}
+	
+	@Test
+	public void substractDenseVectorToZeroVector() {
+		DenseVector v = new DenseVector(new double[]{1.0d, 0.0d, 2.0d, 3.0d});
+		DenseVector zero = new DenseVector(new double[4]);
+		double[] expectedResult = new double[] {-1.0d, 0.0d, -2.0d, -3.0d};
+		double[] actualResult = MllibUtilities.subtract(zero, v).values();
+		assertArrayEquals(expectedResult, actualResult, 0.0d);
+	}
+	
+	@Test
+	public void substractSparseVectorToZeroVector() {
+		SparseVector v = new SparseVector(4, new int[] {0,1,2}, new double[]{1.0d, 2.0d, 3.0d});
+		SparseVector zero = new SparseVector(4, new int[] {}, new double[]{});
+		int[] expectedIndicesResult = v.indices();
+		double[] expectedValuesResult = new double[] {-1.0d, -2.0d, -3.0d};
+		SparseVector result = MllibUtilities.subtract(zero, v);
+		int[] actualIndicesResult = result.indices();
+		double[] actualValuesResult = result.values();
+		assertArrayEquals(expectedIndicesResult, actualIndicesResult);
+		assertArrayEquals(expectedValuesResult, actualValuesResult, 0.0d);
+	}
+	
+	@Test
+	public void substractDenseVectors() {
+		DenseVector v1 = new DenseVector(new double[]{1.0d, 0.0d, 2.0d, 3.0d});
+		DenseVector v2 = new DenseVector(new double[] {2.0d, 3.0d, 0.0d, 1.0d});
+		double[] expectedResult = new double[] {-1.0d, -3.0d, 2.0d, 2.0d};
+		double[] actualResult = MllibUtilities.subtract(v1, v2).values();
+		assertArrayEquals(expectedResult, actualResult, 0.0d);
+	}
+	
+	@Test
+	public void substractSparseVectors() {
+		SparseVector v1 = new SparseVector(4, new int[] {0,2}, new double[]{1.0d, 2.0d});
+		SparseVector v2 = new SparseVector(4, new int[] {0,1}, new double[]{2.0d, 3.0d});
+		int[] expectedIndicesResult = new int[] {0,1,2};
+		double[] expectedValuesResult = new double[] {-1.0d, -3.0d, 2.0d};
+		SparseVector result = MllibUtilities.subtract(v1, v2);
+		int[] actualIndicesResult = result.indices();
+		double[] actualValuesResult = result.values();
+		assertArrayEquals(expectedIndicesResult, actualIndicesResult);
+		assertArrayEquals(expectedValuesResult, actualValuesResult, 0.0d);
+	}
+	
+	@Test
+	public void substractSparseZeroVectors() {
+		SparseVector zero = new SparseVector(4, new int[] {}, new double[]{});
+		SparseVector result = MllibUtilities.subtract(zero, zero);
+		int[] expectedIndicesResult = zero.indices();
+		double[] expectedValuesResult = zero.values();
+		int[] actualIndicesResult = result.indices();
+		double[] actualValuesResult = result.values();
+		assertArrayEquals(expectedIndicesResult, actualIndicesResult);
+		assertArrayEquals(expectedValuesResult, actualValuesResult, 0.0d);
+	}
+	
+	@Test
 	public void normalizeDenseZeroVector(){
 		DenseVector zero = new DenseVector(new double[]{0.0d, 0.0d, 0.0d});
 		double[] expectedValues = zero.values();

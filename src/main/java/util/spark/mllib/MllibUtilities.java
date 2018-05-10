@@ -29,6 +29,8 @@ import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
 import org.apache.spark.mllib.linalg.distributed.IndexedRow;
 import org.apache.spark.mllib.linalg.distributed.IndexedRowMatrix;
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
+import org.spark_project.guava.primitives.Doubles;
+import org.spark_project.guava.primitives.Ints;
 
 import scala.Tuple2;
 import scala.Tuple3;
@@ -42,6 +44,68 @@ import util.spark.SparkUtilities;
  *
  */
 public class MllibUtilities {
+	
+	/**
+	 * Method that subtracts the second dense vector to the first one.
+	 * @param i The first dense vector.
+	 * @param j The second dense vector.
+	 * @return The substraction of the first dense vector by the second one.
+	 */
+	public static DenseVector subtract(DenseVector i, DenseVector j) {
+		int resultSize = Math.min(i.size(), j.size());
+		double[] iValues = i.values();
+		double[] jValues = j.values();
+		double[] resultValues = new double[resultSize];
+		for(int index = 0; index < resultSize; index++) {
+			resultValues[index] = iValues[index] - jValues[index];
+		}
+		return new DenseVector(resultValues);
+	}
+	
+	/**
+	 * Method that subtracts the second sparse vector to the first one.
+	 * @param i The first sparse vector.
+	 * @param j The second sparse vector.
+	 * @return The substraction of the first sparse vector by the second one.
+	 */
+	public static SparseVector subtract(SparseVector i, SparseVector j) {
+		int iIndex = 0;
+		int jIndex = 0;
+		int[] iIndices = i.indices();
+		int[] jIndices = j.indices();
+		double[] iValues = i.values();
+		double[] jValues = j.values();
+		List<Integer> indices = new ArrayList<Integer>();
+		List<Double> values = new ArrayList<Double>();
+		while(iIndex < iIndices.length && jIndex < jIndices.length) {
+			if(iIndices[iIndex] < jIndices[jIndex]) {
+				indices.add(iIndices[iIndex]);
+				values.add(iValues[iIndex]);
+				iIndex++;
+			}else if(iIndices[iIndex] > jIndices[jIndex]) {
+				indices.add(jIndices[jIndex]);
+				values.add(-1.0d * jValues[jIndex]);
+				jIndex++;
+			}
+			else {
+				indices.add(iIndices[iIndex]);
+				values.add(iValues[iIndex] - jValues[jIndex]);
+				iIndex++;
+				jIndex++;
+			}
+		}
+		while(iIndex < iIndices.length) {
+			indices.add(iIndices[iIndex]);
+			values.add(iValues[iIndex]);
+			iIndex++;
+		}
+		while(jIndex < jIndices.length) {
+			indices.add(jIndices[jIndex]);
+			values.add(-1.0d * jValues[jIndex]);
+			jIndex++;
+		}
+		return new SparseVector(Math.min(i.size(), j.size()), Ints.toArray(indices), Doubles.toArray(values));
+	}
 	
 	/**
 	 * Method that takes a dense vector as input and return a normalized deep copy of it.
