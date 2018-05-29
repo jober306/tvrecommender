@@ -52,6 +52,10 @@ public class Recommendations<U extends User, P extends TVProgram> {
 		return recommendations.get(index);
 	}
 	
+	public List<P> get(){
+		return recommendations;
+	}
+	
 	/**
 	 * Method that returns the stream of recommendations.
 	 * @return The stream of recommendations.

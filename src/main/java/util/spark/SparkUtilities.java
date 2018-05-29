@@ -65,9 +65,12 @@ public class SparkUtilities {
 	 * @return The default java spark context.
 	 */
 	public static JavaSparkContext getADefaultSparkContext(){
-		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("TV Recommender");
-		conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-		conf.registerKryoClasses(classesToSerialize());
+		SparkConf conf = new SparkConf()
+				.setMaster("local[*]")
+				.setAppName("TV Recommender")
+				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+				.set("spark.kryoserializer.buffer.max.mb", "512")
+				.registerKryoClasses(classesToSerialize());
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		sc.setLogLevel("WARN");
 		return sc;

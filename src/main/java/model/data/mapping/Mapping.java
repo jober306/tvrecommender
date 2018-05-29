@@ -9,4 +9,7 @@ public interface Mapping<V, VM> extends Serializable{
 	public VM indexToMappedValue(int index);
 	
 	public int size();
+	
+	public boolean containsValue(V value);
+	public boolean containsIndex(int index);
 }

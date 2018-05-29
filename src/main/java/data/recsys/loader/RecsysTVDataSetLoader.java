@@ -8,7 +8,6 @@ import data.recsys.RecsysTVDataSet;
 import data.recsys.RecsysTVEvent;
 import data.recsys.RecsysTVProgram;
 import scala.Tuple2;
-import util.TVDataSetUtilities;
 import util.spark.SparkUtilities;
 
 /**
@@ -112,12 +111,11 @@ public class RecsysTVDataSetLoader {
 	 */
 	public Tuple2<RecsysEPG, RecsysTVDataSet> loadDataSet(int minDuration) {
 		JavaRDD<RecsysTVEvent> events = linesToTVEvent(loadLinesFromDataSet());
-		JavaRDD<RecsysTVEvent> filteredEvents = TVDataSetUtilities
-				.filterByMinDuration(events, 5);
-		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(filteredEvents);
+		JavaRDD<RecsysTVProgram> programs = createProgramsImplicitlyFromEvents(events);
 		RecsysTVDataSet tvDataSet = new RecsysTVDataSet(events);
+		RecsysTVDataSet filteredTVDataSet = (RecsysTVDataSet) tvDataSet.filterByMinDuration(minDuration);
 		RecsysEPG epg = new RecsysEPG(programs);
-		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, tvDataSet);
+		return new Tuple2<RecsysEPG, RecsysTVDataSet>(epg, filteredTVDataSet);
 	}
 
 	/**

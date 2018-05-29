@@ -1,6 +1,5 @@
 package evaluator.result;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -10,7 +9,7 @@ import model.information.AbstractInformation;
 import recommender.TVRecommender;
 import recommender.RecommenderInfo;
 
-public class EvaluationInfo extends AbstractInformation implements Serializable{
+public class EvaluationInfo extends AbstractInformation {
 	 
 	private static final long serialVersionUID = 1L;
 

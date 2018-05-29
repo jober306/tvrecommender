@@ -3,8 +3,13 @@ package evaluator.result;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import model.data.TVProgram;
+import model.data.User;
 import model.information.Information;
 
 /**
@@ -12,13 +17,13 @@ import model.information.Information;
  * @author Jonathan Bergeron
  *
  */
-public class EvaluationResult implements Information, Serializable{
+public class EvaluationResult<U extends User, P extends TVProgram> implements Information, Serializable{
 	
 	private static final long serialVersionUID = 1L;
-	/**
-	 * The tested user id
-	 */
-	final List<MetricResults> metricsResults;
+
+	final Map<U, List<P>> userRecommendations;
+	final Map<String, MetricResults<U>> metricsResults;
+	
 	final EvaluationInfo evaluationInfo;
 	
 	/**
@@ -26,17 +31,39 @@ public class EvaluationResult implements Information, Serializable{
 	 * @param userId The tested user id
 	 * @param score The evaluation score obtained
 	 */
-	public EvaluationResult(List<MetricResults> metricsResults, EvaluationInfo evaluationInfo) {
-		this.metricsResults = metricsResults;
+	public EvaluationResult(Map<U, List<P>> userRecommendations, List<MetricResults<U>> metricsResults, EvaluationInfo evaluationInfo) {
+		this.userRecommendations = userRecommendations;
+		this.metricsResults = metricsResults.stream().collect(Collectors.toMap(MetricResults::metricName, java.util.function.Function.identity()));
 		this.evaluationInfo = evaluationInfo;
+	}
+	
+	public Map<U, List<P>> userRecommendations(){
+		return this.userRecommendations;
+	}
+	
+	public List<P> userRecommendation(U user) {
+		return userRecommendations.get(user);
+	}
+	
+	public List<U> topNUsers(String metricName, int n){
+		return metricsResults.get(metricName)
+				.userScores().entrySet().stream()
+				.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+				.limit(n)
+				.map(Map.Entry::getKey)
+				.collect(Collectors.toList());
 	}
 	
 	/**
 	 * Method that returns the tested user id.
 	 * @return The tested user id.
 	 */
-	public List<MetricResults> metricsResults() {
+	public Map<String, MetricResults<U>> metricsResults() {
 		return this.metricsResults;
+	}
+	
+	public MetricResults<U> metricResult(String metricName) {
+		return metricsResults.get(metricName);
 	}
 	
 	public EvaluationInfo evaluationInfo(){
@@ -53,7 +80,7 @@ public class EvaluationResult implements Information, Serializable{
 		StringBuilder sb = new StringBuilder();
 		sb.append(evaluationInfo.asString());
 		sb.append("\nEvaluation Results\n");
-		for(MetricResults metricResult : metricsResults){
+		for(MetricResults<U> metricResult : metricsResults.values()){
 			String metricName = metricResult.metricName();
 			double meanScore = metricResult.mean();
 			String formattedMeanScore = formatter.format(meanScore);

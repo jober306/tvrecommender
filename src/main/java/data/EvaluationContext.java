@@ -1,7 +1,5 @@
 package data;
 
-import static util.TVDataSetUtilities.createSubDataSet;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,20 +42,20 @@ public class EvaluationContext<U extends User, P extends TVProgram, E extends TV
 	/**
 	 * Constructor of this class
 	 * @param epg The electronic programming guide.
-	 * @param events The events that occured in the epg.
+	 * @param dataSet The events that occured in the epg.
 	 * @param trainingStartTime The training start time.
 	 * @param trainingEndTime The training end time.
 	 * @param testStartTime The testing start time.
 	 * @param testEndTime The testing end time.
 	 */
-	public EvaluationContext(EPG<P> epg, TVDataSet<U, P, E> events, 
+	public EvaluationContext(EPG<P> epg, TVDataSet<U, P, E> dataSet, 
 			LocalDateTime trainingStartTime, LocalDateTime trainingEndTime, 
 			LocalDateTime testStartTime, LocalDateTime testEndTime){
-		super(epg, events, trainingStartTime, trainingEndTime);
+		super(epg, dataSet, trainingStartTime, trainingEndTime);
 		this.testStartTime = testStartTime;
 		this.testEndTime = testEndTime;
 		this.testPrograms = createTestPrograms(testStartTime, testEndTime);
-		this.testSet = createSubDataSet(events, testStartTime, testEndTime);
+		this.testSet = dataSet.filterByDateTime(testStartTime, testEndTime);
 		this.groundTruth = createGroundTruth();
 	}
 	

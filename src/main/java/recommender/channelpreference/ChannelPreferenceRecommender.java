@@ -101,7 +101,8 @@ public abstract class ChannelPreferenceRecommender extends TVRecommender<User, R
 					break;
 			}
 		}
-		return recommendations.subList(0, Math.min(recommendations.size(), numberOfResults));
+		//Wrapping the sublist into array list because sub list is not serializable.
+		return new ArrayList<>(recommendations.subList(0, Math.min(recommendations.size(), numberOfResults)));
 	}
 	
 	@Override

@@ -37,7 +37,7 @@ public class MetricResultsTest {
 	static Tuple2<RecsysEPG, RecsysTVDataSet> data;
 	static EvaluationContext<User, RecsysTVProgram, RecsysTVEvent> context;
 	
-	Map<Integer, Double> usersScore;
+	Map<User, Double> usersScore;
 	
 	OneMetric<User, RecsysTVProgram> oneMetric;
 	IncrementMetric<User, RecsysTVProgram> incMetric;
@@ -52,26 +52,26 @@ public class MetricResultsTest {
 	
 	@Before
 	public void setUp(){
-		usersScore = new HashMap<Integer, Double>();
-		usersScore.put(1, 0.5d);
-		usersScore.put(2, 0.6d);
-		usersScore.put(3, 0.7d);
-		usersScore.put(4, 0.8d);
+		usersScore = new HashMap<User, Double>();
+		usersScore.put(new User(1), 0.5d);
+		usersScore.put(new User(2), 0.6d);
+		usersScore.put(new User(3), 0.7d);
+		usersScore.put(new User(4), 0.8d);
 		this.oneMetric = new OneMetric<>();
 		this.incMetric = new IncrementMetric<>();
 	}
 	
 	@Test
 	public void metricResultsInitializedWithMapTest(){
-		MetricResults metricResults = new MetricResults("", usersScore);
-		Map<Integer, Double> expectedResults = new HashMap<Integer, Double>(usersScore);
-		assertEquals(expectedResults, metricResults.usersScore());
+		MetricResults<User> metricResults = new MetricResults<>("", usersScore);
+		Map<User, Double> expectedResults = new HashMap<User, Double>(usersScore);
+		assertEquals(expectedResults, metricResults.userScores());
 	}
 	
 	@Test
 	public void metricResultsInitializedWithMapNotSeenUserTest(){
-		MetricResults metricResults = new MetricResults("", usersScore);
-		assertTrue(!metricResults.userScore(5).isPresent());
+		MetricResults<User> metricResults = new MetricResults<>("", usersScore);
+		assertTrue(!metricResults.userScores.containsKey(new User(5)));
 	}
 	
 	@Test
@@ -81,7 +81,7 @@ public class MetricResultsTest {
 		Recommendations<User, RecsysTVProgram> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
 
 		Stream<Recommendations<User, RecsysTVProgram>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
-		MetricResults result = incMetric.evaluate(recommendationsStream, context);
+		MetricResults<User> result = incMetric.evaluate(recommendationsStream, context);
 		double expectedMean = 2.0d;
 		assertEquals(expectedMean, result.mean(), 0.0d);
 	}
@@ -89,14 +89,30 @@ public class MetricResultsTest {
 	@Test
 	public void evaluatingMeanWithEmptyMetricResultsTest() {
 		double expectedMean = 0.0d;
-		MetricResults result = new MetricResults("", Collections.emptyMap());
+		MetricResults<User> result = new MetricResults<>("", Collections.emptyMap());
 		assertEquals(expectedMean, result.mean(), 0.0d);
+	}
+	
+	@Test
+	public void varianceTest() {
+		MetricResults<User> metricResults = new MetricResults<>("", usersScore);
+		double expectedResult = 0.0125d;
+		double actualResult = metricResults.variance();
+		assertEquals(expectedResult, actualResult, 0.0001);
+	}
+	
+	@Test
+	public void varianceEmtpyResultsTest() {
+		MetricResults<User> metricResults = new MetricResults<>("", Collections.emptyMap());
+		double expectedResult = 0.0d;
+		double actualResult = metricResults.variance();
+		assertEquals(expectedResult, actualResult, 0.0d);
 	}
 	
 	@Test
 	public void evaluatingGeometricMeanWithEmptyMetricResultsTest() {
 		double expectedGeoMean = 0.0d;
-		MetricResults result = new MetricResults("", Collections.emptyMap());
+		MetricResults<User> result = new MetricResults<>("", Collections.emptyMap());
 		assertEquals(expectedGeoMean, result.geometricMean(), 0.0d);
 	}
 	
@@ -106,7 +122,7 @@ public class MetricResultsTest {
 		Recommendations<User, RecsysTVProgram> recommendations2 = new Recommendations<>(new User(2), Collections.emptyList());
 		Recommendations<User, RecsysTVProgram> recommendations3 = new Recommendations<>(new User(3), Collections.emptyList());
 		Stream<Recommendations<User, RecsysTVProgram>> recommendationsStream = Stream.of(recommendations1, recommendations2, recommendations3);
-		MetricResults result = incMetric.evaluate(recommendationsStream, context);
+		MetricResults<User> result = incMetric.evaluate(recommendationsStream, context);
 		double expectedGeoMean = 1.8171205928321d;
 		assertEquals(expectedGeoMean, result.geometricMean(), 0.000001d);
 	}

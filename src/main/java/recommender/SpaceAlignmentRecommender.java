@@ -8,6 +8,7 @@ import static util.spark.mllib.MllibUtilities.scalarProduct;
 import static util.spark.mllib.MllibUtilities.toDenseLocalVectors;
 import static util.spark.mllib.MllibUtilities.vectorToCoordinateMatrix;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -211,9 +212,10 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 
 	@Override
 	protected Recommendations<U, P> recommendForTesting(U user, List<P> tvPrograms) {
-		EvaluationContext<U, P, E> evalContext = (EvaluationContext<U, P, E>) context;
-		List<Integer> itemIndexesSeenByUser = evalContext.getGroundTruth().get(user)
-				.stream().map(P::id).collect(toList());
+		if(!userMapping.containsValue(user)) {
+			return new Recommendations<>(user, Collections.emptyList());
+		}
+		Set<Integer> itemIndexesSeenByUser = R.getTVProgramIndexesSeenByUser(user);
 		List<P> recommendations = tvPrograms.stream()
 				.map(program -> scoreTVProgram(itemIndexesSeenByUser, program))
 				.sorted(Comparator.comparing(Tuple2<P, Double>::_2).reversed())
@@ -239,7 +241,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		return new Tuple2<P, Double>(program, calculateScore(user, programFeatures));
 	}
 
-	private Tuple2<P, Double> scoreTVProgram(List<Integer> itemIndexesSeenByUser, P tvProgram) {
+	private Tuple2<P, Double> scoreTVProgram(Set<Integer> itemIndexesSeenByUser, P tvProgram) {
 		return new Tuple2<P, Double>(tvProgram, getScore(itemIndexesSeenByUser, tvProgram));
 	}
 
@@ -247,7 +249,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		return calculateNeighboursScore(calculateNewItemNeighborhoodSimilaritiesForUser(user, vector));
 	}
 
-	private double getScore(List<Integer> itemIndexesSeenByUser, P program) {
+	private double getScore(Set<Integer> itemIndexesSeenByUser, P program) {
 		return calculateNeighboursScore(getNewItemNeighborhoodSimilaritiesForUser(itemIndexesSeenByUser, program));
 	}
 
@@ -267,7 +269,7 @@ public class SpaceAlignmentRecommender<U extends User, P extends TVProgram, E ex
 		return sortedFilteredSimilarities.subList(0, Math.min(neighbourhoodSize, sortedFilteredSimilarities.size()));
 	}
 
-	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(List<Integer> itemIndexesSeenByUser, P tvShow) {
+	private List<Double> getNewItemNeighborhoodSimilaritiesForUser(Set<Integer> itemIndexesSeenByUser, P tvShow) {
 		List<Double> similarities = newTVShowsSimilarities.get(tvShow);
 		Stream<Double> filteredSimilarities = itemIndexesSeenByUser.stream().map(similarities::get);
 		List<Double> sorteredFilteredSimilarities = filteredSimilarities

@@ -36,21 +36,18 @@ public class Novelty<U extends User, P extends TVProgram> implements EvaluationM
 	
 	@Override
 	public String name() {
-		return "Novelty (smoothing = " + additiveSmoothing + ")";
+		return "Novelty";
 	}
 
 	@Override
 	public double evaluate(Recommendations<U, P> recommendations, EvaluationContext<U, P,?> evaluationContext){	
 		GroundModel<U, P> groundModel = new GroundModel<>(evaluationContext.getTrainingSet()); 
-		int recommendationsSize = recommendations.size();
-		int numberOfTVPrograms = evaluationContext.getTrainingSet().allProgramIds().size();
-		double ratio = (double) numberOfTVPrograms / recommendationsSize; 
 		final double log2 = Math.log(2);
 		double sum = recommendations.stream()
 				.mapToDouble(recommendation -> groundModel.probabilityTVProgramIsChosen(recommendation, 1.0d))
-				.map(p -> p * Math.log(p) / log2)
+				.map(p -> Math.log(p) / log2)
 				.sum();
-		return -1.0d * ratio * sum;
+		return -1.0d * sum / recommendations.size();
 	}
 
 }

@@ -43,4 +43,14 @@ public class AbstractMapping<V, VM> implements Mapping<V, VM>, Serializable{
 	public int size(){
 		return mapping.size();
 	}
+
+	@Override
+	public boolean containsValue(V value) {
+		return mapping.containsKey(valueMapper.apply(value));
+	}
+
+	@Override
+	public boolean containsIndex(int index) {
+		return mapping.containsValue(index);
+	}
 }

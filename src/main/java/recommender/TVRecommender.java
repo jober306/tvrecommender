@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.spark.api.java.JavaSparkContext;
+
 import data.Context;
 import data.EvaluationContext;
 import model.data.TVEvent;
@@ -70,6 +72,8 @@ public abstract class TVRecommender<U extends User, P extends TVProgram, E exten
 	 * The context of this recommender;
 	 */
 	protected Context<U, P, E> context;
+	
+	protected JavaSparkContext sc;
 
 	RecommendFunction<U, P> recommendFunctionRef;
 	

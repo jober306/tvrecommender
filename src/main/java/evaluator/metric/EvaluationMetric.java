@@ -27,9 +27,9 @@ public interface EvaluationMetric<U extends User, P extends TVProgram> {
 	 * @param context The evaluation context in which the recommendations have been made.
 	 * @return A stream containing the evaluation results. The results are ordered in the same way the recommendations are.
 	 */
-	default public MetricResults evaluate(Stream<Recommendations<U, P>> recommendationsStream, EvaluationContext<U, P, ?> context){
-		Map<Integer, Double> userScores = StreamUtilities.toMapAverage(recommendationsStream, Recommendations::userId, recommendation -> evaluate(recommendation, context));
-		return new MetricResults(name(), userScores);
+	default public MetricResults<U> evaluate(Stream<Recommendations<U, P>> recommendationsStream, EvaluationContext<U, P, ?> context){
+		Map<U, Double> userScores = StreamUtilities.toMapAverage(recommendationsStream, Recommendations::user, recommendation -> evaluate(recommendation, context));
+		return new MetricResults<>(name(), userScores);
 	}
 	
 	/**

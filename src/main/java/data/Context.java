@@ -1,7 +1,5 @@
 package data;
 
-import static util.TVDataSetUtilities.createSubDataSet;
-
 import java.time.LocalDateTime;
 
 import model.data.TVEvent;
@@ -36,29 +34,29 @@ public class Context<U extends User, P extends TVProgram, E extends TVEvent<U, P
 	/**
 	 * Constructor of the class, the training time are set to be the whole tv dataset.
 	 * @param epg The electronic programming guide.
-	 * @param events The tv events that occurred in the epg. 
+	 * @param dataSet The tv events that occurred in the epg. 
 	 */
-	public Context(EPG<P> epg, TVDataSet<U, P, E> events){
+	public Context(EPG<P> epg, TVDataSet<U, P, E> dataSet){
 		this.epg = epg;
-		this.events = events;
-		this.trainingStartTime = events.startTime();
-		this.trainingEndTime = events.endTime();
-		this.trainingSet = events;
+		this.events = dataSet;
+		this.trainingStartTime = dataSet.startTime();
+		this.trainingEndTime = dataSet.endTime();
+		this.trainingSet = dataSet;
 	}
 	
 	/**
 	 * Constructor of the class.
 	 * @param epg The electronic programming guide.
-	 * @param events The tv events that occurred in the epg. 
+	 * @param dataSet The tv events that occurred in the epg. 
 	 * @param trainingStartTime The training start time.
 	 * @param trainingEndTime The training end time.
 	 */
-	public Context(EPG<P> epg, TVDataSet<U, P, E> events, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
+	public Context(EPG<P> epg, TVDataSet<U, P, E> dataSet, LocalDateTime trainingStartTime, LocalDateTime trainingEndTime){
 		this.epg = epg;
-		this.events = events;
+		this.events = dataSet;
 		this.trainingStartTime = trainingStartTime;
 		this.trainingEndTime = trainingEndTime;
-		this.trainingSet = createSubDataSet(events, trainingStartTime, trainingEndTime);
+		this.trainingSet = dataSet.filterByDateTime(trainingStartTime, trainingEndTime);
 	}
 	
 	/**

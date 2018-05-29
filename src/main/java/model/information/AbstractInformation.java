@@ -7,6 +7,8 @@ import java.util.Optional;
 
 public abstract class AbstractInformation implements Information{
 	
+	private static final long serialVersionUID = 1L;
+
 	public static Optional<Information> deserialize(String inputPath){
 		try {
 			FileInputStream fis = new FileInputStream(inputPath);

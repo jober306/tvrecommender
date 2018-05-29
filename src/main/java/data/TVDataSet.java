@@ -2,6 +2,7 @@ package data;
 
 import static java.util.stream.Collectors.toSet;
 import static util.spark.mllib.MllibUtilities.sparseMatrixFormatToCSCMatrixFormat;
+import static util.time.TimeUtilities.isDateTimeBetween;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
@@ -240,6 +241,31 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	}
 	
 	/**
+	 * Method that returns a filtered data set of tv events 
+	 * that have higher duration than given min duration.
+	 * 
+	 * @param minDuration The minimum duration.
+	 * @return A filtered tv data set.
+	 */
+	public TVDataSet<U, P, E> filterByMinDuration(int minDuration) {
+		return newInstance(events.filter(tvEvent -> tvEvent.watchDuration() >= minDuration));
+	}
+
+	/**
+	 * Method that returns a filtered tv data set of tv events occuring between 
+	 * given start (inclusively) and end (exclusively) time.
+	 * 
+	 * @param startTime
+	 *            The start time.
+	 * @param endTime
+	 *            The end time.
+	 * @return The tv events between startTime and endTime.
+	 */
+	public TVDataSet<U, P, E> filterByDateTime(LocalDateTime startTime, LocalDateTime endTime) {
+		return newInstance(events.filter(tvEvent -> isDateTimeBetween(startTime, endTime, tvEvent.watchTime())));
+	}
+	
+	/**
 	 * Method used to create a new data set from some events and a spark
 	 * context.
 	 * 
@@ -381,7 +407,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	
 	@Override
 	public TVDataSetInfo info(){
-		return new TVDataSetInfo(this.getClass().getSimpleName(), numberOfUsers(), numberOfTvPrograms(), numberOfTvEvents());
+		return new TVDataSetInfo(this.getClass().getSimpleName());
 	}
 	
 	private Set<Integer> initAllUserIds(){

@@ -8,6 +8,7 @@ import java.util.stream.IntStream;
 
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 import data.TVDataSet;
 import data.recsys.RecsysTVDataSet;
@@ -25,34 +26,34 @@ public class TVDataSetVisualisation {
 		int width = 560;
 		int height = 370;
 		String outputPath = outputDir + "programCount.jpeg";
-	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
+	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, new XYSeriesCollection(sortedProgramCount));
 	}
 	
 	public static <E extends TVEvent<?, ?>> void createAndSaveSortedChannelCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
-		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::channelId, dataset, "");
+		XYSeries sortedChannelCount = getSortedCountSeriesOf(TVEvent::channelId, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Number of Views";
 		int width = 560;
 		int height = 370;
 		String outputPath = outputDir + "channelCount.jpeg";
-	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
+	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, new XYSeriesCollection(sortedChannelCount));
 	}
 	
 	public static <E extends TVEvent<?, ?>> void createAndSaveSortedUserCountChart(TVDataSet<?, ?, E> dataset, String outputDir){
-		XYSeries sortedProgramCount = getSortedCountSeriesOf(TVEvent::userID, dataset, "");
+		XYSeries sortedUserCount = getSortedCountSeriesOf(TVEvent::userID, dataset, "");
 		String plotTitle = "";
 		String yAxisTitle = "Number of Views";
 		int width = 560;
 		int height = 370;
 		String outputPath = outputDir + "userCount.jpeg";
-	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, sortedProgramCount);
+	    JFreeChartUtilities.createAndSaveXYChart(plotTitle, "", yAxisTitle, width, height, outputPath, new XYSeriesCollection(sortedUserCount));
 	}
 	
 	public static <E extends TVEvent<?, ?>> XYSeries getSortedCountSeriesOf(SerializableFunction<? super E, ?>  tvEventKeyMapper, TVDataSet<?, ?, E> dataset, String seriesName){
-		Map<?, Long> programCount = dataset.events()
+		Map<?, Long> keyCounts = dataset.events()
 	  	     .map(tvEventKeyMapper::apply)
 	  	     .countByValue();
-		List<Long> sortedProgramCount = programCount.entrySet().stream()
+		List<Long> sortedProgramCount = keyCounts.entrySet().stream()
 	  	  	 .map(Entry::getValue)
 	  		 .sorted()
 	  		 .collect(Collectors.toList());
