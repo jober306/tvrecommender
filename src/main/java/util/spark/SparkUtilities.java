@@ -69,7 +69,7 @@ public class SparkUtilities {
 				.setMaster("local[*]")
 				.setAppName("TV Recommender")
 				.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-				.set("spark.kryoserializer.buffer.max.mb", "512")
+				.set("spark.kryoserializer.buffer.max", "512")
 				.registerKryoClasses(classesToSerialize());
 		JavaSparkContext sc = new JavaSparkContext(conf);
 		sc.setLogLevel("WARN");

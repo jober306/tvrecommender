@@ -2,7 +2,6 @@ package util.jfreechart;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -16,8 +15,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.DeviationRenderer;
-import org.jfree.chart.title.TextTitle;
-import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.YIntervalSeriesCollection;
@@ -28,6 +26,11 @@ import org.jfree.data.xy.YIntervalSeriesCollection;
  *
  */
 public class JFreeChartUtilities {
+	
+	public static void createAndSaveBarChart(String title, String xTitle, String yTitle, int width, int height, String outputPath, CategoryDataset categoryDataset) {
+		JFreeChart xyBarChart = ChartFactory.createBarChart(title, xTitle, yTitle, categoryDataset);
+	    saveChartAsJPEG(outputPath, xyBarChart, width, height);
+	}
 	
 	/**
 	 * Method that creates a XYChart and saves it as jpeg.

@@ -70,8 +70,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	
 	
 	/**
-	 * All the lazy attributes. They are transient because Supplier is not Serializable, so each
-	 * worker need to recalculate it.
+	 * All the lazy attributes.
 	 */
 	SerializableSupplier<Integer> numberOfUsers = lazily(() -> numberOfUsers = value(initNumberOfUsers()));
 	SerializableSupplier<Integer> numberOfTvShows = lazily(() -> numberOfTvShows = value(initNumberOfTVShows()));
@@ -80,6 +79,7 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	SerializableSupplier<Set<Integer>> allUserIds = lazily(() -> allUserIds = value(initAllUserIds()));
 	SerializableSupplier<Set<U>> allUsers = lazily(() -> allUsers = value(initAllUsers()));
 	SerializableSupplier<Map<Integer, Long>> tvProgramIdsCount = lazily(()-> tvProgramIdsCount = value(initTVProgramsIdsCount()));
+	SerializableSupplier<Map<U, Long>> usersTVEventCounts = lazily(() -> usersTVEventCounts = value(initUserTVEventCounts()));
 	SerializableSupplier<Set<Integer>> allProgramIds = lazily(() -> allProgramIds = value(initAllProgramIds()));
 	SerializableSupplier<Set<P>> allPrograms = lazily(() -> allPrograms = value(initAllPrograms()));
 	SerializableSupplier<Set<Integer>> allEventIds = lazily(() -> allEventIds = value(initAllEventIds()));
@@ -325,6 +325,10 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 		return tvProgramIdsCount.get();
 	}
 	
+	public Map<U, Long> userTVEventCounts(){
+		return usersTVEventCounts.get();
+	}
+	
 	/**
 	 * Method that returns all the unique tv program ids contained in this data set.
 	 * @return The set of tv program ids.
@@ -420,6 +424,10 @@ public class TVDataSet<U extends User, P extends TVProgram, E extends TVEvent<U,
 	
 	private Map<Integer, Long> initTVProgramsIdsCount(){
 		return events.map(tvEvent -> tvEvent.programID()).countByValue();
+	}
+	
+	private Map<U, Long> initUserTVEventCounts(){
+		return events.map(tvEvent -> tvEvent.user()).countByValue();
 	}
 	
 	private Set<Integer> initAllProgramIds(){

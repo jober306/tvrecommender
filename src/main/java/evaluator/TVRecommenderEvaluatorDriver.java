@@ -48,40 +48,40 @@ public class TVRecommenderEvaluatorDriver {
 		
 		//******************MOVING TIME WINDOW EVALUATION***************************
 		
-//		//Evaluating the top channel recommender
-//		Set<EvaluationResult<User, RecsysTVProgram>> topChannelResults = topChannelEvaluator().evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
-//		serializeEvaluationResults("src/main/resources/results/topchannel/window/", topChannelResults);
-//		
-//		//Evaluating the top channel per user recommender
-//		Set<EvaluationResult<User, RecsysTVProgram>> topChannelPerUserResults = topChannelPerUserEvaluator().evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
-//		serializeEvaluationResults("src/main/resources/results/topchannelperuser/window/", topChannelPerUserResults);
-//		
+		//Evaluating the top channel recommender
+		Set<EvaluationResult<User, RecsysTVProgram>> topChannelResults = topChannelEvaluator().evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
+		serializeEvaluationResults("src/main/resources/results/topchannel/window/", topChannelResults);
+		
+		//Evaluating the top channel per user recommender
+		Set<EvaluationResult<User, RecsysTVProgram>> topChannelPerUserResults = topChannelPerUserEvaluator().evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
+		serializeEvaluationResults("src/main/resources/results/topchannelperuser/window/", topChannelPerUserResults);
+		
 		//Evaluating the top channel per user per slot recommender
 		Set<EvaluationResult<User, RecsysTVProgram>> topChannelPerUserPerSlotResults = topChannelPerUserPerSlotEvaluator().evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
 		serializeEvaluationResults("src/main/resources/results/topchannelperuserperslot/window/", topChannelPerUserPerSlotResults);
 		
-//		//Evaluating the space alignment recommender
-//		Set<EvaluationResult<User, RecsysTVProgram>> spaceAlignmentResults = spaceAlignementEvaluator(sc).evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
-//		serializeEvaluationResults("src/main/resources/results/spacealignment/window/", spaceAlignmentResults);
-//		
+		//Evaluating the space alignment recommender
+		Set<EvaluationResult<User, RecsysTVProgram>> spaceAlignmentResults = spaceAlignementEvaluator(sc).evaluateMovingTimeWindow(data._1(), data._2(), startTime, window, endTime);
+		serializeEvaluationResults("src/main/resources/results/spacealignment/window/", spaceAlignmentResults);
+		
 		//******************INCREASING TRAINING SET EVALUATION***************************
 
-//		//Evaluating the top channel recommender
-//		topChannelResults = topChannelEvaluator().evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
-//		serializeEvaluationResults("src/main/resources/results/topchannel/onemonth/", topChannelResults);
-//		
-//		//Evaluating the top channel per user recommender
-//		topChannelPerUserResults = topChannelPerUserEvaluator().evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
-//		serializeEvaluationResults("src/main/resources/results/topchannelperuser/onemonth/", topChannelPerUserResults);
-//		
+		//Evaluating the top channel recommender
+		topChannelResults = topChannelEvaluator().evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
+		serializeEvaluationResults("src/main/resources/results/topchannel/onemonth/", topChannelResults);
+		
+		//Evaluating the top channel per user recommender
+		topChannelPerUserResults = topChannelPerUserEvaluator().evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
+		serializeEvaluationResults("src/main/resources/results/topchannelperuser/onemonth/", topChannelPerUserResults);
+		
 		//Evaluating the top channel per user per slot recommender
 		topChannelPerUserPerSlotResults = topChannelPerUserPerSlotEvaluator().evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
 		serializeEvaluationResults("src/main/resources/results/topchannelperuserperslot/onemonth/", topChannelPerUserPerSlotResults);
 		
-//		//Evaluating the space alignment recommender
-//		spaceAlignmentResults = spaceAlignementEvaluator(sc).evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
-//		serializeEvaluationResults("src/main/resources/results/spacealignment/onemonth/", spaceAlignmentResults);
-//		
+		//Evaluating the space alignment recommender
+		spaceAlignmentResults = spaceAlignementEvaluator(sc).evaluateWithIncreasingTrainingSize(data._1(), data._2(), startTime, endTime);
+		serializeEvaluationResults("src/main/resources/results/spacealignment/onemonth/", spaceAlignmentResults);
+		
 		sc.close();
 	}
 
